@@ -1011,3 +1011,187 @@ Después de revisar todas las relaciones del modelo se concluye que:
 - No existen relaciones muchos a muchos para el MVP.
 - Las responsabilidades de cada entidad están claramente separadas.
 - El modelo está preparado para su implementación en Prisma y PostgreSQL.
+
+# Relaciones Futuras
+## Sistema de Permisos
+
+En futuras versiones se incorporará un sistema de permisos basado en las siguientes entidades:
+
+Role (N) ↔ (N) Permission
+
+La relación será implementada mediante una entidad intermedia:
+
+RolePermission
+
+Esto permitirá asignar permisos específicos a cada rol sin modificar la lógica del sistema.
+
+## Notificaciones
+
+Se incorporará una entidad Notification para administrar:
+
+- Alertas de stock.
+- Sincronizaciones.
+- Mensajes del sistema.
+- Avisos importantes.
+
+Relación:
+
+User (1) → Notification (N)
+
+## Historial de Equipos
+
+En una versión posterior se incorporará un módulo para administrar el historial de los equipos vendidos.
+
+Las principales entidades serán:
+
+Equipment
+
+EquipmentService
+
+Las relaciones previstas serán:
+
+Client (1) → Equipment (N)
+
+Equipment (1) → EquipmentService (N)
+
+Esto permitirá consultar:
+
+- Fecha de venta.
+- Fecha de entrega.
+- Número de serie.
+- Modelo.
+- Historial de mantenimientos.
+- Historial de reparaciones.
+
+## Imágenes de Productos
+
+La entidad ProductImage permitirá asociar múltiples imágenes a un producto.
+
+Relación:
+
+Product (1) → ProductImage (N)
+
+Esta funcionalidad no será implementada en el MVP.
+
+## Observaciones
+
+Las relaciones documentadas en esta sección forman parte de la arquitectura objetivo del ERP.
+
+No serán implementadas durante el MVP, pero el modelo de datos fue diseñado para incorporarlas sin realizar cambios estructurales en las entidades principales.
+
+# Validación Final
+## Relaciones Principales
+
+- [x] Todo User pertenece a un Role.
+- [x] Todo User pertenece a una Store.
+- [x] Todo Product pertenece a una Category.
+- [x] Todo Product pertenece a una Brand.
+- [x] Todo Product pertenece a una UnitOfMeasure.
+- [x] Todo Client pertenece a un MarginProfile.
+- [x] Todo InventoryMovement pertenece a un Product.
+- [x] Todo InventoryMovement pertenece a un User.
+- [x] Todo InventoryMovement pertenece a una Store.
+- [x] Todo InventoryMovement pertenece a un MovementType.
+- [x] Client es opcional únicamente para movimientos de tipo SALE.
+
+## Inventario
+
+- [x] Product no almacena stock.
+- [x] InventoryStock almacena el stock actual.
+- [x] InventoryMovement almacena el historial.
+- [x] Todo cambio del inventario genera un InventoryMovement.
+- [x] Las transferencias entre tiendas generan dos movimientos:
+  - TRANSFER_OUT
+  - TRANSFER_IN
+
+  ## Sistema de Precios
+
+- [x] MarginProfile administra los porcentajes de margen.
+- [x] ProductPrice almacena los precios calculados.
+- [x] Client solo referencia un MarginProfile.
+- [x] Product no almacena precios de venta.
+- [x] Los usuarios de tienda únicamente consultarán precios ya calculados.
+
+## Auditoría
+
+- [x] Todas las entidades principales utilizan UUID.
+- [x] Todas las entidades principales incluyen auditoría.
+- [x] Todas las entidades principales utilizan Soft Delete.
+- [x] Ningún movimiento de inventario podrá eliminarse físicamente.
+
+## Escalabilidad
+
+El modelo queda preparado para incorporar en futuras versiones:
+
+- [x] Sistema de permisos.
+- [x] Historial de equipos.
+- [x] Notificaciones.
+- [x] Múltiples imágenes por producto.
+
+## Conclusión
+
+Después de revisar todas las relaciones del modelo se concluye que:
+
+- El modelo representa correctamente el funcionamiento del negocio.
+- No existen relaciones duplicadas.
+- No existen dependencias circulares innecesarias.
+- Cada entidad tiene una única responsabilidad.
+- La arquitectura está preparada para implementarse en Prisma y PostgreSQL.
+
+La Fase 3 se considera validada.
+
+# Cierre de la Fase 3
+## Estado
+
+La Fase 3 – Relaciones ha finalizado correctamente.
+
+Se encuentran documentadas:
+
+- Todas las relaciones del modelo.
+- Todas las cardinalidades.
+- Todas las llaves foráneas.
+- El diagrama conceptual del dominio.
+- Las relaciones previstas para futuras versiones.
+
+## Arquitectura Aprobada
+
+El modelo relacional aprobado incluye las siguientes entidades:
+
+- User
+- Role
+- Store
+- Category
+- Product
+- Brand
+- UnitOfMeasure
+- ProductImage
+- MarginProfile
+- ProductPrice
+- Client
+- InventoryMovement
+- MovementType
+- InventoryStock
+- Settings
+
+Todas las relaciones fueron revisadas y validadas antes de iniciar la implementación del modelo físico de la base de datos.
+
+## Decisiones Confirmadas
+
+Durante el diseño se aprobaron las siguientes decisiones de arquitectura:
+
+- El stock será administrado por InventoryStock.
+- Product no almacenará existencias.
+- Product no almacenará precios de venta.
+- Los precios serán calculados y almacenados en ProductPrice.
+- MarginProfile administrará los perfiles de margen.
+- Los usuarios de tienda únicamente visualizarán precios previamente calculados.
+- Las transferencias entre tiendas generarán dos movimientos:
+  - TRANSFER_OUT
+  - TRANSFER_IN
+- Las categorías soportarán jerarquías mediante parentCategoryId.
+- Brand y UnitOfMeasure serán entidades independientes.
+## Próxima Fase
+
+El proyecto queda preparado para iniciar el diseño físico de la base de datos e implementar el modelo en Prisma.
+
+Toda modificación futura deberá respetar las decisiones documentadas durante las Fases 1, 2 y 3.
