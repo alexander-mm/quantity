@@ -133,6 +133,8 @@ model Category {
 
   parentCategoryId BigInt?
 
+  parentCategory Category? @relation("CategoryHierarchy", fields: [parentCategoryId], references: [id])
+
   isActive Boolean @default(true)
 
   createdAt DateTime @default(now())
@@ -142,6 +144,8 @@ model Category {
   createdBy BigInt?
 
   updatedBy BigInt?
+
+  subcategories Category[] @relation("CategoryHierarchy")
 
   products Product[]
 }
