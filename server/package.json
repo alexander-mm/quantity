@@ -6,9 +6,9 @@
   "type": "module",
   "main": "dist/bootstrap/server.js",
   "scripts": {
-    "dev": "nodemon --watch src --ext ts --exec ts-node src/bootstrap/server.ts",
+    "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/bootstrap/server.js",
+    "start": "node dist/index.js",
     "check": "tsc --noEmit && prisma validate",
     "prisma:generate": "prisma generate",
     "prisma:validate": "prisma validate",
@@ -30,10 +30,12 @@
     "morgan": "^1.11.0",
     "multer": "^2.2.0",
     "pg": "^8.22.0",
-    "uuid": "^14.0.1"
+    "uuid": "^14.0.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
+    "@types/compression": "^1.8.1",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
@@ -43,6 +45,7 @@
     "nodemon": "^3.1.14",
     "prisma": "^6.16.2",
     "ts-node": "^10.9.2",
+    "tsx": "^4.23.0",
     "typescript": "^6.0.3"
   }
 }
