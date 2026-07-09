@@ -226,6 +226,8 @@ model Product {
   updatedBy BigInt?
 
   productPrices ProductPrice[]
+
+  inventoryMovements InventoryMovement[]
 }
 
 model MarginProfile {
@@ -344,6 +346,8 @@ model InventoryMovement {
   movementTypeId BigInt
 
   productId BigInt
+
+  product Product @relation(fields: [productId], references: [id])
 
   storeId BigInt
 
