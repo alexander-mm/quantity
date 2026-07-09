@@ -63,3 +63,57 @@ model Store {
 
   updatedBy BigInt?
 }
+
+model User {
+  id BigInt @id @default(autoincrement())
+
+  uuid String @unique @default(uuid())
+
+  username String @unique
+
+  password String
+
+  firstName String
+
+  lastName String
+
+  email String?
+
+  phone String?
+
+  roleId BigInt
+
+  storeId BigInt
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  createdBy BigInt?
+
+  updatedBy BigInt?
+}
+
+model Category {
+  id BigInt @id @default(autoincrement())
+
+  uuid String @unique @default(uuid())
+
+  name String @unique
+
+  description String?
+
+  parentCategoryId BigInt?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  createdBy BigInt?
+
+  updatedBy BigInt?
+}
