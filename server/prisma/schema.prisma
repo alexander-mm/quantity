@@ -78,6 +78,8 @@ model Store {
   updatedBy BigInt?
 
   users User[]
+
+  inventoryMovements InventoryMovement[]
 }
 
 model User {
@@ -350,6 +352,8 @@ model InventoryMovement {
   product Product @relation(fields: [productId], references: [id])
 
   storeId BigInt
+
+  store Store @relation(fields: [storeId], references: [id])
 
   userId BigInt
 
