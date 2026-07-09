@@ -78,6 +78,22 @@ main()
         }
 
         console.log("✅ Settings created.");
+
+        console.log("📦 Seeding Unit Of Measures...");
+
+        await prisma.unitOfMeasure.upsert({
+        where: {
+            code: "UN"
+        },
+        update: {},
+        create: {
+            code: "UN",
+            name: "Unidad",
+            description: "Unidad de medida por defecto"
+        }
+        });
+
+        console.log("✅ Unit Of Measure created.");
     })
     .catch(async (error) => {
 
