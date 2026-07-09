@@ -314,6 +314,8 @@ model Client {
   createdBy BigInt?
 
   updatedBy BigInt?
+
+  inventoryMovements InventoryMovement[]
 }
 
 model MovementType {
@@ -362,6 +364,8 @@ model InventoryMovement {
   user User @relation(fields: [userId], references: [id])
 
   clientId BigInt?
+
+  client Client? @relation(fields: [clientId], references: [id])
 
   quantity Decimal @db.Decimal(12, 2)
 
