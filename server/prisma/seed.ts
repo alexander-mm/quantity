@@ -9,19 +9,41 @@ async function main() {
 }
 
 main()
-  .then(async () => {
+    .then(async () => {
 
-    console.log("✅ Seed completed.");
+        console.log("🌱 Starting database seed...");
 
-    await prisma.$disconnect();
+        console.log("📦 Seeding Roles...");
 
-  })
-  .catch(async (error) => {
+        await prisma.role.upsert({
+        where: {
+            name: "Administrador"
+        },
+        update: {},
+        create: {
+            name: "Administrador",
+            description: "Acceso total al sistema"
+        }
+        });
 
-    console.error(error);
+        await prisma.role.upsert({
+        where: {
+            name: "Tienda"
+        },
+        update: {},
+        create: {
+            name: "Tienda",
+            description: "Usuario de tienda"
+        }
+        });
 
-    await prisma.$disconnect();
+        console.log("✅ Roles created.");
+    })
+    .catch(async (error) => {
 
-    process.exit(1);
+        console.error(error);
 
-  });
+        await prisma.$disconnect();
+
+        process.exit(1);
+    });
