@@ -12,6 +12,12 @@ enum StoreType {
   STORE
 }
 
+enum StockOperation {
+  IN
+  OUT
+  NONE
+}
+
 model Role {
   id BigInt @id @default(autoincrement())
 
@@ -238,4 +244,60 @@ model ProductPrice {
   updatedBy BigInt?
 
   @@unique([productId, marginProfileId])
+}
+
+model Client {
+  id BigInt @id @default(autoincrement())
+
+  uuid String @unique @default(uuid())
+
+  document String @unique
+
+  firstName String?
+
+  lastName String?
+
+  companyName String?
+
+  phone String?
+
+  email String?
+
+  address String?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  createdBy BigInt?
+
+  updatedBy BigInt?
+}
+
+model MovementType {
+  id BigInt @id @default(autoincrement())
+
+  uuid String @unique @default(uuid())
+
+  code String @unique
+
+  name String @unique
+
+  description String?
+
+  affectsStock Boolean @default(true)
+
+  stockOperation StockOperation
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  createdBy BigInt?
+
+  updatedBy BigInt?
 }
