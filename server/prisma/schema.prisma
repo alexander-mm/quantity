@@ -124,6 +124,8 @@ model User {
   updatedBy BigInt?
 
   inventoryMovements InventoryMovement[]
+
+  @@index([isActive])
 }
 
 model Category {

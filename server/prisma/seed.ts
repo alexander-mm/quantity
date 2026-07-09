@@ -1,20 +1,11 @@
 import {
-  PrismaClient,
-  StoreType,
-  StockOperation
-} from "@prisma/client";
+  PrismaClient,  StoreType,  StockOperation} from "@prisma/client";
+  import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
-async function main() {
-
-  console.log("🌱 Starting database seed...");
-
-  // =============================
-  // Roles
-  // =============================
-
-  console.log("📦 Seeding Roles...");
+async function seedRoles() {
+    console.log("📦 Seeding Roles...");
 
   await prisma.role.upsert({
     where: {
@@ -40,11 +31,10 @@ async function main() {
 
   console.log("✅ Roles created.");
 
-  // =============================
-  // Store
-  // =============================
+}
 
-  console.log("📦 Seeding Store...");
+async function seedStores() {
+    console.log("📦 Seeding Store...");
 
   await prisma.store.upsert({
     where: {
@@ -64,12 +54,10 @@ async function main() {
   });
 
   console.log("✅ Store created.");
+}
 
-  // =============================
-  // Settings
-  // =============================
-
-  console.log("📦 Seeding Settings...");
+async function seedSettings() {
+    console.log("📦 Seeding Settings...");
 
   const settingsCount = await prisma.settings.count();
 
@@ -87,12 +75,10 @@ async function main() {
   }
 
   console.log("✅ Settings created.");
+}
 
-  // =============================
-  // Unit Of Measure
-  // =============================
-
-  console.log("📦 Seeding Unit Of Measure...");
+async function seedUnitOfMeasure() {
+    console.log("📦 Seeding Unit Of Measure...");
 
   await prisma.unitOfMeasure.upsert({
     where: {
@@ -107,12 +93,10 @@ async function main() {
   });
 
   console.log("✅ Unit Of Measure created.");
+}
 
-  // =============================
-// Margin Profiles
-// =============================
-
-const marginProfiles = [
+async function seedMarginProfiles() {
+    const marginProfiles = [
   {
     name: "Precio 1",
     percentage: 30.00,
@@ -145,7 +129,10 @@ for (const profile of marginProfiles) {
 
 console.log("✅ Margin Profiles created.");
 
-  const movementTypes = [
+}
+
+async function seedMovementTypes() {
+    const movementTypes = [
     {
       code: "PURCHASE",
       name: "Compra",
@@ -212,6 +199,69 @@ for (const movementType of movementTypes) {
 }
 
 console.log("✅ Movement Types created.");
+}
+
+async function seedAdminUser() {
+    console.log("📦 Seeding Administrator User...");
+
+const adminRole = await prisma.role.findUnique({
+  where: {
+    name: "Administrador"
+  }
+});
+
+const mainStore = await prisma.store.findUnique({
+  where: {
+    code: "MAIN"
+  }
+});
+
+if (!adminRole) {
+  throw new Error("Role 'Administrador' not found.");
+}
+
+if (!mainStore) {
+  throw new Error("Store 'MAIN' not found.");
+}
+
+const hashedPassword = await bcrypt.hash("admin123", 10);
+
+await prisma.user.upsert({
+  where: {
+    username: "admin"
+  },
+  update: {},
+  create: {
+    username: "admin",
+    password: hashedPassword,
+    firstName: "Administrador",
+    lastName: "Sistema",
+    email: "admin@ordeplus.com",
+    roleId: adminRole.id,
+    storeId: mainStore.id
+  }
+});
+
+console.log("✅ Administrator User created.");
+}
+
+async function main() {
+
+  console.log("🌱 Starting database seed...");
+
+  await seedRoles();
+
+   await seedStores();
+
+   await seedSettings();
+
+   await seedUnitOfMeasure();
+
+   await seedMovementTypes();
+
+   await seedMarginProfiles();
+
+   await seedAdminUser();
 
 }
 
