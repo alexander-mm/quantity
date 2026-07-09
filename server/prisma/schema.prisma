@@ -82,6 +82,10 @@ model Store {
   inventoryMovements InventoryMovement[]
 
   inventoryStocks InventoryStock[]
+
+  @@index([type])
+
+  @@index([isActive])
 }
 
 model User {
@@ -148,6 +152,10 @@ model Category {
   subcategories Category[] @relation("CategoryHierarchy")
 
   products Product[]
+
+  @@index([parentCategoryId])
+
+  @@index([isActive])
 }
 
 model Brand {
@@ -170,6 +178,8 @@ model Brand {
   updatedBy BigInt?
 
   products Product[]
+
+  @@index([isActive])
 }
 
 model UnitOfMeasure {
@@ -194,6 +204,8 @@ model UnitOfMeasure {
   updatedBy BigInt?
 
   products Product[]
+
+  @@index([isActive])
 }
 
 model Product {
@@ -270,6 +282,10 @@ model MarginProfile {
   updatedBy BigInt?
 
   productPrices ProductPrice[]
+
+  @@index([displayOrder])
+
+  @@index([isActive])
 }
 
 model ProductPrice {
@@ -298,7 +314,9 @@ model ProductPrice {
   updatedBy BigInt?
 
   @@unique([productId, marginProfileId])
+
   @@index([marginProfileId])
+
   @@index([isActive])
 }
 
@@ -365,6 +383,10 @@ model MovementType {
   updatedBy BigInt?
 
   inventoryMovements InventoryMovement[]
+
+  @@index([isActive])
+
+  @@index([stockOperation])
 }
 
 model InventoryMovement {
