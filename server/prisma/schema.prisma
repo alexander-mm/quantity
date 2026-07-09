@@ -80,6 +80,8 @@ model Store {
   users User[]
 
   inventoryMovements InventoryMovement[]
+
+  inventoryStocks InventoryStock[]
 }
 
 model User {
@@ -404,6 +406,8 @@ model InventoryStock {
   product Product @relation(fields: [productId], references: [id])
 
   storeId BigInt
+
+  store Store @relation(fields: [storeId], references: [id])
 
   quantity Decimal @default(0) @db.Decimal(12, 2)
 
