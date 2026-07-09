@@ -38,6 +38,27 @@ main()
         });
 
         console.log("✅ Roles created.");
+
+        console.log("📦 Seeding Stores...");
+
+        await prisma.store.upsert({
+        where: {
+            code: "MAIN"
+        },
+        update: {},
+        create: {
+            code: "MAIN",
+            name: "Bodega Principal",
+            type: "MAIN_WAREHOUSE",
+            address: null,
+            city: null,
+            phone: null,
+            email: null,
+            manager: null
+        }
+        });
+
+        console.log("✅ Store created.");
     })
     .catch(async (error) => {
 
