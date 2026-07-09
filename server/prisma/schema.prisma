@@ -158,6 +158,8 @@ model Brand {
   createdBy BigInt?
 
   updatedBy BigInt?
+
+  products Product[]
 }
 
 model UnitOfMeasure {
@@ -196,6 +198,8 @@ model Product {
   description String?
 
   brandId BigInt
+
+  brand Brand @relation(fields: [brandId], references: [id])
 
   categoryId BigInt
 
