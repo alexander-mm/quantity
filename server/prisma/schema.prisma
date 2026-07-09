@@ -116,6 +116,8 @@ model User {
   createdBy BigInt?
 
   updatedBy BigInt?
+
+  inventoryMovements InventoryMovement[]
 }
 
 model Category {
@@ -356,6 +358,8 @@ model InventoryMovement {
   store Store @relation(fields: [storeId], references: [id])
 
   userId BigInt
+
+  user User @relation(fields: [userId], references: [id])
 
   clientId BigInt?
 
