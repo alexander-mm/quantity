@@ -342,6 +342,8 @@ model MovementType {
   createdBy BigInt?
 
   updatedBy BigInt?
+
+  inventoryMovements InventoryMovement[]
 }
 
 model InventoryMovement {
@@ -350,6 +352,8 @@ model InventoryMovement {
   uuid String @unique @default(uuid())
 
   movementTypeId BigInt
+
+  movementType MovementType @relation(fields: [movementTypeId], references: [id])
 
   productId BigInt
 
