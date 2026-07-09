@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, StoreType } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -49,7 +49,7 @@ main()
         create: {
             code: "MAIN",
             name: "Bodega Principal",
-            type: "MAIN_WAREHOUSE",
+            type: StoreType.MAIN_WAREHOUSE,
             address: null,
             city: null,
             phone: null,
@@ -59,6 +59,25 @@ main()
         });
 
         console.log("✅ Store created.");
+
+        console.log("📦 Seeding Settings...");
+
+        const settingsCount = await prisma.settings.count();
+
+        if (settingsCount === 0) {
+
+        await prisma.settings.create({
+            data: {
+            companyName: "ORDEPLUS",
+            currency: "USD",
+            syncInterval: 5,
+            lowStockAlerts: true
+            }
+        });
+
+        }
+
+        console.log("✅ Settings created.");
     })
     .catch(async (error) => {
 
