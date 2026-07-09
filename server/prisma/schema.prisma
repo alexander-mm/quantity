@@ -343,3 +343,30 @@ model InventoryMovement {
 
   updatedBy BigInt?
 }
+
+model InventoryStock {
+
+  id              BigInt   @id @default(autoincrement())
+
+  uuid            String   @unique @default(uuid())
+
+  productId       BigInt
+
+  storeId         BigInt
+
+  quantity        Decimal  @default(0) @db.Decimal(12,2)
+
+  lastMovementId  BigInt?
+
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+
+  updatedAt       DateTime @updatedAt
+
+  createdBy       BigInt?
+
+  updatedBy       BigInt?
+
+  @@unique([productId, storeId])
+}
