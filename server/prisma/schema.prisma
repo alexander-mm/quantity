@@ -42,6 +42,8 @@ model Role {
   createdBy BigInt?
 
   updatedBy BigInt?
+
+  users User[]
 }
 
 model Store {
@@ -74,6 +76,8 @@ model Store {
   createdBy BigInt?
 
   updatedBy BigInt?
+
+  users User[]
 }
 
 model User {
@@ -95,7 +99,11 @@ model User {
 
   roleId BigInt
 
+  role Role @relation(fields: [roleId], references: [id])
+
   storeId BigInt
+
+  store Store @relation(fields: [storeId], references: [id])
 
   isActive Boolean @default(true)
 
