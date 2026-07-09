@@ -117,3 +117,23 @@ model Category {
 
   updatedBy BigInt?
 }
+
+model Brand {
+  id BigInt @id @default(autoincrement())
+
+  uuid String @unique @default(uuid())
+
+  name String @unique
+
+  description String?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  createdBy BigInt?
+
+  updatedBy BigInt?
+}
