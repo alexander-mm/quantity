@@ -1,15 +1,23 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "ORDEPLUS Quantity ERP Backend",
+  "private": true,
+  "type": "module",
+  "main": "dist/bootstrap/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon --watch src --ext ts --exec ts-node src/bootstrap/server.ts",
+    "build": "tsc",
+    "start": "node dist/bootstrap/server.js",
+    "check": "tsc --noEmit && prisma validate",
+    "prisma:generate": "prisma generate",
+    "prisma:validate": "prisma validate",
+    "prisma:format": "prisma format",
+    "prisma:studio": "prisma studio",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "prisma:seed": "ts-node prisma/seed.ts"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "@prisma/client": "^6.16.2",
     "bcrypt": "^6.0.0",
@@ -22,7 +30,6 @@
     "morgan": "^1.11.0",
     "multer": "^2.2.0",
     "pg": "^8.22.0",
-    "prisma": "^6.16.2",
     "uuid": "^14.0.1"
   },
   "devDependencies": {
@@ -34,6 +41,7 @@
     "@types/multer": "^2.2.0",
     "@types/node": "^26.1.0",
     "nodemon": "^3.1.14",
+    "prisma": "^6.16.2",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3"
   }
