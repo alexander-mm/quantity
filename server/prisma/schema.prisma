@@ -159,3 +159,83 @@ model UnitOfMeasure {
 
   updatedBy BigInt?
 }
+
+model Product {
+  id BigInt @id @default(autoincrement())
+
+  uuid String @unique @default(uuid())
+
+  internalCode String @unique
+
+  barcode String @unique
+
+  name String
+
+  description String?
+
+  brandId BigInt
+
+  categoryId BigInt
+
+  unitOfMeasureId BigInt
+
+  costPrice Decimal @db.Decimal(12, 2)
+
+  minimumStock Decimal @db.Decimal(12, 2)
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  createdBy BigInt?
+
+  updatedBy BigInt?
+}
+
+model MarginProfile {
+  id BigInt @id @default(autoincrement())
+
+  uuid String @unique @default(uuid())
+
+  name String @unique
+
+  percentage Decimal @db.Decimal(5, 2)
+
+  displayOrder Int
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  createdBy BigInt?
+
+  updatedBy BigInt?
+}
+
+model ProductPrice {
+  id BigInt @id @default(autoincrement())
+
+  uuid String @unique @default(uuid())
+
+  productId BigInt
+
+  marginProfileId BigInt
+
+  price Decimal @db.Decimal(12, 2)
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  createdBy BigInt?
+
+  updatedBy BigInt?
+
+  @@unique([productId, marginProfileId])
+}
