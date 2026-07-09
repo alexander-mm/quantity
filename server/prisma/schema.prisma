@@ -18,6 +18,12 @@ enum StockOperation {
   NONE
 }
 
+enum SyncStatus {
+  PENDING
+  SYNCED
+  ERROR
+}
+
 model Role {
   id BigInt @id @default(autoincrement())
 
@@ -290,6 +296,42 @@ model MovementType {
   affectsStock Boolean @default(true)
 
   stockOperation StockOperation
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  createdBy BigInt?
+
+  updatedBy BigInt?
+}
+
+model InventoryMovement {
+  id BigInt @id @default(autoincrement())
+
+  uuid String @unique @default(uuid())
+
+  movementTypeId BigInt
+
+  productId BigInt
+
+  storeId BigInt
+
+  userId BigInt
+
+  clientId BigInt?
+
+  quantity Decimal @db.Decimal(12, 2)
+
+  unitCost Decimal @db.Decimal(12, 2)
+
+  observations String?
+
+  movementDate DateTime
+
+  syncStatus SyncStatus @default(PENDING)
 
   isActive Boolean @default(true)
 
