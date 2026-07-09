@@ -224,6 +224,8 @@ model Product {
   createdBy BigInt?
 
   updatedBy BigInt?
+
+  productPrices ProductPrice[]
 }
 
 model MarginProfile {
@@ -246,6 +248,8 @@ model MarginProfile {
   createdBy BigInt?
 
   updatedBy BigInt?
+
+  productPrices ProductPrice[]
 }
 
 model ProductPrice {
@@ -255,7 +259,11 @@ model ProductPrice {
 
   productId BigInt
 
+  product Product @relation(fields: [productId], references: [id])
+
   marginProfileId BigInt
+
+  marginProfile MarginProfile @relation(fields: [marginProfileId], references: [id])
 
   price Decimal @db.Decimal(12, 2)
 
