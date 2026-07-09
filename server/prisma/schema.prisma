@@ -232,6 +232,8 @@ model Product {
   productPrices ProductPrice[]
 
   inventoryMovements InventoryMovement[]
+
+  inventoryStocks InventoryStock[]
 }
 
 model MarginProfile {
@@ -398,6 +400,8 @@ model InventoryStock {
   uuid String @unique @default(uuid())
 
   productId BigInt
+
+  product Product @relation(fields: [productId], references: [id])
 
   storeId BigInt
 
