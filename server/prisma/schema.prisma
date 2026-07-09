@@ -240,6 +240,12 @@ model Product {
   inventoryMovements InventoryMovement[]
 
   inventoryStocks InventoryStock[]
+
+  @@index([name])
+  @@index([categoryId])
+  @@index([brandId])
+  @@index([unitOfMeasureId])
+  @@index([isActive])
 }
 
 model MarginProfile {
@@ -292,6 +298,8 @@ model ProductPrice {
   updatedBy BigInt?
 
   @@unique([productId, marginProfileId])
+  @@index([marginProfileId])
+  @@index([isActive])
 }
 
 model Client {
@@ -324,6 +332,11 @@ model Client {
   updatedBy BigInt?
 
   inventoryMovements InventoryMovement[]
+
+  @@index([firstName])
+  @@index([lastName])
+  @@index([companyName])
+  @@index([isActive])
 }
 
 model MovementType {
@@ -398,6 +411,16 @@ model InventoryMovement {
   createdBy BigInt?
 
   updatedBy BigInt?
+
+  @@index([movementDate])
+  @@index([productId])
+  @@index([storeId])
+  @@index([userId])
+  @@index([clientId])
+  @@index([movementTypeId])
+  @@index([syncStatus])
+  @@index([productId, movementDate])
+  @@index([storeId, movementDate])
 }
 
 model InventoryStock {
@@ -428,6 +451,9 @@ model InventoryStock {
   updatedBy BigInt?
 
   @@unique([productId, storeId])
+  @@index([storeId])
+  @@index([quantity])
+  @@index([isActive])
 }
 
 model Settings {
