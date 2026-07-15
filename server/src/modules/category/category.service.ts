@@ -2,6 +2,8 @@ import { Category } from "@prisma/client";
 
 import { CategoryRepository } from "./category.repository.js";
 
+import { ConflictError } from "../../shared/errors/index.js";
+
 export class CategoryService {
 
     private readonly repository = new CategoryRepository();
@@ -28,11 +30,14 @@ export class CategoryService {
 
     }): Promise<Category> {
 
-        const existingCategory = await this.repository.findByName(data.name);
+        const existingCategory =
+            await this.repository.findByName(data.name);
 
         if (existingCategory) {
 
-            throw new Error("CATEGORY_ALREADY_EXISTS");
+            throw new ConflictError(
+                "Ya existe una categoría con ese nombre."
+            );
 
         }
 

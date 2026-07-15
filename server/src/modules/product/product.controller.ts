@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from "express";
 
-import { CategoryService } from "./category.service.js";
-
 import { ApiResponse } from "../../shared/responses/index.js";
 
-export class CategoryController {
+import { ProductService } from "./product.service.js";
 
-    private readonly service = new CategoryService();
+export class ProductController {
+
+    private readonly service = new ProductService();
 
     async findAll(
         _req: Request,
@@ -16,17 +16,21 @@ export class CategoryController {
 
         try {
 
-            const categories = await this.service.findAll();
+            const products = await this.service.findAll();
 
             res.status(200).json(
                 ApiResponse.success(
-                    "Categorías obtenidas correctamente.",
-                    categories
+                    "Productos obtenidos correctamente.",
+                    products
                 )
             );
+
         } catch (error) {
+
             next(error);
+
         }
+
     }
 
     async findById(
@@ -40,34 +44,40 @@ export class CategoryController {
             const { id } = req.params;
 
             if (!id || Array.isArray(id)) {
+
                 res.status(400).json(
-                    ApiResponse.error(
-                        "Id inválido."
-                    )
+                    ApiResponse.error("Id inválido.")
                 );
+
                 return;
+
             }
 
-            const category = await this.service.findById(id);
+            const product = await this.service.findById(id);
 
-            if (!category) {
+            if (!product) {
 
                 res.status(404).json(
                     ApiResponse.error(
-                        "Categoría no encontrada."
+                        "Producto no encontrado."
                     )
                 );
 
                 return;
+
             }
+
             res.status(200).json(
                 ApiResponse.success(
-                    "Categoría obtenida correctamente.",
-                    category
+                    "Producto obtenido correctamente.",
+                    product
                 )
             );
+
         } catch (error) {
+
             next(error);
+
         }
 
     }
@@ -79,16 +89,37 @@ export class CategoryController {
     ): Promise<void> {
 
         try {
-            const category = await this.service.create(req.body);
+
+            const body = {
+
+                ...req.body,
+
+                brandId: BigInt(req.body.brandId),
+
+                categoryId: BigInt(req.body.categoryId),
+
+                unitOfMeasureId: BigInt(req.body.unitOfMeasureId),
+
+                marginProfileId: BigInt(req.body.marginProfileId)
+
+            };
+
+            const product =
+                await this.service.create(body);
 
             res.status(201).json(
                 ApiResponse.success(
-                    "Categoría creada correctamente.",
-                    category
+                    "Producto creado correctamente.",
+                    product
                 )
             );
+
         } catch (error) {
+
             next(error);
+
         }
+
     }
+
 }
