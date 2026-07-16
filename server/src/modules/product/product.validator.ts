@@ -27,37 +27,39 @@ export const createProductSchema = z.object({
         .max(500, "La descripción no puede superar los 500 caracteres.")
         .optional(),
 
-    brandId: z
-        .bigint({
-            error: "La marca es obligatoria."
-        }),
+brandId: z
+    .number({
+        error: "La marca es obligatoria."
+    })
+    .int()
+    .positive(),
 
-    categoryId: z
-        .bigint({
-            error: "La categoría es obligatoria."
-        }),
+categoryId: z
+    .number({
+        error: "La categoría es obligatoria."
+    })
+    .int()
+    .positive(),
 
-    unitOfMeasureId: z
-        .bigint({
-            error: "La unidad de medida es obligatoria."
-        }),
+unitOfMeasureId: z
+    .number({
+        error: "La unidad de medida es obligatoria."
+    })
+    .int()
+    .positive(),
 
-    marginProfileId: z
-        .bigint({
-            error: "El perfil de margen es obligatorio."
-        }),
+marginProfileId: z
+    .number({
+        error: "El perfil de margen es obligatorio."
+    })
+    .int()
+    .positive(),
 
     costPrice: z
         .number({
             error: "El costo es obligatorio."
         })
         .nonnegative("El costo no puede ser negativo."),
-
-    salePrice: z
-        .number({
-            error: "El precio de venta es obligatorio."
-        })
-        .nonnegative("El precio de venta no puede ser negativo."),
 
     minimumStock: z
         .number({

@@ -2,15 +2,15 @@ import { Router } from "express";
 
 import { validate } from "../../middleware/validate.js";
 
-import { ProductController } from "./product.controller.js";
-
-import { createProductSchema } from "./product.validator.js";
-
 import { authenticate } from "../../middleware/authenticate.js";
+
+import { MovementTypeController } from "./movement-type.controller.js";
+
+import { createMovementTypeSchema } from "./movement-type.validator.js";
 
 const router = Router();
 
-const controller = new ProductController();
+const controller = new MovementTypeController();
 
 router.get(
     "/",
@@ -20,12 +20,14 @@ router.get(
 
 router.get(
     "/:id",
+    authenticate,
     controller.findById.bind(controller)
 );
 
 router.post(
     "/",
-    validate(createProductSchema),
+    authenticate,
+    validate(createMovementTypeSchema),
     controller.create.bind(controller)
 );
 

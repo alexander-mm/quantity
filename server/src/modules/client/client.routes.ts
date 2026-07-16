@@ -1,16 +1,14 @@
 import { Router } from "express";
 
+import { authenticate } from "../../middleware/authenticate.js";
 import { validate } from "../../middleware/validate.js";
 
-import { ProductController } from "./product.controller.js";
-
-import { createProductSchema } from "./product.validator.js";
-
-import { authenticate } from "../../middleware/authenticate.js";
+import { ClientController } from "./client.controller.js";
+import { createClientSchema } from "./client.validator.js";
 
 const router = Router();
 
-const controller = new ProductController();
+const controller = new ClientController();
 
 router.get(
     "/",
@@ -20,12 +18,14 @@ router.get(
 
 router.get(
     "/:id",
+    authenticate,
     controller.findById.bind(controller)
 );
 
 router.post(
     "/",
-    validate(createProductSchema),
+    authenticate,
+    validate(createClientSchema),
     controller.create.bind(controller)
 );
 

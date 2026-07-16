@@ -1,4 +1,5 @@
 import { Product } from "@prisma/client";
+import { PriceCalculator } from "../../shared/pricing/index.js";
 
 import {
     ConflictError,
@@ -59,8 +60,6 @@ export class ProductService {
         marginProfileId: bigint;
 
         costPrice: number;
-
-        salePrice: number;
 
         minimumStock: number;
 
@@ -148,7 +147,15 @@ export class ProductService {
 
         }
 
-        return this.repository.create(data);
+        const salePrice = PriceCalculator.calculateSalePrice(
+            data.costPrice,
+            Number(marginProfile.percentage)
+            );
+
+        return this.repository.create({
+            ...data,
+            salePrice
+            });
 
     }
 

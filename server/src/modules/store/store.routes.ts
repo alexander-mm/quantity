@@ -2,19 +2,16 @@ import { Router } from "express";
 
 import { validate } from "../../middleware/validate.js";
 
-import { ProductController } from "./product.controller.js";
+import { StoreController } from "./store.controller.js";
 
-import { createProductSchema } from "./product.validator.js";
-
-import { authenticate } from "../../middleware/authenticate.js";
+import { createStoreSchema } from "./store.validator.js";
 
 const router = Router();
 
-const controller = new ProductController();
+const controller = new StoreController();
 
 router.get(
     "/",
-    authenticate,
     controller.findAll.bind(controller)
 );
 
@@ -25,7 +22,7 @@ router.get(
 
 router.post(
     "/",
-    validate(createProductSchema),
+    validate(createStoreSchema),
     controller.create.bind(controller)
 );
 
