@@ -1,8 +1,14 @@
-import { Role } from "@prisma/client";
+import { Role, PrismaClient, Prisma } from "@prisma/client";
 
 import { BaseRepository } from "../../repositories/base/BaseRepository.js";
 
 export class RoleRepository extends BaseRepository {
+
+    constructor(
+        prismaClient?: PrismaClient | Prisma.TransactionClient
+    ) {
+        super(prismaClient);
+    }
 
     async findAll(): Promise<Role[]> {
 

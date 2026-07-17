@@ -153,93 +153,45 @@ prisma.inventoryStock.count({
 
                 },
 
-                include: {
+                select: {
 
-                    product: {
+    quantity: true,
 
-    select: {
+    movementDate: true,
 
-        id: true,
+    movementType: {
 
-        internalCode: true,
+        select: {
 
-        barcode: true,
+            name: true
 
-        name: true,
+        }
 
-        salePrice: true,
+    },
 
-        minimumStock: true
+    product: {
 
-    }
+        select: {
 
-},
+            name: true
 
-                    movementType: {
+        }
 
-    select: {
+    },
 
-        id: true,
+    user: {
 
-        code: true,
+        select: {
 
-        name: true,
+            firstName: true,
 
-        stockOperation: true
+            lastName: true
 
-    }
-
-},
-
-                user: {
-
-                    select: {
-
-                        id: true,
-
-                        username: true,
-
-                        firstName: true,
-
-                        lastName: true
-
-                    }
-
-                },
-
-                    store: {
-
-    select: {
-
-        id: true,
-
-        code: true,
-
-        name: true
+        }
 
     }
 
 },
-
-                    client: {
-
-    select: {
-
-        id: true,
-
-        document: true,
-
-        firstName: true,
-
-        lastName: true,
-
-        companyName: true
-
-    }
-
-}
-
-                },
 
                 orderBy: {
 

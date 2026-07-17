@@ -1,8 +1,14 @@
-import { Category } from "@prisma/client";
+import { Category, PrismaClient, Prisma } from "@prisma/client";
 
 import { BaseRepository } from "../../repositories/base/BaseRepository.js";
 
 export class CategoryRepository extends BaseRepository {
+
+    constructor(
+        prismaClient?: PrismaClient | Prisma.TransactionClient
+    ) {
+        super(prismaClient);
+    }
 
     async findAll(): Promise<Category[]> {
 

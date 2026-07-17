@@ -1,8 +1,14 @@
-import { InventoryStock, Prisma } from "@prisma/client";
+import { InventoryStock, PrismaClient, Prisma } from "@prisma/client";
 
 import { BaseRepository } from "../../repositories/base/BaseRepository.js";
 
 export class InventoryStockRepository extends BaseRepository {
+
+    constructor(
+        prismaClient?: PrismaClient | Prisma.TransactionClient
+    ) {
+        super(prismaClient);
+    }
 
     async findAll(): Promise<InventoryStock[]> {
 
@@ -162,64 +168,64 @@ export class InventoryStockRepository extends BaseRepository {
     }
 
     async create(
-    productId: bigint,
-    storeId: bigint,
-    quantity: Prisma.Decimal
-): Promise<InventoryStock> {
+        productId: bigint,
+        storeId: bigint,
+        quantity: Prisma.Decimal
+    ): Promise<InventoryStock> {
 
-    return this.prisma.inventoryStock.create({
+        return this.prisma.inventoryStock.create({
 
-        data: {
+            data: {
 
-            product: {
+                product: {
 
-                connect: {
+                    connect: {
 
-                    id: productId
+                        id: productId
 
-                }
+                    }
+
+                },
+
+                store: {
+
+                    connect: {
+
+                        id: storeId
+
+                    }
+
+                },
+
+                quantity
+
+            }
+
+        });
+
+    }
+
+    async updateQuantity(
+        id: bigint,
+        quantity: Prisma.Decimal
+    ): Promise<InventoryStock> {
+
+        return this.prisma.inventoryStock.update({
+
+            where: {
+
+                id
 
             },
 
-            store: {
+            data: {
 
-                connect: {
+                quantity
 
-                    id: storeId
+            }
 
-                }
+        });
 
-            },
-
-            quantity
-
-        }
-
-    });
-
-}
-
-async updateQuantity(
-    id: bigint,
-    quantity: Prisma.Decimal
-): Promise<InventoryStock> {
-
-    return this.prisma.inventoryStock.update({
-
-        where: {
-
-            id
-
-        },
-
-        data: {
-
-            quantity
-
-        }
-
-    });
-
-}
+    }
 
 }

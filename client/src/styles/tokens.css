@@ -1,0 +1,64 @@
+:root {
+
+  /* ===========================
+     BRAND
+  =========================== */
+
+  --color-primary: #0170B8;
+  --color-primary-hover: #015E99;
+  --color-primary-light: #E6F3FA;
+
+  /* ===========================
+     NEUTRAL
+  =========================== */
+
+  --color-white: #FFFFFF;
+
+  --color-black: #000000;
+
+  --color-gray-50: #F8FAFC;
+  --color-gray-100: #F1F5F9;
+  --color-gray-200: #E2E8F0;
+  --color-gray-300: #CBD5E1;
+  --color-gray-400: #94A3B8;
+  --color-gray-500: #64748B;
+  --color-gray-600: #475569;
+  --color-gray-700: #334155;
+  --color-gray-800: #3B3D3C;
+  --color-gray-900: #1E293B;
+
+  /* ===========================
+     STATUS
+  =========================== */
+
+  --color-success: #16A34A;
+  --color-warning: #D97706;
+  --color-danger: #DC2626;
+  --color-info: #0284C7;
+
+  /* ===========================
+     BORDERS
+  =========================== */
+
+  --border-color: var(--color-gray-200);
+
+  /* ===========================
+     SHADOWS
+  =========================== */
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.05);
+
+  --shadow-md: 0 4px 6px rgb(0 0 0 / 0.08);
+
+  --shadow-lg: 0 10px 20px rgb(0 0 0 / 0.10);
+
+  /* ===========================
+     RADIUS
+  =========================== */
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+
+}

@@ -1,8 +1,13 @@
-import { Product } from "@prisma/client";
-
+import { Product, PrismaClient, Prisma } from "@prisma/client";
 import { BaseRepository } from "../../repositories/base/BaseRepository.js";
 
 export class ProductRepository extends BaseRepository {
+
+    constructor(
+        prismaClient?: PrismaClient | Prisma.TransactionClient
+    ) {
+        super(prismaClient);
+    }
 
     async findAll(): Promise<Product[]> {
 
@@ -11,15 +16,14 @@ export class ProductRepository extends BaseRepository {
             where: {
                 isActive: true
             },
-
             orderBy: {
                 name: "asc"
             }
-
         });
-
     }
 
+
+    
     async findById(
         id: bigint
     ): Promise<Product | null> {

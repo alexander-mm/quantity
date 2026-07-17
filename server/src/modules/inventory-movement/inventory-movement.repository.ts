@@ -1,8 +1,14 @@
-import { InventoryMovement } from "@prisma/client";
+import { InventoryMovement, PrismaClient, Prisma } from "@prisma/client";
 import { CreateInventoryMovementDto } from "./inventory-movement.dto.js";
 import { BaseRepository } from "../../repositories/base/BaseRepository.js";
 
 export class InventoryMovementRepository extends BaseRepository {
+
+    constructor(
+        prismaClient?: PrismaClient | Prisma.TransactionClient
+    ) {
+        super(prismaClient);
+    }
 
     async findAll(): Promise<InventoryMovement[]> {
 
@@ -49,149 +55,149 @@ export class InventoryMovementRepository extends BaseRepository {
 
     }
 
-async findByProduct(
-    productId: bigint
-): Promise<InventoryMovement[]> {
+    async findByProduct(
+        productId: bigint
+    ): Promise<InventoryMovement[]> {
 
-    return this.prisma.inventoryMovement.findMany({
+        return this.prisma.inventoryMovement.findMany({
 
-        where: {
-            productId,
-            isActive: true
-        },
-
-        orderBy: {
-            movementDate: "desc"
-        }
-
-    });
-
-}
-
-async findByStore(
-    storeId: bigint
-): Promise<InventoryMovement[]> {
-
-    return this.prisma.inventoryMovement.findMany({
-
-        where: {
-            storeId,
-            isActive: true
-        },
-
-        orderBy: {
-            movementDate: "desc"
-        }
-
-    });
-
-}
-
-async create(
-    data: CreateInventoryMovementDto
-): Promise<InventoryMovement> {
-
-    return this.prisma.inventoryMovement.create({
-
-        data: {
-
-            movementType: {
-
-                connect: {
-
-                    id: data.movementTypeId
-
-                }
-
+            where: {
+                productId,
+                isActive: true
             },
 
-            product: {
+            orderBy: {
+                movementDate: "desc"
+            }
 
-                connect: {
+        });
 
-                    id: data.productId
+    }
 
-                }
+    async findByStore(
+        storeId: bigint
+    ): Promise<InventoryMovement[]> {
 
+        return this.prisma.inventoryMovement.findMany({
+
+            where: {
+                storeId,
+                isActive: true
             },
 
-            store: {
+            orderBy: {
+                movementDate: "desc"
+            }
 
-                connect: {
+        });
 
-                    id: data.storeId
+    }
 
-                }
+    async create(
+        data: CreateInventoryMovementDto
+    ): Promise<InventoryMovement> {
 
-            },
+        return this.prisma.inventoryMovement.create({
 
-            user: {
+            data: {
 
-                connect: {
+                movementType: {
 
-                    id: data.userId
-
-                }
-
-            },
-
-            client: data.clientId
-                ? {
                     connect: {
-                        id: data.clientId
+
+                        id: data.movementTypeId
+
                     }
-                }
-                : undefined,
 
-            quantity: data.quantity,
+                },
 
-            unitCost: data.unitCost,
+                product: {
 
-            observations: data.observations,
+                    connect: {
 
-            movementDate: data.movementDate
+                        id: data.productId
 
-        }
+                    }
 
-    });
+                },
 
-}
+                store: {
 
-async getKardex(
-    productId: bigint,
-    storeId: bigint
-): Promise<InventoryMovement[]> {
+                    connect: {
 
-    return this.prisma.inventoryMovement.findMany({
+                        id: data.storeId
 
-        where: {
+                    }
 
-            productId,
+                },
 
-            storeId,
+                user: {
 
-            isActive: true
+                    connect: {
 
-        },
+                        id: data.userId
 
-        include: {
+                    }
 
-            movementType: true,
+                },
 
-            user: true,
+                client: data.clientId
+                    ? {
+                        connect: {
+                            id: data.clientId
+                        }
+                    }
+                    : undefined,
 
-            client: true
+                quantity: data.quantity,
 
-        },
+                unitCost: data.unitCost,
 
-        orderBy: {
+                observations: data.observations,
 
-            movementDate: "asc"
+                movementDate: data.movementDate
 
-        }
+            }
 
-    });
+        });
 
-}
+    }
+
+    async getKardex(
+        productId: bigint,
+        storeId: bigint
+    ): Promise<InventoryMovement[]> {
+
+        return this.prisma.inventoryMovement.findMany({
+
+            where: {
+
+                productId,
+
+                storeId,
+
+                isActive: true
+
+            },
+
+            include: {
+
+                movementType: true,
+
+                user: true,
+
+                client: true
+
+            },
+
+            orderBy: {
+
+                movementDate: "asc"
+
+            }
+
+        });
+
+    }
 
 }

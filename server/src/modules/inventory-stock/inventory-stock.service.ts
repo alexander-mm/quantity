@@ -6,8 +6,13 @@ import { InventoryStockRepository } from "./inventory-stock.repository.js";
 
 export class InventoryStockService {
 
-    private readonly repository =
-        new InventoryStockRepository();
+    private repository: InventoryStockRepository;
+
+    constructor(
+        repository?: InventoryStockRepository
+    ) {
+        this.repository = repository ?? new InventoryStockRepository();
+    }
 
     // ============================
     // CONSULTAS

@@ -47,24 +47,24 @@ export class InventoryMovementService {
     }
 
     async findByProduct(
-    productId: string
-): Promise<InventoryMovement[]> {
+        productId: string
+    ): Promise<InventoryMovement[]> {
 
-    return this.repository.findByProduct(
-        BigInt(productId)
-    );
+        return this.repository.findByProduct(
+            BigInt(productId)
+        );
 
-}
+    }
 
-async findByStore(
-    storeId: string
-): Promise<InventoryMovement[]> {
+    async findByStore(
+        storeId: string
+    ): Promise<InventoryMovement[]> {
 
-    return this.repository.findByStore(
-        BigInt(storeId)
-    );
+        return this.repository.findByStore(
+            BigInt(storeId)
+        );
 
-}
+    }
 
     async create(
         data: CreateInventoryMovementDto
@@ -157,68 +157,66 @@ async findByStore(
 
         }
 
-       const movement = await this.repository.create(data);
+        if (movementType.affectsStock) {
 
-if (movementType.affectsStock) {
+            switch (movementType.stockOperation) {
 
-    switch (movementType.stockOperation) {
+                case "IN":
 
-        case "IN":
+                    await this.inventoryStockService.increaseStock(
 
-            await this.inventoryStockService.increaseStock(
+                        data.productId,
 
-                data.productId,
+                        data.storeId,
 
-                data.storeId,
+                        data.quantity
 
-                data.quantity
+                    );
 
-            );
+                    break;
 
-            break;
+                case "OUT":
 
-        case "OUT":
+                    await this.inventoryStockService.decreaseStock(
 
-            await this.inventoryStockService.decreaseStock(
+                        data.productId,
 
-                data.productId,
+                        data.storeId,
 
-                data.storeId,
+                        data.quantity
 
-                data.quantity
+                    );
 
-            );
+                    break;
 
-            break;
+                case "NONE":
 
-        case "NONE":
+                    break;
 
-            break;
+            }
 
-    }
+        }
 
-}
+        const movement = await this.repository.create(data);
 
-return movement;
-
-
+        return movement;
 
     }
 
     async getKardex(
-    productId: string,
-    storeId: string
-): Promise<InventoryMovement[]> {
+        productId: string,
+        storeId: string
+    ): Promise<InventoryMovement[]> {
 
-    return this.repository.getKardex(
+        return this.repository.getKardex(
 
-        BigInt(productId),
+            BigInt(productId),
 
-        BigInt(storeId)
+            BigInt(storeId)
 
-    );
+        );
 
-}
+    }
 
 }
 

@@ -1,8 +1,13 @@
-import { MovementType, Prisma } from "@prisma/client";
-
+import { MovementType, PrismaClient, Prisma } from "@prisma/client";
 import { BaseRepository } from "../../repositories/base/BaseRepository.js";
 
 export class MovementTypeRepository extends BaseRepository {
+
+    constructor(
+        prismaClient?: PrismaClient | Prisma.TransactionClient
+    ) {
+        super(prismaClient);
+    }
 
     async findAll(): Promise<MovementType[]> {
 
