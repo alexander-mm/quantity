@@ -1,162 +1,180 @@
-import { Product } from "@prisma/client";
-import { PriceCalculator } from "../../shared/pricing/index.js";
-
-import {
-    ConflictError,
-    NotFoundError
-} from "../../shared/errors/index.js";
-
+import { Product, Prisma } from "@prisma/client";
+import { ConflictError, NotFoundError } from "../../shared/errors/index.js";
 import { ProductRepository } from "./product.repository.js";
-
 import { BrandRepository } from "../brand/brand.repository.js";
 import { CategoryRepository } from "../category/category.repository.js";
 import { UnitOfMeasureRepository } from "../unit-of-measure/unit-of-measure.repository.js"
 import { MarginProfileRepository } from "../margin-profile/margin-profile.repository.js";
+import { ProductPriceRepository } from "../product-prices/product-price.repository.js";
+import { PriceCalculator } from "../../shared/pricing/index.js";
+
 
 export class ProductService {
-
     private readonly repository = new ProductRepository();
-
     private readonly brandRepository = new BrandRepository();
-
     private readonly categoryRepository = new CategoryRepository();
-
     private readonly unitRepository = new UnitOfMeasureRepository();
-
     private readonly marginRepository = new MarginProfileRepository();
 
+    private readonly productPriceRepository = new ProductPriceRepository();
+
+
     async findAll(): Promise<Product[]> {
-
         return this.repository.findAll();
-
     }
 
     async findById(
         id: string
     ): Promise<Product | null> {
-
         return this.repository.findById(
             BigInt(id)
         );
-
     }
 
+
+
     async create(data: {
-
         internalCode: string;
-
         barcode?: string | null;
-
         name: string;
-
         description?: string;
-
-        brandId: bigint;
-
+        brand: string;
         categoryId: bigint;
-
-        unitOfMeasureId: bigint;
-
-        marginProfileId: bigint;
-
+        unitOfMeasure: string;
+        marginProfileIds: bigint[];
         costPrice: number;
-
         minimumStock: number;
-
     }): Promise<Product> {
 
+        const productRepository = this.repository;
+
+const brandRepository = this.brandRepository;
+
+const categoryRepository = this.categoryRepository;
+
+const unitRepository = this.unitRepository;
+
+const marginRepository = this.marginRepository;
+
+const productPriceRepository = this.productPriceRepository;
+
         const existingCode =
-            await this.repository.findByInternalCode(
+            await productRepository.findByInternalCode(
                 data.internalCode
             );
-
         if (existingCode) {
-
             throw new ConflictError(
                 "Ya existe un producto con ese código interno."
             );
-
         }
 
         if (data.barcode) {
-
             const existingBarcode =
                 await this.repository.findByBarcode(
                     data.barcode
                 );
-
             if (existingBarcode) {
-
                 throw new ConflictError(
                     "Ya existe un producto con ese código de barras."
                 );
-
             }
-
         }
-
-        const brand =
-            await this.brandRepository.findById(
-                data.brandId
+        let brand =
+            await brandRepository.findByName(
+                data.brand
             );
 
         if (!brand) {
 
-            throw new NotFoundError(
-                "La marca no existe."
-            );
+            brand = await this.brandRepository.create({
+
+                name: data.brand
+
+            });
 
         }
 
         const category =
-            await this.categoryRepository.findById(
+            await categoryRepository.findById(
                 data.categoryId
             );
-
         if (!category) {
 
             throw new NotFoundError(
                 "La categoría no existe."
             );
-
         }
 
-        const unit =
-            await this.unitRepository.findById(
-                data.unitOfMeasureId
+        let unit =
+            await unitRepository.findByName(
+                data.unitOfMeasure
             );
 
         if (!unit) {
 
-            throw new NotFoundError(
-                "La unidad de medida no existe."
-            );
+            unit = await this.unitRepository.create({
 
-        }
+                code: data.unitOfMeasure.toUpperCase(),
 
-        const marginProfile =
-            await this.marginRepository.findById(
-                data.marginProfileId
-            );
+                name: data.unitOfMeasure
 
-        if (!marginProfile) {
-
-            throw new NotFoundError(
-                "El perfil de margen no existe."
-            );
-
-        }
-
-        const salePrice = PriceCalculator.calculateSalePrice(
-            data.costPrice,
-            Number(marginProfile.percentage)
-            );
-
-        return this.repository.create({
-            ...data,
-            salePrice
             });
 
-    }
+        }
 
+
+
+        const product = await this.repository.create({
+
+            internalCode: data.internalCode,
+
+            barcode: data.barcode,
+
+            name: data.name,
+
+            description: data.description,
+
+            brandId: brand.id,
+
+            categoryId: data.categoryId,
+
+            unitOfMeasureId: unit.id,
+
+            costPrice: data.costPrice,
+
+            minimumStock: data.minimumStock
+
+        });
+
+        const marginProfiles = await Promise.all(
+
+            data.marginProfileIds.map(id =>
+                marginRepository.findById(id)
+            )
+
+        );
+
+        const prices = marginProfiles
+            .filter(profile => profile !== null)
+            .map(profile => ({
+
+                productId: product.id,
+
+                marginProfileId: profile!.id,
+
+                price: new Prisma.Decimal(
+                    PriceCalculator.calculateSalePrice(
+                        data.costPrice,
+                        Number(profile!.percentage)
+                    )
+                ),
+                isActive: true
+
+            }));
+
+
+        await productPriceRepository.createMany(prices);
+
+        return product;
+    }
 }

@@ -1,8 +1,16 @@
 import { api } from "@/services/api";
 
-export async function getProducts() {
+import type {
 
-    const { data } = await api.get("/products");
+    ApiResponse,
+
+    Product
+
+} from "@/types";
+
+export async function getProducts(): Promise<ApiResponse<Product[]>> {
+
+    const { data } = await api.get<ApiResponse<Product[]>>("/products");
 
     return data;
 

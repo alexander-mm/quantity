@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from "express";
-
 import { ApiResponse } from "../../shared/responses/index.js";
-
 import { ProductService } from "./product.service.js";
+import { ProductQueryService } from "./product.query.service.js";
 
 export class ProductController {
 
     private readonly service = new ProductService();
+    private readonly queryService = new ProductQueryService();
 
     async findAll(
         _req: Request,
@@ -16,7 +16,7 @@ export class ProductController {
 
         try {
 
-            const products = await this.service.findAll();
+            const products = await this.queryService.findAll();
 
             res.status(200).json(
                 ApiResponse.success(
@@ -89,18 +89,15 @@ export class ProductController {
     ): Promise<void> {
 
         try {
-
             const body = {
 
                 ...req.body,
 
-                brandId: BigInt(req.body.brandId),
-
                 categoryId: BigInt(req.body.categoryId),
 
-                unitOfMeasureId: BigInt(req.body.unitOfMeasureId),
-
-                marginProfileId: BigInt(req.body.marginProfileId)
+                marginProfileIds: req.body.marginProfileIds.map(
+                    (id: number | string) => BigInt(id)
+                )
 
             };
 

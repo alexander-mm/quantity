@@ -7,6 +7,296 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Role {
+  id          BigInt   @id @default(autoincrement())
+  uuid        String   @unique @default(uuid())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   BigInt?
+  updatedBy   BigInt?
+  users       User[]
+}
+
+model Store {
+  id                 BigInt              @id @default(autoincrement())
+  uuid               String              @unique @default(uuid())
+  code               String              @unique
+  name               String
+  type               StoreType
+  address            String?
+  city               String?
+  phone              String?
+  email              String?
+  manager            String?
+  isActive           Boolean             @default(true)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  createdBy          BigInt?
+  updatedBy          BigInt?
+  inventoryMovements InventoryMovement[]
+  inventoryStocks    InventoryStock[]
+  users              User[]
+
+  @@index([type])
+  @@index([isActive])
+}
+
+model User {
+  id                 BigInt              @id @default(autoincrement())
+  uuid               String              @unique @default(uuid())
+  username           String              @unique
+  password           String
+  firstName          String
+  lastName           String
+  email              String?
+  phone              String?
+  roleId             BigInt
+  storeId            BigInt
+  isActive           Boolean             @default(true)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  createdBy          BigInt?
+  updatedBy          BigInt?
+  inventoryMovements InventoryMovement[]
+  role               Role                @relation(fields: [roleId], references: [id])
+  store              Store               @relation(fields: [storeId], references: [id])
+
+  @@index([isActive])
+}
+
+model Category {
+  id               BigInt     @id @default(autoincrement())
+  uuid             String     @unique @default(uuid())
+  name             String     @unique
+  description      String?
+  parentCategoryId BigInt?
+  isActive         Boolean    @default(true)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  createdBy        BigInt?
+  updatedBy        BigInt?
+  parentCategory   Category?  @relation("CategoryHierarchy", fields: [parentCategoryId], references: [id])
+  subcategories    Category[] @relation("CategoryHierarchy")
+  products         Product[]
+
+  @@index([parentCategoryId])
+  @@index([isActive])
+}
+
+model Brand {
+  id          BigInt    @id @default(autoincrement())
+  uuid        String    @unique @default(uuid())
+  name        String    @unique
+  description String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   BigInt?
+  updatedBy   BigInt?
+  products    Product[]
+
+  @@index([isActive])
+}
+
+model UnitOfMeasure {
+  id          BigInt    @id @default(autoincrement())
+  uuid        String    @unique @default(uuid())
+  code        String    @unique
+  name        String    @unique
+  description String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   BigInt?
+  updatedBy   BigInt?
+  products    Product[]
+
+  @@index([isActive])
+}
+
+model Product {
+  id                 BigInt              @id @default(autoincrement())
+  uuid               String              @unique @default(uuid())
+  internalCode       String              @unique
+  barcode            String?             @unique
+  name               String
+  description        String?
+  brandId            BigInt
+  categoryId         BigInt
+  unitOfMeasureId    BigInt
+  costPrice          Decimal             @db.Decimal(12, 2)
+  minimumStock       Decimal             @db.Decimal(12, 2)
+  isActive           Boolean             @default(true)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  createdBy          BigInt?
+  updatedBy          BigInt?
+  inventoryMovements InventoryMovement[]
+  inventoryStocks    InventoryStock[]
+  brand              Brand               @relation(fields: [brandId], references: [id])
+  category           Category            @relation(fields: [categoryId], references: [id])
+  unitOfMeasure      UnitOfMeasure       @relation(fields: [unitOfMeasureId], references: [id])
+  productPrices      ProductPrice[]
+
+  @@index([name])
+  @@index([categoryId])
+  @@index([brandId])
+  @@index([unitOfMeasureId])
+  @@index([isActive])
+}
+
+model MarginProfile {
+  id           BigInt         @id @default(autoincrement())
+  uuid         String         @unique @default(uuid())
+  name         String         @unique
+  percentage   Decimal        @db.Decimal(5, 2)
+  displayOrder Int
+  isActive     Boolean        @default(true)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  createdBy    BigInt?
+  updatedBy    BigInt?
+  ProductPrice ProductPrice[]
+
+  @@index([displayOrder])
+  @@index([isActive])
+}
+
+model ProductPrice {
+  id              BigInt        @id @default(autoincrement())
+  uuid            String        @unique @default(uuid())
+  productId       BigInt
+  marginProfileId BigInt
+  price           Decimal       @db.Decimal(12, 2)
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  calculatedAt    DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  createdBy       BigInt?
+  updatedBy       BigInt?
+  marginProfile   MarginProfile @relation(fields: [marginProfileId], references: [id])
+  product         Product       @relation(fields: [productId], references: [id])
+
+  @@unique([productId, marginProfileId])
+  @@index([marginProfileId])
+  @@index([isActive])
+}
+
+model Client {
+  id                 BigInt              @id @default(autoincrement())
+  uuid               String              @unique @default(uuid())
+  document           String              @unique
+  firstName          String?
+  lastName           String?
+  companyName        String?
+  phone              String?
+  email              String?
+  address            String?
+  isActive           Boolean             @default(true)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  createdBy          BigInt?
+  updatedBy          BigInt?
+  inventoryMovements InventoryMovement[]
+
+  @@index([firstName])
+  @@index([lastName])
+  @@index([companyName])
+  @@index([isActive])
+}
+
+model MovementType {
+  id                 BigInt              @id @default(autoincrement())
+  uuid               String              @unique @default(uuid())
+  code               String              @unique
+  name               String              @unique
+  description        String?
+  affectsStock       Boolean             @default(true)
+  stockOperation     StockOperation
+  isActive           Boolean             @default(true)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  createdBy          BigInt?
+  updatedBy          BigInt?
+  inventoryMovements InventoryMovement[]
+
+  @@index([isActive])
+  @@index([stockOperation])
+}
+
+model InventoryMovement {
+  id             BigInt       @id @default(autoincrement())
+  uuid           String       @unique @default(uuid())
+  movementTypeId BigInt
+  productId      BigInt
+  storeId        BigInt
+  userId         BigInt
+  clientId       BigInt?
+  quantity       Decimal      @db.Decimal(12, 2)
+  unitCost       Decimal      @db.Decimal(12, 2)
+  observations   String?
+  movementDate   DateTime
+  syncStatus     SyncStatus   @default(PENDING)
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  createdBy      BigInt?
+  updatedBy      BigInt?
+  client         Client?      @relation(fields: [clientId], references: [id])
+  movementType   MovementType @relation(fields: [movementTypeId], references: [id])
+  product        Product      @relation(fields: [productId], references: [id])
+  store          Store        @relation(fields: [storeId], references: [id])
+  user           User         @relation(fields: [userId], references: [id])
+
+  @@index([movementDate])
+  @@index([productId])
+  @@index([storeId])
+  @@index([userId])
+  @@index([clientId])
+  @@index([movementTypeId])
+  @@index([syncStatus])
+  @@index([productId, movementDate])
+  @@index([storeId, movementDate])
+}
+
+model InventoryStock {
+  id             BigInt   @id @default(autoincrement())
+  uuid           String   @unique @default(uuid())
+  productId      BigInt
+  storeId        BigInt
+  quantity       Decimal  @default(0) @db.Decimal(12, 2)
+  lastMovementId BigInt?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  createdBy      BigInt?
+  updatedBy      BigInt?
+  product        Product  @relation(fields: [productId], references: [id])
+  store          Store    @relation(fields: [storeId], references: [id])
+
+  @@unique([productId, storeId])
+  @@index([storeId])
+  @@index([quantity])
+  @@index([isActive])
+}
+
+model Settings {
+  id             BigInt   @id @default(autoincrement())
+  uuid           String   @unique @default(uuid())
+  companyName    String
+  currency       String
+  syncInterval   Int      @default(5)
+  lowStockAlerts Boolean  @default(true)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  createdBy      BigInt?
+  updatedBy      BigInt?
+}
+
 enum StoreType {
   MAIN_WAREHOUSE
   STORE
@@ -22,487 +312,4 @@ enum SyncStatus {
   PENDING
   SYNCED
   ERROR
-}
-
-model Role {
-  id BigInt @id @default(autoincrement())
-
-  uuid String @unique @default(uuid())
-
-  name String @unique
-
-  description String?
-
-  isActive Boolean @default(true)
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
-
-  createdBy BigInt?
-
-  updatedBy BigInt?
-
-  users User[]
-}
-
-model Store {
-  id BigInt @id @default(autoincrement())
-
-  uuid String @unique @default(uuid())
-
-  code String @unique
-
-  name String
-
-  type StoreType
-
-  address String?
-
-  city String?
-
-  phone String?
-
-  email String?
-
-  manager String?
-
-  isActive Boolean @default(true)
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
-
-  createdBy BigInt?
-
-  updatedBy BigInt?
-
-  users User[]
-
-  inventoryMovements InventoryMovement[]
-
-  inventoryStocks InventoryStock[]
-
-  @@index([type])
-  @@index([isActive])
-}
-
-model User {
-  id BigInt @id @default(autoincrement())
-
-  uuid String @unique @default(uuid())
-
-  username String @unique
-
-  password String
-
-  firstName String
-
-  lastName String
-
-  email String?
-
-  phone String?
-
-  roleId BigInt
-
-  role Role @relation(fields: [roleId], references: [id])
-
-  storeId BigInt
-
-  store Store @relation(fields: [storeId], references: [id])
-
-  isActive Boolean @default(true)
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
-
-  createdBy BigInt?
-
-  updatedBy BigInt?
-
-  inventoryMovements InventoryMovement[]
-
-  @@index([isActive])
-}
-
-model Category {
-  id BigInt @id @default(autoincrement())
-
-  uuid String @unique @default(uuid())
-
-  name String @unique
-
-  description String?
-
-  parentCategoryId BigInt?
-
-  parentCategory Category? @relation("CategoryHierarchy", fields: [parentCategoryId], references: [id])
-
-  isActive Boolean @default(true)
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
-
-  createdBy BigInt?
-
-  updatedBy BigInt?
-
-  subcategories Category[] @relation("CategoryHierarchy")
-
-  products Product[]
-
-  @@index([parentCategoryId])
-  @@index([isActive])
-}
-
-model Brand {
-  id BigInt @id @default(autoincrement())
-
-  uuid String @unique @default(uuid())
-
-  name String @unique
-
-  description String?
-
-  isActive Boolean @default(true)
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
-
-  createdBy BigInt?
-
-  updatedBy BigInt?
-
-  products Product[]
-
-  @@index([isActive])
-}
-
-model UnitOfMeasure {
-  id BigInt @id @default(autoincrement())
-
-  uuid String @unique @default(uuid())
-
-  code String @unique
-
-  name String @unique
-
-  description String?
-
-  isActive Boolean @default(true)
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
-
-  createdBy BigInt?
-
-  updatedBy BigInt?
-
-  products Product[]
-
-  @@index([isActive])
-}
-
-model Product {
-  id BigInt @id @default(autoincrement())
-
-  uuid String @unique @default(uuid())
-
-  internalCode String @unique
-
-  barcode String? @unique
-
-  name String
-
-  description String?
-
-  brandId BigInt
-
-  brand Brand @relation(fields: [brandId], references: [id])
-
-  categoryId BigInt
-
-  category Category @relation(fields: [categoryId], references: [id])
-
-  unitOfMeasureId BigInt
-
-  unitOfMeasure UnitOfMeasure @relation(fields: [unitOfMeasureId], references: [id])
-
-  marginProfileId BigInt
-
-  marginProfile MarginProfile @relation(fields: [marginProfileId], references: [id])
-
-  costPrice Decimal @db.Decimal(12, 2)
-
-  salePrice Decimal @db.Decimal(12, 2)
-
-  minimumStock Decimal @db.Decimal(12, 2)
-
-  isActive Boolean @default(true)
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
-
-  createdBy BigInt?
-
-  updatedBy BigInt?
-
-  productPrices ProductPrice[]
-
-  inventoryMovements InventoryMovement[]
-
-  inventoryStocks InventoryStock[]
-
-  @@index([name])
-  @@index([categoryId])
-  @@index([brandId])
-  @@index([unitOfMeasureId])
-  @@index([marginProfileId])
-  @@index([isActive])
-}
-
-model MarginProfile {
-  id BigInt @id @default(autoincrement())
-
-  uuid String @unique @default(uuid())
-
-  name String @unique
-
-  percentage Decimal @db.Decimal(5, 2)
-
-  displayOrder Int
-
-  isActive Boolean @default(true)
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
-
-  createdBy BigInt?
-
-  updatedBy BigInt?
-
-  products Product[]
-
-  ProductPrice ProductPrice[]
-
-  @@index([displayOrder])
-  @@index([isActive])
-}
-
-model ProductPrice {
-  id BigInt @id @default(autoincrement())
-
-  uuid String @unique @default(uuid())
-
-  productId BigInt
-
-  product Product @relation(fields: [productId], references: [id])
-
-  marginProfileId BigInt
-
-  marginProfile MarginProfile @relation(fields: [marginProfileId], references: [id])
-
-  price Decimal @db.Decimal(12, 2)
-
-  isActive Boolean @default(true)
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
-
-  createdBy BigInt?
-
-  updatedBy BigInt?
-
-  @@unique([productId, marginProfileId])
-  @@index([marginProfileId])
-  @@index([isActive])
-}
-
-model Client {
-  id BigInt @id @default(autoincrement())
-
-  uuid String @unique @default(uuid())
-
-  document String @unique
-
-  firstName String?
-
-  lastName String?
-
-  companyName String?
-
-  phone String?
-
-  email String?
-
-  address String?
-
-  isActive Boolean @default(true)
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
-
-  createdBy BigInt?
-
-  updatedBy BigInt?
-
-  inventoryMovements InventoryMovement[]
-
-  @@index([firstName])
-  @@index([lastName])
-  @@index([companyName])
-  @@index([isActive])
-}
-
-model MovementType {
-  id BigInt @id @default(autoincrement())
-
-  uuid String @unique @default(uuid())
-
-  code String @unique
-
-  name String @unique
-
-  description String?
-
-  affectsStock Boolean @default(true)
-
-  stockOperation StockOperation
-
-  isActive Boolean @default(true)
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
-
-  createdBy BigInt?
-
-  updatedBy BigInt?
-
-  inventoryMovements InventoryMovement[]
-
-  @@index([isActive])
-  @@index([stockOperation])
-}
-
-model InventoryMovement {
-  id BigInt @id @default(autoincrement())
-
-  uuid String @unique @default(uuid())
-
-  movementTypeId BigInt
-
-  movementType MovementType @relation(fields: [movementTypeId], references: [id])
-
-  productId BigInt
-
-  product Product @relation(fields: [productId], references: [id])
-
-  storeId BigInt
-
-  store Store @relation(fields: [storeId], references: [id])
-
-  userId BigInt
-
-  user User @relation(fields: [userId], references: [id])
-
-  clientId BigInt?
-
-  client Client? @relation(fields: [clientId], references: [id])
-
-  quantity Decimal @db.Decimal(12, 2)
-
-  unitCost Decimal @db.Decimal(12, 2)
-
-  observations String?
-
-  movementDate DateTime
-
-  syncStatus SyncStatus @default(PENDING)
-
-  isActive Boolean @default(true)
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
-
-  createdBy BigInt?
-
-  updatedBy BigInt?
-
-  @@index([movementDate])
-  @@index([productId])
-  @@index([storeId])
-  @@index([userId])
-  @@index([clientId])
-  @@index([movementTypeId])
-  @@index([syncStatus])
-  @@index([productId, movementDate])
-  @@index([storeId, movementDate])
-}
-
-model InventoryStock {
-  id BigInt @id @default(autoincrement())
-
-  uuid String @unique @default(uuid())
-
-  productId BigInt
-
-  product Product @relation(fields: [productId], references: [id])
-
-  storeId BigInt
-
-  store Store @relation(fields: [storeId], references: [id])
-
-  quantity Decimal @default(0) @db.Decimal(12, 2)
-
-  lastMovementId BigInt?
-
-  isActive Boolean @default(true)
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
-
-  createdBy BigInt?
-
-  updatedBy BigInt?
-
-  @@unique([productId, storeId])
-  @@index([storeId])
-  @@index([quantity])
-  @@index([isActive])
-}
-
-model Settings {
-  id BigInt @id @default(autoincrement())
-
-  uuid String @unique @default(uuid())
-
-  companyName String
-
-  currency String
-
-  syncInterval Int @default(5)
-
-  lowStockAlerts Boolean @default(true)
-
-  isActive Boolean @default(true)
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
-
-  createdBy BigInt?
-
-  updatedBy BigInt?
 }

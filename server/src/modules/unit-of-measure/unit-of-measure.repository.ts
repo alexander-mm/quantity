@@ -7,17 +7,13 @@ export class UnitOfMeasureRepository extends BaseRepository {
     async findAll(): Promise<UnitOfMeasure[]> {
 
         return this.prisma.unitOfMeasure.findMany({
-
             where: {
                 isActive: true
             },
-
             orderBy: {
                 name: "asc"
             }
-
         });
-
     }
 
     async findById(
@@ -25,13 +21,10 @@ export class UnitOfMeasureRepository extends BaseRepository {
     ): Promise<UnitOfMeasure | null> {
 
         return this.prisma.unitOfMeasure.findUnique({
-
             where: {
                 id
             }
-
         });
-
     }
 
     async findByUuid(
@@ -39,13 +32,10 @@ export class UnitOfMeasureRepository extends BaseRepository {
     ): Promise<UnitOfMeasure | null> {
 
         return this.prisma.unitOfMeasure.findUnique({
-
             where: {
                 uuid
             }
-
         });
-
     }
 
     async findByCode(
@@ -53,13 +43,10 @@ export class UnitOfMeasureRepository extends BaseRepository {
     ): Promise<UnitOfMeasure | null> {
 
         return this.prisma.unitOfMeasure.findUnique({
-
             where: {
                 code
             }
-
         });
-
     }
 
     async findByName(
@@ -67,31 +54,20 @@ export class UnitOfMeasureRepository extends BaseRepository {
     ): Promise<UnitOfMeasure | null> {
 
         return this.prisma.unitOfMeasure.findUnique({
-
             where: {
                 name
             }
-
         });
-
     }
 
     async create(data: {
-
         code: string;
-
         name: string;
-
         description?: string;
-
     }): Promise<UnitOfMeasure> {
 
         return this.prisma.unitOfMeasure.create({
-
             data
-
         });
-
     }
-
 }

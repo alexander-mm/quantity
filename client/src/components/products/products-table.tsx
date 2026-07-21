@@ -1,6 +1,6 @@
-import { Pencil, Eye, Trash2 } from "lucide-react";
+import { Eye, Pencil, Trash2 } from "lucide-react";
 
-import { EntityTable } from "@/components";
+import { EntityTable } from "@/components/ui";
 
 type Product = {
 
@@ -9,6 +9,10 @@ type Product = {
     internalCode: string;
 
     name: string;
+
+    price: string | null;
+
+    isActive: boolean;
 
     brand: {
 
@@ -22,13 +26,9 @@ type Product = {
 
     };
 
-    stock: string;
-
-    isActive: boolean;
-
 };
 
-type ProductsTableProps = {
+type Props = {
 
     products: Product[];
 
@@ -38,7 +38,7 @@ export function ProductsTable({
 
     products
 
-}: ProductsTableProps) {
+}: Props) {
 
     return (
 
@@ -54,7 +54,7 @@ export function ProductsTable({
 
                 "Categoría",
 
-                "Stock",
+                "Precio",
 
                 "Estado",
 
@@ -72,7 +72,7 @@ export function ProductsTable({
 
                         key={product.id}
 
-                        className="border-b hover:bg-muted/40"
+                        className="border-b transition hover:bg-muted/40"
 
                     >
 
@@ -102,13 +102,23 @@ export function ProductsTable({
 
                         <td className="px-6 py-4">
 
-                            {product.stock}
-
+                            {
+                                product.price
+                                    ? `$${Number(product.price).toLocaleString()}`
+                                    : "-"
+                            }
                         </td>
 
                         <td className="px-6 py-4">
 
-                            <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+                            <span
+
+                                className={`rounded-full px-3 py-1 text-xs font-medium ${product.isActive
+                                        ? "bg-green-100 text-green-700"
+                                        : "bg-red-100 text-red-700"
+                                    }`}
+
+                            >
 
                                 {product.isActive ? "Activo" : "Inactivo"}
 
@@ -118,16 +128,16 @@ export function ProductsTable({
 
                         <td className="px-6 py-4">
 
-                            <div className="flex gap-3">
+                            <div className="flex items-center gap-3">
 
                                 <Eye
                                     size={18}
-                                    className="cursor-pointer"
+                                    className="cursor-pointer text-slate-500 hover:text-primary"
                                 />
 
                                 <Pencil
                                     size={18}
-                                    className="cursor-pointer"
+                                    className="cursor-pointer text-slate-500 hover:text-primary"
                                 />
 
                                 <Trash2

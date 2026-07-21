@@ -1,11 +1,12 @@
 import {
-  PrismaClient,  StoreType,  StockOperation} from "@prisma/client";
-  import bcrypt from "bcrypt";
+  PrismaClient, StoreType, StockOperation
+} from "@prisma/client";
+import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
 async function seedRoles() {
-    console.log("📦 Seeding Roles...");
+  console.log("📦 Seeding Roles...");
 
   await prisma.role.upsert({
     where: {
@@ -34,7 +35,7 @@ async function seedRoles() {
 }
 
 async function seedStores() {
-    console.log("📦 Seeding Store...");
+  console.log("📦 Seeding Store...");
 
   await prisma.store.upsert({
     where: {
@@ -57,7 +58,7 @@ async function seedStores() {
 }
 
 async function seedSettings() {
-    console.log("📦 Seeding Settings...");
+  console.log("📦 Seeding Settings...");
 
   const settingsCount = await prisma.settings.count();
 
@@ -78,7 +79,7 @@ async function seedSettings() {
 }
 
 async function seedUnitOfMeasure() {
-    console.log("📦 Seeding Unit Of Measure...");
+  console.log("📦 Seeding Unit Of Measure...");
 
   await prisma.unitOfMeasure.upsert({
     where: {
@@ -95,44 +96,132 @@ async function seedUnitOfMeasure() {
   console.log("✅ Unit Of Measure created.");
 }
 
-async function seedMarginProfiles() {
-    const marginProfiles = [
-  {
-    name: "Precio 1",
-    percentage: 30.00,
-    displayOrder: 1
-  },
-  {
-    name: "Precio 2",
-    percentage: 40.00,
-    displayOrder: 2
+async function seedBrands() {
+
+  console.log("📦 Seeding Brands...");
+
+  const brands = [
+
+    "ORDEPLUS",
+
+    "DeLaval",
+
+    "GEA",
+
+    "Milkrite",
+
+    "Interpuls",
+
+    "Genérica"
+
+  ];
+
+  for (const name of brands) {
+
+    await prisma.brand.upsert({
+
+      where: {
+        name
+      },
+
+      update: {},
+
+      create: {
+        name
+      }
+
+    });
+
   }
-];
 
-console.log("📦 Seeding Margin Profiles...");
-
-for (const profile of marginProfiles) {
-
-  await prisma.marginProfile.upsert({
-    where: {
-      name: profile.name
-    },
-    update: {},
-    create: {
-      name: profile.name,
-      percentage: profile.percentage,
-      displayOrder: profile.displayOrder
-    }
-  });
+  console.log("✅ Brands created.");
 
 }
 
-console.log("✅ Margin Profiles created.");
+async function seedCategories() {
+
+  console.log("📦 Seeding Categories...");
+
+  const categories = [
+
+    "Bombas de vacío",
+
+    "Pulsadores",
+
+    "Pezoneras",
+
+    "Colectores",
+
+    "Mangueras",
+
+    "Repuestos",
+
+    "Accesorios",
+
+    "Consumibles"
+
+  ];
+
+  for (const name of categories) {
+
+    await prisma.category.upsert({
+
+      where: {
+        name
+      },
+
+      update: {},
+
+      create: {
+        name
+      }
+
+    });
+
+  }
+
+  console.log("✅ Categories created.");
+
+}
+
+async function seedMarginProfiles() {
+  const marginProfiles = [
+    {
+      name: "Precio 1",
+      percentage: 30.00,
+      displayOrder: 1
+    },
+    {
+      name: "Precio 2",
+      percentage: 40.00,
+      displayOrder: 2
+    }
+  ];
+
+  console.log("📦 Seeding Margin Profiles...");
+
+  for (const profile of marginProfiles) {
+
+    await prisma.marginProfile.upsert({
+      where: {
+        name: profile.name
+      },
+      update: {},
+      create: {
+        name: profile.name,
+        percentage: profile.percentage,
+        displayOrder: profile.displayOrder
+      }
+    });
+
+  }
+
+  console.log("✅ Margin Profiles created.");
 
 }
 
 async function seedMovementTypes() {
-    const movementTypes = [
+  const movementTypes = [
     {
       code: "PURCHASE",
       name: "Compra",
@@ -186,63 +275,63 @@ async function seedMovementTypes() {
 
   console.log("📦 Seeding Movement Types...");
 
-for (const movementType of movementTypes) {
+  for (const movementType of movementTypes) {
 
-  await prisma.movementType.upsert({
-    where: {
-      code: movementType.code
-    },
-    update: {},
-    create: movementType
-  });
+    await prisma.movementType.upsert({
+      where: {
+        code: movementType.code
+      },
+      update: {},
+      create: movementType
+    });
 
-}
+  }
 
-console.log("✅ Movement Types created.");
+  console.log("✅ Movement Types created.");
 }
 
 async function seedAdminUser() {
-    console.log("📦 Seeding Administrator User...");
+  console.log("📦 Seeding Administrator User...");
 
-const adminRole = await prisma.role.findUnique({
-  where: {
-    name: "Administrador"
+  const adminRole = await prisma.role.findUnique({
+    where: {
+      name: "Administrador"
+    }
+  });
+
+  const mainStore = await prisma.store.findUnique({
+    where: {
+      code: "MAIN"
+    }
+  });
+
+  if (!adminRole) {
+    throw new Error("Role 'Administrador' not found.");
   }
-});
 
-const mainStore = await prisma.store.findUnique({
-  where: {
-    code: "MAIN"
+  if (!mainStore) {
+    throw new Error("Store 'MAIN' not found.");
   }
-});
 
-if (!adminRole) {
-  throw new Error("Role 'Administrador' not found.");
-}
+  const hashedPassword = await bcrypt.hash("admin123", 10);
 
-if (!mainStore) {
-  throw new Error("Store 'MAIN' not found.");
-}
+  await prisma.user.upsert({
+    where: {
+      username: "admin"
+    },
+    update: {},
+    create: {
+      username: "admin",
+      password: hashedPassword,
+      firstName: "Administrador",
+      lastName: "Sistema",
+      email: "admin@ordeplus.com",
+      roleId: adminRole.id,
+      storeId: mainStore.id
+    }
+  });
 
-const hashedPassword = await bcrypt.hash("admin123", 10);
-
-await prisma.user.upsert({
-  where: {
-    username: "admin"
-  },
-  update: {},
-  create: {
-    username: "admin",
-    password: hashedPassword,
-    firstName: "Administrador",
-    lastName: "Sistema",
-    email: "admin@ordeplus.com",
-    roleId: adminRole.id,
-    storeId: mainStore.id
-  }
-});
-
-console.log("✅ Administrator User created.");
+  console.log("✅ Administrator User created.");
 }
 
 async function main() {
@@ -251,17 +340,22 @@ async function main() {
 
   await seedRoles();
 
-   await seedStores();
+  await seedStores();
 
-   await seedSettings();
+  await seedSettings();
 
-   await seedUnitOfMeasure();
+  await seedUnitOfMeasure();
 
-   await seedMovementTypes();
+  await seedMovementTypes();
 
-   await seedMarginProfiles();
+  await seedMarginProfiles();
 
-   await seedAdminUser();
+  await seedAdminUser();
+
+  await seedBrands();
+
+  await seedCategories();
+
 
 }
 

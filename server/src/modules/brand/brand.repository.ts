@@ -12,17 +12,13 @@ export class BrandRepository extends BaseRepository {
     async findAll(): Promise<Brand[]> {
 
         return this.prisma.brand.findMany({
-
             where: {
                 isActive: true
             },
-
             orderBy: {
                 name: "asc"
             }
-
         });
-
     }
 
     async findById(
@@ -30,13 +26,10 @@ export class BrandRepository extends BaseRepository {
     ): Promise<Brand | null> {
 
         return this.prisma.brand.findUnique({
-
             where: {
                 id
             }
-
         });
-
     }
 
     async findByUuid(
@@ -44,13 +37,10 @@ export class BrandRepository extends BaseRepository {
     ): Promise<Brand | null> {
 
         return this.prisma.brand.findUnique({
-
             where: {
                 uuid
             }
-
         });
-
     }
 
     async findByName(
@@ -62,25 +52,16 @@ export class BrandRepository extends BaseRepository {
             where: {
                 name
             }
-
         });
-
     }
 
     async create(data: {
-
         name: string;
-
         description?: string;
-
     }): Promise<Brand> {
 
         return this.prisma.brand.create({
-
             data
-
         });
-
     }
-
 }

@@ -27,33 +27,21 @@ export const createProductSchema = z.object({
         .max(500, "La descripción no puede superar los 500 caracteres.")
         .optional(),
 
-brandId: z
-    .number({
-        error: "La marca es obligatoria."
-    })
-    .int()
-    .positive(),
+    brand: z
+        .string()
+        .trim()
+        .min(1, "La marca es obligatoria."),
 
-categoryId: z
-    .number({
-        error: "La categoría es obligatoria."
-    })
-    .int()
-    .positive(),
+    categoryId: z
+        .number({
+            error: "La categoría es obligatoria."
+        })
+        .int()
+        .positive(),
 
-unitOfMeasureId: z
-    .number({
-        error: "La unidad de medida es obligatoria."
-    })
-    .int()
-    .positive(),
-
-marginProfileId: z
-    .number({
-        error: "El perfil de margen es obligatorio."
-    })
-    .int()
-    .positive(),
+    unitOfMeasure: z
+        .string()
+        .trim(),
 
     costPrice: z
         .number({
@@ -65,6 +53,9 @@ marginProfileId: z
         .number({
             error: "El stock mínimo es obligatorio."
         })
-        .nonnegative("El stock mínimo no puede ser negativo.")
+        .nonnegative("El stock mínimo no puede ser negativo."),
 
+    marginProfileIds: z
+        .array(z.number().int().positive())
+        .min(1, "Debe seleccionar al menos un perfil de precio.")
 });

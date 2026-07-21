@@ -19,8 +19,6 @@ export function DashboardPage() {
 
     }
 
-    console.log(latestMovements);
-
     return (
 
     <PageContainer>
