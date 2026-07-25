@@ -8,6 +8,7 @@ import { InventoryStockPage } from "@/pages/inventory-stock";
 import { KardexPage } from "@/pages/kardex";
 import { SuppliersPage } from "@/pages";
 import { PurchasesPage } from "@/pages/purchases";
+import { SalesPage } from "@/pages/sales";
 
 const router = createBrowserRouter([
 
@@ -39,6 +40,17 @@ const router = createBrowserRouter([
             <ProtectedRoute>
                 <DashboardLayout>
                     <PurchasesPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
+
+    {
+        path: "/sales",
+        element: (
+            <ProtectedRoute>
+                <DashboardLayout>
+                    <SalesPage />
                 </DashboardLayout>
             </ProtectedRoute>
         )

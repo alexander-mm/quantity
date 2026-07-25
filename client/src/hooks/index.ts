@@ -13,3 +13,5 @@ export * from "./inventory-stock";
 export * from "./kardex";
 export * from "./supplier";
 export * from "./purchases";
+export * from "./clients";
+export * from "./sales";

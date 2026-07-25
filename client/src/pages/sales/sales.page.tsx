@@ -1,0 +1,143 @@
+import { PageContainer, PageHeader, SalesToolbar, SalesTable, SaleModal, SaleViewModal } from "@/components";
+import { useSales } from "@/hooks";
+import { useState } from "react";
+import type { Sale } from "@/types";
+
+export function SalesPage() {
+
+    const {
+        data,
+        isLoading,
+        isError
+    } = useSales();
+
+    const sales = data?.data ?? [];
+
+    const [open, setOpen] =
+        useState(false);
+
+    const [
+        saleToView,
+        setSaleToView
+    ] = useState<Sale | null>(null);
+
+    if (isLoading) {
+
+        return (
+
+            <PageContainer>
+
+                <PageHeader
+                    title="Ventas"
+                    description="Administra las ventas del inventario."
+                />
+
+                <p className="mt-6">
+                    Cargando...
+                </p>
+
+            </PageContainer>
+
+        );
+
+    }
+
+    if (isError) {
+
+        return (
+
+            <PageContainer>
+
+                <PageHeader
+                    title="Ventas"
+                    description="Administra las ventas del inventario."
+                />
+
+                <p className="mt-6">
+                    Error al cargar las ventas.
+                </p>
+
+            </PageContainer>
+
+        );
+
+    }
+
+    return (
+
+        <PageContainer>
+
+            <PageHeader
+                title="Ventas"
+                description="Administra las ventas del inventario."
+            />
+
+            <div className="mt-8">
+
+                <SalesToolbar
+                    onNewSale={() => {
+                        setOpen(true);
+                    }}
+                />
+
+            </div>
+
+            <div className="mt-6">
+
+                {
+                    sales.length === 0
+                        ? (
+                            <div className="rounded-xl border border-dashed p-12 text-center">
+                                <h2 className="text-xl font-semibold">
+                                    No existen ventas registradas
+                                </h2>
+
+                                <p className="mt-2 text-muted-foreground">
+                                    Haz clic en "Nueva venta" para registrar la primera.
+                                </p>
+                            </div>
+                        )
+                        : (
+                            <>
+                                <SalesTable
+                                    sales={sales}
+                                    onView={(sale) => {
+
+                                        setSaleToView(
+                                            sale
+                                        );
+
+                                    }}
+                                />
+
+                                <p className="mt-4 text-sm text-muted-foreground">
+                                    Mostrando {sales.length} ventas
+                                </p>
+                            </>
+                        )
+                }
+
+            </div>
+
+            <SaleModal
+                open={open}
+                onOpenChange={setOpen}
+            />
+
+            <SaleViewModal
+                open={
+                    !!saleToView
+                }
+                sale={
+                    saleToView
+                }
+                onOpenChange={() =>
+                    setSaleToView(null)
+                }
+            />
+
+        </PageContainer>
+
+    );
+
+}

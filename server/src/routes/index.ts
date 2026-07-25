@@ -15,6 +15,8 @@ import inventoryStockRoutes from "../modules/inventory-stock/inventory-stock.rou
 import dashboardRoutes from "../modules/dashboard/dashboard.routes.js";
 import supplierRoutes from "../modules/supplier/supplier.routes.js";
 import purchaseRoutes from "../modules/purchase/purchase.routes.js";
+import saleRoutes from "../modules/sale/sale.routes.js";
+import productPriceRoutes from "../modules/product-prices/product-price.routes.js";
 
 const router = Router();
 
@@ -51,5 +53,9 @@ router.use("/inventory-stock", inventoryStockRoutes);
 router.use("/dashboard", dashboardRoutes);
 
 router.use("/purchases", purchaseRoutes);
+
+router.use("/sales", saleRoutes);
+
+router.use("/product-prices", productPriceRoutes);
 
 export default router;

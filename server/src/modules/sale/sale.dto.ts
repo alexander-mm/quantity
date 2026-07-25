@@ -1,0 +1,30 @@
+export interface CreateSaleDetailDto {
+    productId: string;
+    quantity: number;
+    unitPrice: number;
+    discount?: number;
+    tax?: number;
+}
+
+export interface CreateSaleDto {
+    number: string;
+    clientId: string;
+    storeId: string;
+    userId: string;
+    saleDate: Date;
+    reference?: string;
+    observations?: string;
+    details: CreateSaleDetailDto[];
+}
+
+export interface UpdateSaleDto {
+    number: string;
+    clientId: string;
+    storeId: string;
+    userId: string;
+    saleDate: Date;
+    reference?: string;
+    observations?: string;
+    status: "DRAFT" | "CONFIRMED" | "CANCELLED";
+    details: CreateSaleDetailDto[];
+}

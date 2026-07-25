@@ -13,6 +13,26 @@ export class ProductPriceRepository extends BaseRepository {
         super(prismaClient);
     }
 
+    async findByProduct(
+        productId: bigint
+    ) {
+
+        return this.prisma.productPrice.findMany({
+            where: {
+                productId,
+                isActive: true
+            },
+            orderBy: {
+                marginProfile: {
+                    displayOrder: "asc"
+                }
+            },
+            include: {
+                marginProfile: true
+            }
+        });
+    }
+
     async createMany(
         data: Prisma.ProductPriceCreateManyInput[]
     ): Promise<void> {

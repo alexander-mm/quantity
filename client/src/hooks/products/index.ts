@@ -3,3 +3,4 @@ export * from "./use-product";
 export * from "./use-create-product";
 export * from "./use-update-product";
 export * from "./use-delete-products";
+export * from "./use-product-prices";

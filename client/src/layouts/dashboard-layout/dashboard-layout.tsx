@@ -36,6 +36,10 @@ export function DashboardLayout({
 
                 <p>Inventario</p>
 
+                <p>Compras</p>
+
+                <p>Ventas</p>
+
             </aside>
 
             <div>

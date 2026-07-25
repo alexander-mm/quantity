@@ -1,0 +1,162 @@
+import { NextFunction, Request, Response } from "express";
+import { SaleService } from "./sale.service.js";
+import { ApiResponse } from "../../shared/responses/index.js";
+
+export class SaleController {
+
+    private readonly service = new SaleService();
+
+    async findAll(
+        _req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+        try {
+            const sales = await this.service.findAll();
+            res.status(200).json(
+                ApiResponse.success(
+                    "Ventas obtenidas correctamente.",
+                    sales
+                )
+            );
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async findById(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+        try {
+            const { id } = req.params;
+            if (!id || Array.isArray(id)) {
+                res.status(400).json(
+                    ApiResponse.error(
+                        "Id inválido."
+                    )
+                );
+                return;
+            }
+            const sale = await this.service.findById(id);
+            res.status(200).json(
+                ApiResponse.success(
+                    "Venta obtenida correctamente.",
+                    sale
+                )
+            );
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async create(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+        try {
+            const sale = await this.service.create(
+                req.body
+            );
+            res.status(201).json(
+                ApiResponse.success(
+                    "Venta creada correctamente.",
+                    sale
+                )
+            );
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async update(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+        try {
+            const { id } = req.params;
+            if (!id || Array.isArray(id)) {
+                res.status(400).json(
+                    ApiResponse.error(
+                        "Id inválido."
+                    )
+                );
+                return;
+            }
+            const sale = await this.service.update(
+                id,
+                req.body
+            );
+            res.status(200).json(
+                ApiResponse.success(
+                    "Venta actualizada correctamente.",
+                    sale
+                )
+            );
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async delete(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+        try {
+            const { id } = req.params;
+            if (!id || Array.isArray(id)) {
+                res.status(400).json(
+                    ApiResponse.error(
+                        "Id inválido."
+                    )
+                );
+                return;
+            }
+            await this.service.delete(id);
+            res.status(200).json(
+                ApiResponse.success(
+                    "Venta eliminada correctamente."
+                )
+            );
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async confirm(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+        try {
+            const { id } = req.params;
+
+            if (!id || Array.isArray(id)) {
+                res.status(400).json(
+                    ApiResponse.error(
+                        "Id inválido."
+                    )
+                );
+                return;
+            }
+
+            const sale =
+                await this.service.confirm(id);
+
+            res.status(200).json(
+                ApiResponse.success(
+                    "Venta confirmada correctamente.",
+                    sale
+                )
+            );
+
+        } catch (error) {
+            next(error);
+        }
+    }
+
+}

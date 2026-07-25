@@ -12,3 +12,10 @@ export interface Product {
         name: string;
     };
 }
+
+export interface ProductPrice {
+    marginProfileId: string;
+    marginProfileName: string;
+    marginProfilePercentage: string;
+    price: string;
+}

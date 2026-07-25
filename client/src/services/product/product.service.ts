@@ -1,5 +1,5 @@
 import { api } from "@/services/api";
-import type { ApiResponse, Product } from "@/types";
+import type { ApiResponse, Product, ProductPrice } from "@/types";
 import type { ProductFormData } from "@/validators";
 
 export async function getProducts(): Promise<ApiResponse<Product[]>> {
@@ -92,5 +92,17 @@ export async function deleteProduct(
     await api.delete(
         `/products/${id}`
     );
+
+}
+
+export async function getProductPrices(
+    productId: string
+): Promise<ApiResponse<ProductPrice[]>> {
+
+    const { data } = await api.get<ApiResponse<ProductPrice[]>>(
+        `/product-prices/${productId}`
+    );
+
+    return data;
 
 }

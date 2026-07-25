@@ -7,3 +7,4 @@ export * from "./kardex";
 export * from "./selectors";
 export * from "./supplier";
 export * from "./purchases";
+export * from "./sales";
