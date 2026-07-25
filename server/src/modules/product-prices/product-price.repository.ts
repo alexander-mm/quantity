@@ -32,4 +32,11 @@ export class ProductPriceRepository extends BaseRepository {
             }
         });
     }
+
+    withTransaction(
+        tx: Prisma.TransactionClient
+    ): ProductPriceRepository {
+        return new ProductPriceRepository(tx);
+    }
+
 }

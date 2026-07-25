@@ -1,20 +1,33 @@
 import { Controller, useForm } from "react-hook-form";
+import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { productSchema } from "@/validators";
 import type { ProductFormData } from "@/validators";
-import { useBrands, useCategories, useUnitsOfMeasure, useMarginProfiles } from "@/hooks";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useCategories, useMarginProfiles, useCreateProduct, useUpdateProduct, useProduct } from "@/hooks";
+import { toast } from "react-hot-toast";
 
+type ProductFormProps = {
+    onSuccess?: () => void;
+    mode?: "create" | "edit";
+    productId?: string;
+};
 
-export function ProductForm() {
+export function ProductForm({
+
+    onSuccess,
+    mode = "create",
+    productId
+}: ProductFormProps) {
 
     const {
         register,
         control,
         handleSubmit,
+        reset,
         formState: {
             errors
         }
@@ -25,26 +38,96 @@ export function ProductForm() {
             barcode: "",
             name: "",
             description: "",
-            brandId: "",
+            brand: "",
             categoryId: "",
-            unitOfMeasureId: "",
-            marginProfileId: "",
+            unitOfMeasure: "",
+            marginProfileIds: [],
             costPrice: 0,
             minimumStock: 0
         }
     });
 
-    const { data: brandsData } = useBrands();
     const { data: categoriesData } = useCategories();
-    const { data: unitsData } = useUnitsOfMeasure();
     const { data: marginsData } = useMarginProfiles();
-    const brands = brandsData?.data ?? [];
+    const createProductMutation = useCreateProduct();
+    const { data: productData } = useProduct(
+        mode === "edit"
+            ? productId
+            : undefined
+    );
+    const updateProductMutation = useUpdateProduct();
     const categories = categoriesData?.data ?? [];
-    const units = unitsData?.data ?? [];
     const margins = marginsData?.data ?? [];
+    useEffect(() => {
 
-    function onSubmit(data: ProductFormData) {
-        console.log(data);
+        if (
+            mode !== "edit" ||
+            !productData?.data
+        ) {
+            return;
+        }
+
+        reset({
+
+            internalCode: productData.data.internalCode,
+            barcode: productData.data.barcode ?? "",
+            name: productData.data.name,
+            description: productData.data.description ?? "",
+            brand: productData.data.brand,
+            categoryId: productData.data.categoryId,
+            unitOfMeasure: productData.data.unitOfMeasure,
+            marginProfileIds: productData.data.marginProfileIds,
+            costPrice: Number(productData.data.costPrice),
+            minimumStock: Number(productData.data.minimumStock)
+        });
+    }, [
+        mode,
+        productData,
+        reset
+    ]);
+
+    async function onSubmit(data: ProductFormData) {
+
+        const payload = {
+            ...data,
+            costPrice: Number(data.costPrice),
+            minimumStock: Number(data.minimumStock)
+        };
+
+        if (mode === "create") {
+            createProductMutation.mutate(payload, {
+                onSuccess: () => {
+                    toast.success("Producto creado correctamente.");
+                    reset();
+                    onSuccess?.();
+                },
+                onError: (error) => {
+                    console.error(error);
+                    toast.error("No se pudo crear el producto.");
+                }
+            });
+            return;
+        }
+
+        if (!productId) {
+
+            toast.error("No se encontró el producto.");
+            return;
+        }
+        updateProductMutation.mutate({
+            id: productId,
+            data: payload
+        }, {
+            onSuccess: () => {
+                toast.success("Producto actualizado correctamente.");
+                reset();
+                onSuccess?.();
+            },
+            onError: (error) => {
+                console.error(error);
+                toast.error("No se pudo actualizar el producto.");
+            }
+        });
     }
 
     return (
@@ -97,33 +180,14 @@ export function ProductForm() {
                 <Label>
                     Marca
                 </Label>
-                <Controller
-                    name="brandId"
-                    control={control}
-                    render={({ field }) => (
-                        <Select
-                            value={field.value}
-                            onValueChange={field.onChange}
-                        >
-                            <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Seleccione una marca" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {brands.map((brand) => (
-                                    <SelectItem
-                                        key={brand.id}
-                                        value={brand.id}
-                                    >
-                                        {brand.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    )}
-                />
-                <p className="text-sm text-red-500">
 
-                    {errors.brandId?.message}
+                <Input
+                    {...register("brand")}
+                    placeholder="Ingrese la marca"
+                />
+
+                <p className="text-sm text-red-500">
+                    {errors.brand?.message}
                 </p>
             </div>
 
@@ -165,66 +229,82 @@ export function ProductForm() {
                 <Label>
                     Unidad de medida
                 </Label>
-                <Controller
-                    name="unitOfMeasureId"
-                    control={control}
-                    render={({ field }) => (
-                        <Select
-                            value={field.value}
-                            onValueChange={field.onChange}
-                        >
-                            <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Seleccione una unidad de medida" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {units.map((unit) => (
-                                    <SelectItem
-                                        key={unit.id}
-                                        value={unit.id}
-                                    >
-                                        {unit.code} - {unit.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    )}
+
+                <Input
+                    {...register("unitOfMeasure")}
+                    placeholder="Ej. Unidad, Caja, Metro..."
                 />
+
                 <p className="text-sm text-red-500">
-                    {errors.unitOfMeasureId?.message}
+                    {errors.unitOfMeasure?.message}
                 </p>
             </div>
 
             <div>
+
                 <Label>
-                    Perfil de margen
+                    Perfiles de precio
                 </Label>
+
                 <Controller
-                    name="marginProfileId"
                     control={control}
+                    name="marginProfileIds"
                     render={({ field }) => (
-                        <Select
-                            value={field.value}
-                            onValueChange={field.onChange}
-                        >
-                            <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Seleccione un perfil" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {margins.map((margin) => (
-                                    <SelectItem
-                                        key={margin.id}
-                                        value={margin.id}
-                                    >
-                                        {margin.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+
+                        <div className="space-y-2">
+
+                            {margins.map(profile => (
+
+                                <label
+                                    key={profile.id}
+                                    className="flex items-center gap-2"
+                                >
+
+                                    <input
+                                        type="checkbox"
+                                        value={profile.id}
+                                        checked={field.value.includes(profile.id)}
+                                        onChange={(e) => {
+
+                                            if (e.target.checked) {
+
+                                                field.onChange([
+                                                    ...field.value,
+                                                    profile.id
+                                                ]);
+
+                                            } else {
+
+                                                field.onChange(
+
+                                                    field.value.filter(
+                                                        id => id !== profile.id
+                                                    )
+
+                                                );
+
+                                            }
+
+                                        }}
+                                    />
+
+                                    {profile.name}
+
+                                </label>
+
+                            ))}
+
+                        </div>
+
                     )}
                 />
+
                 <p className="text-sm text-red-500">
-                    {errors.marginProfileId?.message}
+
+                    {errors.marginProfileIds?.message}
+
                 </p>
+
             </div>
 
             <div>

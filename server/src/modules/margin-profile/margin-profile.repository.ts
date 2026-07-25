@@ -1,4 +1,4 @@
-import { MarginProfile } from "@prisma/client";
+import { MarginProfile, Prisma } from "@prisma/client";
 
 import { BaseRepository } from "../../repositories/base/BaseRepository.js";
 
@@ -80,4 +80,11 @@ export class MarginProfileRepository extends BaseRepository {
 
     }
 
+    withTransaction(
+    tx: Prisma.TransactionClient
+): MarginProfileRepository {
+
+    return new MarginProfileRepository(tx);
+
+}
 }

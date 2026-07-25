@@ -1,69 +1,48 @@
-import {
-
-    Dialog,
-
-    DialogContent,
-
-    DialogDescription,
-
-    DialogHeader,
-
-    DialogTitle
-
-} from "@/components/ui/dialog";
-
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ProductForm } from "./product-form";
 
 type ProductFormModalProps = {
-
     open: boolean;
-
     onOpenChange: (open: boolean) => void;
-
+    mode?: "create" | "edit";
+    productId?: string;
 };
 
 export function ProductFormModal({
-
     open,
-
-    onOpenChange
-
+    onOpenChange,
+    mode = "create",
+    productId
 }: ProductFormModalProps) {
 
     return (
-
         <Dialog
-
             open={open}
-
             onOpenChange={onOpenChange}
-
         >
-
             <DialogContent className="sm:max-w-2xl">
-
                 <DialogHeader>
-
                     <DialogTitle>
-
-                        Nuevo producto
-
+                        {
+                            mode === "create"
+                                ? "Nuevo producto"
+                                : "Editar producto"
+                        }
                     </DialogTitle>
-
                     <DialogDescription>
-
-                        Registra un nuevo producto en el inventario.
-
+                        {
+                            mode === "create"
+                                ? "Registra un nuevo producto en el inventario."
+                                : "Modifica la información del producto."
+                        }
                     </DialogDescription>
-
                 </DialogHeader>
-
-                <ProductForm />
-
+                <ProductForm
+                    mode={mode}
+                    productId={productId}
+                    onSuccess={() => onOpenChange(false)}
+                />
             </DialogContent>
-
         </Dialog>
-
     );
-
 }

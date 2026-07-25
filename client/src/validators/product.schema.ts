@@ -10,13 +10,15 @@ export const productSchema = z.object({
 
     description: z.string().optional(),
 
-    brandId: z.string().min(1, "Seleccione una marca"),
+    brand: z.string().min(1, "Ingrese una marca"),
 
     categoryId: z.string().min(1, "Seleccione una categoría"),
 
-    unitOfMeasureId: z.string().min(1, "Seleccione una unidad"),
+    unitOfMeasure: z.string().min(1, "Ingrese una unidad de medida"),
 
-    marginProfileId: z.string().min(1, "Seleccione un perfil"),
+    marginProfileIds: z
+        .array(z.string())
+        .min(1, "Seleccione al menos un perfil de precio"),
 
     costPrice: z.coerce.number().min(0),
 

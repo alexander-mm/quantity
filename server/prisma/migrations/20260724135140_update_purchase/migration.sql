@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "public"."Purchase" ADD COLUMN     "discount" DECIMAL(12,2) NOT NULL DEFAULT 0,
+ADD COLUMN     "reference" TEXT,
+ADD COLUMN     "subtotal" DECIMAL(12,2) NOT NULL DEFAULT 0,
+ADD COLUMN     "tax" DECIMAL(12,2) NOT NULL DEFAULT 0,
+ADD COLUMN     "total" DECIMAL(12,2) NOT NULL DEFAULT 0;

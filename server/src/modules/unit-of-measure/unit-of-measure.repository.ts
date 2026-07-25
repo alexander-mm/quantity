@@ -1,11 +1,9 @@
-import { UnitOfMeasure } from "@prisma/client";
-
+import { UnitOfMeasure, Prisma } from "@prisma/client";
 import { BaseRepository } from "../../repositories/base/BaseRepository.js";
 
 export class UnitOfMeasureRepository extends BaseRepository {
 
     async findAll(): Promise<UnitOfMeasure[]> {
-
         return this.prisma.unitOfMeasure.findMany({
             where: {
                 isActive: true
@@ -19,7 +17,6 @@ export class UnitOfMeasureRepository extends BaseRepository {
     async findById(
         id: bigint
     ): Promise<UnitOfMeasure | null> {
-
         return this.prisma.unitOfMeasure.findUnique({
             where: {
                 id
@@ -30,7 +27,6 @@ export class UnitOfMeasureRepository extends BaseRepository {
     async findByUuid(
         uuid: string
     ): Promise<UnitOfMeasure | null> {
-
         return this.prisma.unitOfMeasure.findUnique({
             where: {
                 uuid
@@ -41,7 +37,6 @@ export class UnitOfMeasureRepository extends BaseRepository {
     async findByCode(
         code: string
     ): Promise<UnitOfMeasure | null> {
-
         return this.prisma.unitOfMeasure.findUnique({
             where: {
                 code
@@ -52,7 +47,6 @@ export class UnitOfMeasureRepository extends BaseRepository {
     async findByName(
         name: string
     ): Promise<UnitOfMeasure | null> {
-
         return this.prisma.unitOfMeasure.findUnique({
             where: {
                 name
@@ -65,9 +59,16 @@ export class UnitOfMeasureRepository extends BaseRepository {
         name: string;
         description?: string;
     }): Promise<UnitOfMeasure> {
-
         return this.prisma.unitOfMeasure.create({
             data
         });
+    }
+
+    withTransaction(
+        tx: Prisma.TransactionClient
+    ): UnitOfMeasureRepository {
+
+        return new UnitOfMeasureRepository(tx);
+
     }
 }

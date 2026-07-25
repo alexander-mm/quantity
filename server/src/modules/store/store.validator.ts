@@ -39,6 +39,8 @@ export const createStoreSchema = z.object({
         .optional(),
 
     email: z
+        .string()
+        .trim()
         .email("Correo electrónico inválido.")
         .optional()
         .or(z.literal("")),
@@ -50,3 +52,6 @@ export const createStoreSchema = z.object({
         .optional()
 
 });
+
+export type CreateStoreInput =
+    z.infer<typeof createStoreSchema>;

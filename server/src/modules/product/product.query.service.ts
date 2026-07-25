@@ -6,9 +6,12 @@ export class ProductQueryService {
         new ProductQueryRepository();
 
     async findAll() {
-
         return this.repository.findAll();
-
     }
 
+    async findById(id: string) {
+        return this.repository.findById(
+            BigInt(id)
+        );
+    }
 }

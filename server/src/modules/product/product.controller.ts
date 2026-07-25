@@ -15,22 +15,16 @@ export class ProductController {
     ): Promise<void> {
 
         try {
-
             const products = await this.queryService.findAll();
-
             res.status(200).json(
                 ApiResponse.success(
                     "Productos obtenidos correctamente.",
                     products
                 )
             );
-
         } catch (error) {
-
             next(error);
-
         }
-
     }
 
     async findById(
@@ -38,33 +32,24 @@ export class ProductController {
         res: Response,
         next: NextFunction
     ): Promise<void> {
-
         try {
-
             const { id } = req.params;
-
             if (!id || Array.isArray(id)) {
-
                 res.status(400).json(
                     ApiResponse.error("Id inválido.")
                 );
-
                 return;
-
             }
 
-            const product = await this.service.findById(id);
-
+            const product =
+                await this.queryService.findById(id);
             if (!product) {
-
                 res.status(404).json(
                     ApiResponse.error(
                         "Producto no encontrado."
                     )
                 );
-
                 return;
-
             }
 
             res.status(200).json(
@@ -75,11 +60,75 @@ export class ProductController {
             );
 
         } catch (error) {
-
             next(error);
-
         }
+    }
 
+    async update(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+
+        try {
+            const { id } = req.params;
+            if (!id || Array.isArray(id)) {
+                res.status(400).json(
+                    ApiResponse.error("Id inválido.")
+                );
+                return;
+            }
+
+            const body = {
+                ...req.body,
+                categoryId: BigInt(req.body.categoryId),
+                marginProfileIds: req.body.marginProfileIds.map(
+                    (id: number | string) => BigInt(id)
+                )
+            };
+
+            const product =
+                await this.service.update(
+                    id,
+                    body
+                );
+            res.status(200).json(
+                ApiResponse.success(
+                    "Producto actualizado correctamente.",
+                    product
+                )
+            );
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async delete(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+
+        try {
+            const { id } = req.params;
+            if (!id || Array.isArray(id)) {
+                res.status(400).json(
+                    ApiResponse.error("Id inválido.")
+                );
+                return;
+            }
+
+            const product =
+                await this.service.delete(id);
+            res.status(200).json(
+                ApiResponse.success(
+                    "Producto eliminado correctamente.",
+                    product
+                )
+            );
+        } catch (error) {
+            next(error);
+        }
     }
 
     async create(
@@ -90,20 +139,15 @@ export class ProductController {
 
         try {
             const body = {
-
                 ...req.body,
-
                 categoryId: BigInt(req.body.categoryId),
-
                 marginProfileIds: req.body.marginProfileIds.map(
                     (id: number | string) => BigInt(id)
                 )
-
             };
 
             const product =
                 await this.service.create(body);
-
             res.status(201).json(
                 ApiResponse.success(
                     "Producto creado correctamente.",
@@ -112,11 +156,7 @@ export class ProductController {
             );
 
         } catch (error) {
-
             next(error);
-
         }
-
     }
-
 }

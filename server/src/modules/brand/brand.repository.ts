@@ -64,4 +64,13 @@ export class BrandRepository extends BaseRepository {
             data
         });
     }
+
+    withTransaction(
+        tx: Prisma.TransactionClient
+    ): BrandRepository {
+
+        return new BrandRepository(tx);
+
+    }
 }
+

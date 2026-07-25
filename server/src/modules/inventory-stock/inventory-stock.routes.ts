@@ -1,11 +1,8 @@
 import { Router } from "express";
-
 import { authenticate } from "../../middleware/authenticate.js";
-
 import { InventoryStockController } from "./inventory-stock.controller.js";
 
 const router = Router();
-
 const controller = new InventoryStockController();
 
 router.get(

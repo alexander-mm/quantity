@@ -1,0 +1,27 @@
+export interface Transfer{
+    id:string;
+    productId:string;
+    originStoreId:string;
+    destinationStoreId:string;
+    quantity:string;
+    observations:string|null;
+    createdAt:string;
+    product:{
+        id:string;
+        internalCode:string;
+        name:string;
+    };
+    originStore:{
+        id:string;
+        name:string;
+    };
+    destinationStore:{
+        id:string;
+        name:string;
+    };
+    user:{
+        id:string;
+        firstName:string;
+        lastName:string;
+    };
+}

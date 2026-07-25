@@ -90,4 +90,45 @@ export class ProductRepository extends BaseRepository {
         });
 
     }
+
+    async update(
+        id: bigint,
+        data: {
+            internalCode: string;
+            barcode?: string | null;
+            name: string;
+            description?: string;
+            brandId: bigint;
+            categoryId: bigint;
+            unitOfMeasureId: bigint;
+            costPrice: number;
+            minimumStock: number;
+        }
+    ): Promise<Product> {
+
+        return this.prisma.product.update({
+            where: {
+                id
+            },
+            data
+        });
+    }
+
+    async delete(
+        id: bigint
+    ): Promise<Product> {
+        return this.prisma.product.delete({
+            where: {
+                id
+            }
+        });
+    }
+
+    withTransaction(
+        tx: Prisma.TransactionClient
+    ): ProductRepository {
+
+        return new ProductRepository(tx);
+
+    }
 }

@@ -5,37 +5,34 @@ import {
     ProductsTable,
     ProductsTableSkeleton,
     ProductsErrorState,
-    ProductsEmptyState
+    ProductsEmptyState,
+    ProductFormModal,
+    DeleteProductDialog,
 } from "@/components";
-
-import { useProducts } from "@/hooks";
+import { useState } from "react";
+import { useProducts, useDeleteProduct } from "@/hooks";
+import type { Product } from "@/types";
 
 export function ProductsPage() {
 
-    const {
-
-        data,
-
-        isLoading,
-
-        isError
-
-    } = useProducts();
-
+    const { data, isLoading, isError } = useProducts();
+    const deleteProductMutation = useDeleteProduct();
     const products = data?.data ?? [];
+    const [open, setOpen] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+    const [productToDelete, setProductToDelete] = useState<Product | null>(null);
 
     if (isLoading) {
-
         return (
-
             <PageContainer>
-
                 <PageHeader
                     title="Productos"
                     description="Administra los productos del sistema."
                 />
                 <div className="mt-8">
-                    <ProductsToolbar />
+                    <ProductsToolbar
+                        onNewProduct={() => setOpen(true)}
+                    />
                 </div>
 
                 <div className="mt-6">
@@ -44,9 +41,7 @@ export function ProductsPage() {
             </PageContainer>
         );
     }
-
     if (isError) {
-
         return (
             <PageContainer>
                 <PageHeader
@@ -59,19 +54,17 @@ export function ProductsPage() {
             </PageContainer>
         );
     }
-
     return (
-
         <PageContainer>
-
             <PageHeader
                 title="Productos"
                 description="Administra los productos del sistema."
             />
             <div className="mt-8">
-                <ProductsToolbar />
+                <ProductsToolbar
+                    onNewProduct={() => setOpen(true)}
+                />
             </div>
-
             <div className="mt-6">
                 {
                     products.length === 0
@@ -82,6 +75,14 @@ export function ProductsPage() {
                             <>
                                 <ProductsTable
                                     products={products}
+                                    onEdit={(product) => {
+                                        setSelectedProduct(product);
+                                        setOpen(true);
+                                    }}
+                                    onDelete={(product) => {
+
+                                        setProductToDelete(product);
+                                    }}
                                 />
                                 <p className="mt-4 text-sm text-muted-foreground">
                                     Mostrando {products.length} productos
@@ -90,8 +91,41 @@ export function ProductsPage() {
                         )
                 }
             </div>
+            <ProductFormModal
+                open={open}
+                onOpenChange={(value) => {
+                    setOpen(value);
+                    if (!value) {
+                        setSelectedProduct(null);
+                    }
+                }}
+                mode={
+                    selectedProduct
+                        ? "edit"
+                        : "create"
+                }
+                productId={selectedProduct?.id}
+            />
+            <DeleteProductDialog
+                open={!!productToDelete}
+                productName={productToDelete?.name ?? ""}
+                onCancel={() => {
+                    setProductToDelete(null);
+                }}
+                onConfirm={() => {
+                    if (!productToDelete) {
+                        return;
+                    }
+                    deleteProductMutation.mutate(
+                        productToDelete.id,
+                        {
+                            onSuccess: () => {
+                                setProductToDelete(null);
+                            }
+                        }
+                    );
+                }}
+            />
         </PageContainer>
-
     );
-
 }

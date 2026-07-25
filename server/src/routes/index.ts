@@ -13,6 +13,8 @@ import clientRoutes from "../modules/client/client.routes.js";
 import inventoryMovementRoutes from "../modules/inventory-movement/inventory-movement.routes.js";
 import inventoryStockRoutes from "../modules/inventory-stock/inventory-stock.routes.js";
 import dashboardRoutes from "../modules/dashboard/dashboard.routes.js";
+import supplierRoutes from "../modules/supplier/supplier.routes.js";
+import purchaseRoutes from "../modules/purchase/purchase.routes.js";
 
 const router = Router();
 
@@ -34,6 +36,8 @@ router.use("/roles", roleRoutes);
 
 router.use("/users", userRoutes);
 
+router.use("/suppliers", supplierRoutes);
+
 router.use("/auth", authRoutes);
 
 router.use("/movement-types", movementTypeRoutes);
@@ -45,5 +49,7 @@ router.use("/inventory-movements", inventoryMovementRoutes);
 router.use("/inventory-stock", inventoryStockRoutes);
 
 router.use("/dashboard", dashboardRoutes);
+
+router.use("/purchases", purchaseRoutes);
 
 export default router;
