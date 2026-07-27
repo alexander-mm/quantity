@@ -4,11 +4,11 @@
   "description": "ORDEPLUS Quantity ERP Backend",
   "private": true,
   "type": "module",
-  "main": "dist/bootstrap/server.js",
+  "main": "dist/src/bootstrap/server.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "node dist/src/index.js",
     "check": "tsc --noEmit && prisma validate",
     "prisma:generate": "prisma generate",
     "prisma:validate": "prisma validate",
