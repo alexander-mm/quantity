@@ -65,7 +65,7 @@ export function PurchasesTable({
                                 ).toLocaleDateString()}
                             </td>
                             <td className="px-6 py-4">
-                                {purchase.supplier.name}
+                                {purchase.supplier.companyName}
                             </td>
                             <td className="px-6 py-4">
                                 {purchase.store.name}
