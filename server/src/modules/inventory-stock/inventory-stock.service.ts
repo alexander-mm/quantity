@@ -1,6 +1,7 @@
 import { InventoryStock, Prisma } from "@prisma/client";
 import { ConflictError, NotFoundError } from "../../shared/errors/index.js";
 import { InventoryStockRepository } from "./inventory-stock.repository.js";
+import { prisma } from "../../database/index.js";
 
 export class InventoryStockService {
     private repository: InventoryStockRepository;
