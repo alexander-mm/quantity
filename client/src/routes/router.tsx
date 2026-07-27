@@ -9,6 +9,7 @@ import { KardexPage } from "@/pages/kardex";
 import { SuppliersPage } from "@/pages";
 import { PurchasesPage } from "@/pages/purchases";
 import { SalesPage } from "@/pages/sales";
+import { InventoryAdjustmentsPage } from "@/pages/inventory-adjustments";
 
 const router = createBrowserRouter([
 
@@ -62,6 +63,17 @@ const router = createBrowserRouter([
             <ProtectedRoute>
                 <DashboardLayout>
                     <InventoryMovementsPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
+
+    {
+        path: "/inventory-adjustments",
+        element: (
+            <ProtectedRoute>
+                <DashboardLayout>
+                    <InventoryAdjustmentsPage />
                 </DashboardLayout>
             </ProtectedRoute>
         )

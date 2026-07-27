@@ -1,8 +1,17 @@
 import { NextFunction, Request, Response } from "express";
+import { User } from "@prisma/client";
 
 import { ApiResponse } from "../../shared/responses/index.js";
 
 import { UserService } from "./user.service.js";
+
+function sanitizeUser(user: User) {
+
+    const { password, ...safeUser } = user;
+
+    return safeUser;
+
+}
 
 export class UserController {
 
@@ -21,7 +30,7 @@ export class UserController {
             res.status(200).json(
                 ApiResponse.success(
                     "Usuarios obtenidos correctamente.",
-                    users
+                    users.map(sanitizeUser)
                 )
             );
 
@@ -72,7 +81,7 @@ export class UserController {
             res.status(200).json(
                 ApiResponse.success(
                     "Usuario obtenido correctamente.",
-                    user
+                    sanitizeUser(user)
                 )
             );
 
@@ -107,7 +116,7 @@ export class UserController {
             res.status(201).json(
                 ApiResponse.success(
                     "Usuario creado correctamente.",
-                    user
+                    sanitizeUser(user)
                 )
             );
 

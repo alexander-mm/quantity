@@ -5,3 +5,8 @@ export async function getInventoryStock(): Promise<ApiResponse<InventoryStock[]>
     const { data } = await api.get<ApiResponse<InventoryStock[]>>("/inventory-stock");
     return data;
 }
+
+export async function getLowStock(): Promise<ApiResponse<InventoryStock[]>> {
+    const { data } = await api.get<ApiResponse<InventoryStock[]>>("/inventory-stock/low-stock");
+    return data;
+}

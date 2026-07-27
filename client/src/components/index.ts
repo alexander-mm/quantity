@@ -2,6 +2,7 @@ export * from "./ui";
 export * from "./dashboard";
 export * from "./products";
 export * from "./inventory-movements";
+export * from "./inventory-adjustments";
 export * from "./inventory-stock";
 export * from "./kardex";
 export * from "./selectors";

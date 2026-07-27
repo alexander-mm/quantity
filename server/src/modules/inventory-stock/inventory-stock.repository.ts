@@ -85,17 +85,18 @@ export class InventoryStockRepository extends BaseRepository {
     }
 
     async findLowStock(): Promise<InventoryStock[]> {
-        return this.prisma.inventoryStock.findMany({
+
+        const stock = await this.prisma.inventoryStock.findMany({
             include: {
                 product: true,
                 store: true
-            },
-            where: {
-                quantity: {
-                    lte: new Prisma.Decimal(0)
-                }
             }
         });
+
+        return stock.filter(
+            item => item.quantity.lte(item.product.minimumStock)
+        );
+
     }
 
     async create(

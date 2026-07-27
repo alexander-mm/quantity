@@ -1,7 +1,9 @@
 import {
+    AlertTriangle,
     ArrowRightLeft,
     Boxes,
     Package,
+    PackageX,
     Store,
     UserCog,
     Users
@@ -83,6 +85,22 @@ export function DashboardSummary({
                 description="Registrados hoy"
                 value={summary.todayMovements}
                 icon={ArrowRightLeft}
+            />
+
+            <StatCard
+                title="Stock bajo"
+                description="Bajo el mínimo configurado"
+                value={summary.lowStockProducts}
+                icon={AlertTriangle}
+                className="border-amber-300"
+            />
+
+            <StatCard
+                title="Sin stock"
+                description="Existencia en cero"
+                value={summary.outOfStockProducts}
+                icon={PackageX}
+                className="border-red-300"
             />
 
         </div>

@@ -1,13 +1,10 @@
 import type { PropsWithChildren } from "react";
 
 export function DashboardLayout({
-
     children
-
 }: PropsWithChildren) {
 
     return (
-
         <div
             style={{
                 display: "grid",
@@ -15,7 +12,6 @@ export function DashboardLayout({
                 minHeight: "100vh"
             }}
         >
-
             <aside
                 style={{
                     background: "#0170B8",
@@ -23,36 +19,24 @@ export function DashboardLayout({
                     padding: "24px"
                 }}
             >
-
                 <h2>ORDEPLUS</h2>
-
                 <hr />
-
                 <p>Dashboard</p>
-
                 <p>Productos</p>
-
                 <p>Clientes</p>
-
                 <p>Inventario</p>
-
                 <p>Compras</p>
-
                 <p>Ventas</p>
-
             </aside>
 
             <div>
-
                 <header
                     style={{
                         padding: "20px",
                         borderBottom: "1px solid #E5E7EB"
                     }}
                 >
-
                     ERP ORDEPLUS
-
                 </header>
 
                 <main
@@ -60,15 +44,9 @@ export function DashboardLayout({
                         padding: "24px"
                     }}
                 >
-
                     {children}
-
                 </main>
-
             </div>
-
         </div>
-
     );
-
 }

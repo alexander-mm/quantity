@@ -6,6 +6,7 @@ export * from "./categories";
 export * from "./units-of-measure";
 export * from "./margin-profiles";
 export * from "./inventory-movements";
+export * from "./inventory-adjustments";
 export * from "./stores";
 export * from "./movement-types";
 export * from "./users";
