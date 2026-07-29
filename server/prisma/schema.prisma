@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Role {
@@ -41,6 +42,8 @@ model Store {
   users              User[]
   purchases          Purchase[]
   sales              Sale[]
+  stockTransfersOrigin      StockTransfer[] @relation("TransferOrigin")
+  stockTransfersDestination StockTransfer[] @relation("TransferDestination")
 
   @@index([type])
   @@index([isActive])
@@ -67,6 +70,7 @@ model User {
   store              Store               @relation(fields: [storeId], references: [id])
   purchases          Purchase[]
   sales              Sale[]
+   stockTransfers StockTransfer[]
 
   @@index([isActive])
 }
@@ -147,6 +151,7 @@ model Product {
   productPrices      ProductPrice[]
   purchaseDetails    PurchaseDetail[]
   saleDetails        SaleDetail[]
+  stockTransferDetails StockTransferDetail[]
 
   @@index([name])
   @@index([categoryId])
@@ -418,6 +423,48 @@ model InventoryStock {
   @@index([storeId])
 }
 
+model StockTransfer {
+  id            BigInt         @id @default(autoincrement())
+  uuid          String         @unique @default(uuid())
+  number        String         @unique
+  originStoreId BigInt
+  destStoreId   BigInt
+  userId        BigInt
+  status        TransferStatus @default(PENDING)
+  dispatchDate  DateTime
+  receivedAt    DateTime?
+  receivedBy    BigInt?
+  observations  String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  createdBy     BigInt?
+  updatedBy     BigInt?
+
+  originStore Store                 @relation("TransferOrigin", fields: [originStoreId], references: [id])
+  destStore   Store                 @relation("TransferDestination", fields: [destStoreId], references: [id])
+  user        User                  @relation(fields: [userId], references: [id])
+  details     StockTransferDetail[]
+
+  @@index([status])
+  @@index([destStoreId])
+  @@index([originStoreId])
+}
+
+model StockTransferDetail {
+  id               BigInt   @id @default(autoincrement())
+  uuid             String   @unique @default(uuid())
+  transferId       BigInt
+  productId        BigInt
+  quantitySent     Decimal  @db.Decimal(12, 2)
+  quantityReceived Decimal? @db.Decimal(12, 2)
+
+  transfer StockTransfer @relation(fields: [transferId], references: [id])
+  product  Product       @relation(fields: [productId], references: [id])
+
+  @@index([transferId])
+  @@index([productId])
+}
+
 model Settings {
   id             BigInt   @id @default(autoincrement())
   uuid           String   @unique @default(uuid())
@@ -452,5 +499,12 @@ enum SyncStatus {
 enum DocumentStatus {
   DRAFT
   CONFIRMED
+  CANCELLED
+}
+
+enum TransferStatus {
+  PENDING
+  RECEIVED
+  WITH_ISSUES
   CANCELLED
 }
