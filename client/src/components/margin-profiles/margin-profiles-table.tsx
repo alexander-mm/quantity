@@ -9,13 +9,14 @@ type Props = {
 };
 
 export function MarginProfilesTable({ profiles, onEdit, onDelete }: Props) {
+
     return (
-        <EntityTable headers={["Nombre", "Porcentaje", "Orden", "Estado", "Acciones"]}>
+        <EntityTable headers={["Nombre", "Porcentaje", "Acciones"]}>
             {profiles.map(profile => (
                 <tr key={profile.id} className="border-b transition hover:bg-muted/40">
                     <td className="px-6 py-4">{profile.name}</td>
                     <td className="px-6 py-4">{Number(profile.percentage)}%</td>
-                    <td className="px-6 py-4">{profile.displayOrder}</td>
+                    {/* <td className="px-6 py-4">{profile.displayOrder}</td>
                     <td className="px-6 py-4">
                         <span
                             className={`rounded-full px-3 py-1 text-xs font-medium ${
@@ -26,7 +27,7 @@ export function MarginProfilesTable({ profiles, onEdit, onDelete }: Props) {
                         >
                             {profile.isActive ? "Activo" : "Inactivo"}
                         </span>
-                    </td>
+                    </td> */}
                     <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                             <Pencil

@@ -5,15 +5,19 @@ import {
     BrandsToolbar,
     BrandsTable,
     BrandsEmptyState,
-    BrandModal
+    BrandModal,
+    DeleteBrandDialog
 } from "@/components";
-import { useBrands } from "@/hooks";
+import { useBrands, useDeleteBrand } from "@/hooks";
+import type { Brand } from "@/types";
 
 export function BrandsPage() {
 
     const { data, isLoading, isError } = useBrands();
+    const deleteMutation = useDeleteBrand();
     const brands = data?.data ?? [];
     const [open, setOpen] = useState(false);
+    const [brandToDelete, setBrandToDelete] = useState<Brand | null>(null);
 
     return (
         <PageContainer>
@@ -33,11 +37,30 @@ export function BrandsPage() {
                 {!isLoading && !isError && (
                     brands.length === 0
                         ? <BrandsEmptyState />
-                        : <BrandsTable brands={brands} />
+                        : (
+                            <BrandsTable
+                                brands={brands}
+                                onDelete={(brand) => setBrandToDelete(brand)}
+                            />
+                        )
                 )}
             </div>
 
             <BrandModal open={open} onOpenChange={setOpen} />
+
+            <DeleteBrandDialog
+                open={!!brandToDelete}
+                brandName={brandToDelete?.name ?? ""}
+                onCancel={() => setBrandToDelete(null)}
+                onConfirm={() => {
+                    if (!brandToDelete) {
+                        return;
+                    }
+                    deleteMutation.mutate(brandToDelete.id, {
+                        onSuccess: () => setBrandToDelete(null)
+                    });
+                }}
+            />
 
         </PageContainer>
     );

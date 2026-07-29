@@ -109,4 +109,42 @@ export class BrandController {
 
     }
 
+    async delete(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+
+        try {
+
+            const { id } = req.params;
+
+            if (!id || Array.isArray(id)) {
+
+                res.status(400).json(
+                    ApiResponse.error(
+                        "Id inválido."
+                    )
+                );
+
+                return;
+
+            }
+
+            await this.service.delete(id);
+
+            res.status(200).json(
+                ApiResponse.success(
+                    "Marca eliminada correctamente."
+                )
+            );
+
+        } catch (error) {
+
+            next(error);
+
+        }
+
+    }
+
 }

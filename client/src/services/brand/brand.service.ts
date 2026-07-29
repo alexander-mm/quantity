@@ -12,3 +12,8 @@ export async function createBrand(payload: CreateBrandRequest): Promise<ApiRespo
     const { data } = await api.post<ApiResponse<Brand>>("/brands", payload);
     return data;
 }
+
+export async function deleteBrand(id: string): Promise<ApiResponse<void>> {
+    const { data } = await api.delete<ApiResponse<void>>(`/brands/${id}`);
+    return data;
+}

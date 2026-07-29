@@ -5,15 +5,19 @@ import {
     CategoriesToolbar,
     CategoriesTable,
     CategoriesEmptyState,
-    CategoryModal
+    CategoryModal,
+    DeleteCategoryDialog
 } from "@/components";
-import { useCategories } from "@/hooks";
+import { useCategories, useDeleteCategory } from "@/hooks";
+import type { Category } from "@/types";
 
 export function CategoriesPage() {
 
     const { data, isLoading, isError } = useCategories();
+    const deleteMutation = useDeleteCategory();
     const categories = data?.data ?? [];
     const [open, setOpen] = useState(false);
+    const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
 
     return (
         <PageContainer>
@@ -33,11 +37,30 @@ export function CategoriesPage() {
                 {!isLoading && !isError && (
                     categories.length === 0
                         ? <CategoriesEmptyState />
-                        : <CategoriesTable categories={categories} />
+                        : (
+                            <CategoriesTable
+                                categories={categories}
+                                onDelete={(category) => setCategoryToDelete(category)}
+                            />
+                        )
                 )}
             </div>
 
             <CategoryModal open={open} onOpenChange={setOpen} />
+
+            <DeleteCategoryDialog
+                open={!!categoryToDelete}
+                categoryName={categoryToDelete?.name ?? ""}
+                onCancel={() => setCategoryToDelete(null)}
+                onConfirm={() => {
+                    if (!categoryToDelete) {
+                        return;
+                    }
+                    deleteMutation.mutate(categoryToDelete.id, {
+                        onSuccess: () => setCategoryToDelete(null)
+                    });
+                }}
+            />
 
         </PageContainer>
     );

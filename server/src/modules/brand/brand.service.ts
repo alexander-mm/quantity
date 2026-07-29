@@ -1,6 +1,6 @@
 import { Brand } from "@prisma/client";
 
-import { ConflictError } from "../../shared/errors/index.js";
+import { ConflictError, NotFoundError } from "../../shared/errors/index.js";
 
 import { BrandRepository } from "./brand.repository.js";
 
@@ -46,6 +46,29 @@ export class BrandService {
         }
 
         return this.repository.create(data);
+
+    }
+
+    async delete(
+        id: string
+    ): Promise<Brand> {
+
+        const brand =
+            await this.repository.findById(
+                BigInt(id)
+            );
+
+        if (!brand) {
+
+            throw new NotFoundError(
+                "Marca no encontrada."
+            );
+
+        }
+
+        return this.repository.delete(
+            BigInt(id)
+        );
 
     }
 

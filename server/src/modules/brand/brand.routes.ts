@@ -33,4 +33,11 @@ router.post(
     controller.create.bind(controller)
 );
 
+router.delete(
+    "/:id",
+    authenticate,
+    authorize(ROLES.ADMIN),
+    controller.delete.bind(controller)
+);
+
 export default router;

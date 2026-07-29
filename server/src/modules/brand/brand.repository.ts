@@ -65,6 +65,20 @@ export class BrandRepository extends BaseRepository {
         });
     }
 
+    async delete(
+        id: bigint
+    ): Promise<Brand> {
+
+        return this.prisma.brand.update({
+            where: {
+                id
+            },
+            data: {
+                isActive: false
+            }
+        });
+    }
+
     withTransaction(
         tx: Prisma.TransactionClient
     ): BrandRepository {

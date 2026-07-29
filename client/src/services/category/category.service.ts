@@ -30,3 +30,8 @@ export async function createCategory(
     );
     return data;
 }
+
+export async function deleteCategory(id: string): Promise<ApiResponse<void>> {
+    const { data } = await api.delete<ApiResponse<void>>(`/categories/${id}`);
+    return data;
+}

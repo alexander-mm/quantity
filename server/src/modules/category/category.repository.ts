@@ -54,6 +54,19 @@ export class CategoryRepository extends BaseRepository {
         });
     }
 
+    async delete(
+        id: bigint
+    ): Promise<Category> {
+        return this.prisma.category.update({
+            where: {
+                id
+            },
+            data: {
+                isActive: false
+            }
+        });
+    }
+
     withTransaction(
         tx: Prisma.TransactionClient
     ): CategoryRepository {

@@ -2,7 +2,7 @@ import { Category } from "@prisma/client";
 
 import { CategoryRepository } from "./category.repository.js";
 
-import { ConflictError } from "../../shared/errors/index.js";
+import { ConflictError, NotFoundError } from "../../shared/errors/index.js";
 
 export class CategoryService {
 
@@ -42,6 +42,25 @@ export class CategoryService {
         }
 
         return this.repository.create(data);
+
+    }
+
+    async delete(
+        id: string
+    ): Promise<Category> {
+
+        const category =
+            await this.repository.findById(BigInt(id));
+
+        if (!category) {
+
+            throw new NotFoundError(
+                "Categoría no encontrada."
+            );
+
+        }
+
+        return this.repository.delete(BigInt(id));
 
     }
 
