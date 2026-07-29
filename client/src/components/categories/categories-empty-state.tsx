@@ -1,0 +1,13 @@
+import { FolderTree } from "lucide-react";
+
+export function CategoriesEmptyState() {
+    return (
+        <div className="rounded-xl border border-dashed p-12 text-center">
+            <FolderTree size={48} className="mx-auto text-muted-foreground" />
+            <h2 className="mt-4 text-xl font-semibold">No existen categorías registradas</h2>
+            <p className="mt-2 text-muted-foreground">
+                Haz clic en "Nueva categoría" para registrar la primera.
+            </p>
+        </div>
+    );
+}

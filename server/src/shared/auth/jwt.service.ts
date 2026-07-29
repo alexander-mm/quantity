@@ -10,6 +10,10 @@ export interface JwtPayload {
 
     roleId: string;
 
+    roleName: string;
+
+    storeId: string;
+
 }
 
 export class JwtService {

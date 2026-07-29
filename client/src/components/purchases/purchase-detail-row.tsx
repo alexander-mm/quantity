@@ -153,6 +153,22 @@ export function PurchaseDetailRow({
 
             </td>
 
+            <td className="p-2 w-32">
+
+                <Input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    {...register(
+                        `details.${index}.pvp`,
+                        {
+                            valueAsNumber:true
+                        }
+                    )}
+                />
+
+            </td>
+
             <td className="p-2 w-28">
 
                 <Input

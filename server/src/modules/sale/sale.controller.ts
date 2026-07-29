@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import { SaleService } from "./sale.service.js";
 import { ApiResponse } from "../../shared/responses/index.js";
+import { AuthenticatedRequest } from "../../middleware/authenticate.js";
+import { ROLES } from "../../shared/constants/roles.js";
 
 export class SaleController {
 
@@ -52,11 +54,24 @@ export class SaleController {
     }
 
     async create(
-        req: Request,
+        req: AuthenticatedRequest,
         res: Response,
         next: NextFunction
     ): Promise<void> {
         try {
+
+            if (
+                req.user?.roleName === ROLES.STORE &&
+                req.body.storeId !== req.user.storeId
+            ) {
+                res.status(403).json(
+                    ApiResponse.error(
+                        "Solo puedes registrar ventas para tu propia tienda."
+                    )
+                );
+                return;
+            }
+
             const sale = await this.service.create(
                 req.body
             );

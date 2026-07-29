@@ -1,5 +1,6 @@
 import { PrismaClient, Prisma } from "@prisma/client";
 import { BaseRepository } from "../../repositories/base/BaseRepository.js";
+import { safeUserSelect } from "../../shared/constants/safe-user-select.js";
 
 type InventoryAdjustmentWithRelations =
     Prisma.InventoryMovementGetPayload<{
@@ -7,7 +8,7 @@ type InventoryAdjustmentWithRelations =
             movementType: true;
             product: true;
             store: true;
-            user: true;
+            user: { select: typeof safeUserSelect };
         };
     }>;
 
@@ -36,7 +37,7 @@ export class InventoryAdjustmentRepository extends BaseRepository {
                 movementType: true,
                 product: true,
                 store: true,
-                user: true
+                user: { select: safeUserSelect }
             },
 
             orderBy: {

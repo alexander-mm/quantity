@@ -1,20 +1,25 @@
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { EntityTable } from "@/components/ui";
 import type { Product } from "@/types";
+import { useAuth } from "@/hooks";
+import { ROLES } from "@/constants/roles";
 
 type Props = {
     products: Product[];
+    onView: (product: Product) => void;
     onEdit: (product: Product) => void;
     onDelete: (product: Product) => void;
 };
 
 export function ProductsTable({
     products,
+    onView,
     onEdit,
     onDelete
 
 }: Props) {
-
+    const { user } = useAuth();
+    const isAdmin = user?.roleName === ROLES.ADMIN;
     return (
         <EntityTable
             headers={[
@@ -67,17 +72,22 @@ export function ProductsTable({
                                 <Eye
                                     size={18}
                                     className="cursor-pointer text-slate-500 hover:text-primary"
+                                    onClick={() => onView(product)}
                                 />
-                                <Pencil
-                                    size={18}
-                                    className="cursor-pointer text-slate-500 hover:text-primary"
-                                    onClick={() => onEdit(product)}
-                                />
-                                <Trash2
-                                    size={18}
-                                    className="cursor-pointer text-red-500 hover:text-red-700"
-                                    onClick={() => onDelete(product)}
-                                />
+                                {isAdmin && (
+                                    <>
+                                        <Pencil
+                                            size={18}
+                                            className="cursor-pointer text-slate-500 hover:text-primary"
+                                            onClick={() => onEdit(product)}
+                                        />
+                                        <Trash2
+                                            size={18}
+                                            className="cursor-pointer text-red-500 hover:text-red-700"
+                                            onClick={() => onDelete(product)}
+                                        />
+                                    </>
+                                )}
                             </div>
                         </td>
                     </tr>

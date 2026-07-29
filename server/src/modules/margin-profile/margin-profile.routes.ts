@@ -2,6 +2,8 @@ import { Router } from "express";
 
 import { validate } from "../../middleware/validate.js";
 import { authenticate } from "../../middleware/authenticate.js";
+import { authorize } from "../../middleware/authorize.js";
+import { ROLES } from "../../shared/constants/roles.js";
 
 import { MarginProfileController } from "./margin-profile.controller.js";
 
@@ -26,6 +28,7 @@ router.get(
 router.post(
     "/",
     authenticate,
+    authorize(ROLES.ADMIN),
     validate(createMarginProfileSchema),
     controller.create.bind(controller)
 );

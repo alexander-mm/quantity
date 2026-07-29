@@ -1,13 +1,14 @@
 import { Prisma, PrismaClient, Purchase } from "@prisma/client";
 import { BaseRepository } from "../../repositories/base/BaseRepository.js";
 import { CreatePurchaseDto, UpdatePurchaseDto } from "./purchase.dto.js";
+import { safeUserSelect } from "../../shared/constants/safe-user-select.js";
 
 type PurchaseWithRelations =
     Prisma.PurchaseGetPayload<{
         include: {
             supplier: true;
             store: true;
-            user: true;
+            user: { select: typeof safeUserSelect };
             details: {
                 include: {
                     product: true;
@@ -32,7 +33,7 @@ export class PurchaseRepository extends BaseRepository {
             include: {
                 supplier: true,
                 store: true,
-                user: true,
+                user: { select: safeUserSelect },
                 details: {
                     include: {
                         product: true
@@ -50,7 +51,7 @@ export class PurchaseRepository extends BaseRepository {
             include: {
                 supplier: true,
                 store: true,
-                user: true,
+                user: { select: safeUserSelect },
                 details: {
                     include: {
                         product: true
@@ -109,6 +110,7 @@ export class PurchaseRepository extends BaseRepository {
                         productId: BigInt(item.productId),
                         quantity: item.quantity,
                         unitCost: item.unitCost,
+                        pvp: item.pvp,
                         discount: item.discount ?? 0,
                         tax: item.tax ?? 0,
                         lineTotal:
@@ -121,7 +123,7 @@ export class PurchaseRepository extends BaseRepository {
             include: {
                 supplier: true,
                 store: true,
-                user: true,
+                user: { select: safeUserSelect },
                 details: {
                     include: {
                         product: true

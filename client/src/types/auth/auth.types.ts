@@ -18,6 +18,8 @@ export interface AuthUser {
 
     roleId: string;
 
+    roleName: string;
+
     storeId: string;
 
 }

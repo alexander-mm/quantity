@@ -84,13 +84,44 @@ export class InventoryStockRepository extends BaseRepository {
         });
     }
 
-    async findLowStock(): Promise<InventoryStock[]> {
+    async findAllForStore(
+        storeId: bigint
+    ): Promise<InventoryStock[]> {
+        return this.prisma.inventoryStock.findMany({
+            include: {
+                product: true,
+                store: true
+            },
+            where: {
+                OR: [
+                    { storeId },
+                    { store: { type: "MAIN_WAREHOUSE" } }
+                ]
+            },
+            orderBy: [
+                { storeId: "asc" },
+                { productId: "asc" }
+            ]
+        });
+    }
+
+    async findLowStock(
+        storeId?: bigint
+    ): Promise<InventoryStock[]> {
 
         const stock = await this.prisma.inventoryStock.findMany({
             include: {
                 product: true,
                 store: true
-            }
+            },
+            where: storeId
+                ? {
+                    OR: [
+                        { storeId },
+                        { store: { type: "MAIN_WAREHOUSE" } }
+                    ]
+                }
+                : undefined
         });
 
         return stock.filter(

@@ -1,11 +1,14 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema, type LoginSchema} from "./login.schema";
+import { loginSchema, type LoginSchema } from "./login.schema";
 import { useState } from "react";
 import { authService } from "@/services";
 import { useAuth } from "@/hooks";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
 
 export function LoginForm() {
     const [loading, setLoading] = useState(false);
@@ -17,7 +20,7 @@ export function LoginForm() {
         formState: {
             errors
         }
-        
+
     } = useForm<LoginSchema>({
         resolver: zodResolver(loginSchema),
         defaultValues: {
@@ -28,71 +31,72 @@ export function LoginForm() {
 
     async function onSubmit(data: LoginSchema) {
 
-    try {
+        try {
 
-        setLoading(true);
+            setLoading(true);
 
-        const response = await authService.login(data);
+            const response = await authService.login(data);
 
-        setAuth(
+            setAuth(
 
-            response.data.token,
+                response.data.token,
 
-            response.data.user
+                response.data.user
 
-        );
+            );
 
-        toast.success(response.message);
-        navigate("/dashboard");
-        console.log(response);
+            toast.success(response.message);
+            navigate("/dashboard");
+            console.log(response);
 
-    } catch {
+        } catch {
 
-        toast.error("Usuario o contraseña incorrectos.");
+            toast.error("Usuario o contraseña incorrectos.");
 
-    } finally {
+        } finally {
 
-        setLoading(false);
+            setLoading(false);
+
+        }
 
     }
 
-}
-
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
-            <div>
-                <label>Usuario</label>
-                <input
+            <div className="flex justify-between">
+                <Label className="mr-2">Usuario:</Label>
+                <Input
                     {...register("username")}
                 />
                 <p>{errors.username?.message}</p>
             </div>
             <br />
-            <div>
-                <label>Contraseña</label>
-                <input
+            <div className="flex justify-between">
+                <Label className="mr-2">Contraseña:</Label>
+                <Input
                     type="password"
                     {...register("password")}
                 />
                 <p>{errors.password?.message}</p>
             </div>
             <br />
-           <button
-    type="submit"
-    disabled={loading}
->
+            <button
+                className="flex justify-between p-2 px-4 text-white bg-blue-500 shadow-lg shadow-blue-500/40 rounded-md"
+                type="submit"
+                disabled={loading}
+            >
 
-    {
+                {
 
-        loading
+                    loading
 
-            ? "Ingresando..."
+                        ? "Ingresando"
 
-            : "Ingresar"
+                        : "Ingresar"
 
-    }
+                }
 
-</button>
+            </button>
         </form>
     );
 }

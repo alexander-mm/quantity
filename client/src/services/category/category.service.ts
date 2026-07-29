@@ -15,3 +15,18 @@ export async function getCategories(): Promise<ApiResponse<Category[]>> {
     return data;
 
 }
+
+export type CreateCategoryRequest = {
+    name: string;
+    description?: string;
+};
+
+export async function createCategory(
+    payload: CreateCategoryRequest
+): Promise<ApiResponse<Category>> {
+    const { data } = await api.post<ApiResponse<Category>>(
+        "/categories",
+        payload
+    );
+    return data;
+}

@@ -50,7 +50,11 @@ export class AuthService {
 
             username: user.username,
 
-            roleId: user.roleId.toString()
+            roleId: user.roleId.toString(),
+
+            roleName: user.role.name,
+
+            storeId: user.storeId.toString()
 
         });
 
@@ -69,6 +73,8 @@ export class AuthService {
                 lastName: user.lastName,
 
                 roleId: user.roleId.toString(),
+
+                roleName: user.role.name,
 
                 storeId: user.storeId.toString()
 

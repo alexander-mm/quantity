@@ -34,7 +34,9 @@ if (isAuthenticated) {
                 }}
             >
 
-                <h1>ORDEPLUS ERP</h1>
+                <div className="mb-6">
+                    <img src="../../../public/quantity-logo-blue.png"/>
+                </div>
                 <LoginForm />
 
             </div>

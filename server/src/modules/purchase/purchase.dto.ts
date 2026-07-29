@@ -2,6 +2,7 @@ export interface CreatePurchaseDetailDto {
     productId: string;
     quantity: number;
     unitCost: number;
+    pvp: number;
     discount?: number;
     tax?: number;
 }

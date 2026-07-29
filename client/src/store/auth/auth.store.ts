@@ -9,6 +9,7 @@ interface AuthUser {
     firstName: string;
     lastName: string;
     roleId: string;
+    roleName: string;
     storeId: string;
 }
 

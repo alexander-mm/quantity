@@ -1,8 +1,26 @@
 import type { PropsWithChildren } from "react";
+import { NavLink } from "react-router-dom";
+import { useAuth } from "@/hooks";
+import { ROLES } from "@/constants/roles";
+
+function navLinkStyle({ isActive }: { isActive: boolean }) {
+    return {
+        display: "block",
+        padding: "8px 0",
+        color: "#FFF",
+        textDecoration: "none",
+        fontWeight: isActive ? "bold" : "normal",
+        opacity: isActive ? 1 : 0.85
+    };
+}
+
 
 export function DashboardLayout({
     children
 }: PropsWithChildren) {
+
+    const { user } = useAuth();
+    const isAdmin = user?.roleName === ROLES.ADMIN;
 
     return (
         <div
@@ -19,14 +37,34 @@ export function DashboardLayout({
                     padding: "24px"
                 }}
             >
+                <div className="mb-6">
+                    <img src="../../../public/quantity-logo.png"/>
+                </div>
                 <h2>ORDEPLUS</h2>
+
                 <hr />
-                <p>Dashboard</p>
-                <p>Productos</p>
-                <p>Clientes</p>
-                <p>Inventario</p>
-                <p>Compras</p>
-                <p>Ventas</p>
+                <NavLink to="/dashboard" style={navLinkStyle}>Dashboard</NavLink>
+                <NavLink to="/products" style={navLinkStyle}>Productos</NavLink>
+                <p style={{ opacity: 0.5 }}>Clientes</p>
+                <NavLink to="/suppliers" style={navLinkStyle}>Proveedores</NavLink>
+                <NavLink to="/purchases" style={navLinkStyle}>Compras</NavLink>
+                <NavLink to="/sales" style={navLinkStyle}>Ventas</NavLink>
+                <NavLink to="/inventory-stock" style={navLinkStyle}>Inventario</NavLink>
+                <NavLink to="/inventory-movements" style={navLinkStyle}>Movimientos</NavLink>
+                <NavLink to="/inventory-adjustments" style={navLinkStyle}>Ajustes</NavLink>
+                <NavLink to="/kardex" style={navLinkStyle}>Kardex</NavLink>
+
+                {isAdmin && (
+                    <>
+                        <hr style={{ margin: "16px 0", opacity: 0.3 }} />
+                        <NavLink to="/users" style={navLinkStyle}>Usuarios</NavLink>
+                        <NavLink to="/stores" style={navLinkStyle}>Tiendas</NavLink>
+                        <NavLink to="/brands" style={navLinkStyle}>Marcas</NavLink>
+                        <NavLink to="/categories" style={navLinkStyle}>Categorías</NavLink>
+                        <NavLink to="/units-of-measure" style={navLinkStyle}>Unidades de Medida</NavLink>
+                        <NavLink to="/margin-profiles" style={navLinkStyle}>Perfiles de Margen</NavLink>
+                    </>
+                )}
             </aside>
 
             <div>

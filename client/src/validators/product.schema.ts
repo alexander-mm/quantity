@@ -22,6 +22,8 @@ export const productSchema = z.object({
 
     costPrice: z.coerce.number().min(0),
 
+    pvp: z.coerce.number().positive("El PVP debe ser mayor que cero."),
+
     minimumStock: z.coerce.number().min(0)
 
 });

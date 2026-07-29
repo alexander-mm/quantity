@@ -43,6 +43,10 @@ export const purchaseSchema=z.object({
                     .number()
                     .min(0),
 
+                pvp:z
+                    .number()
+                    .positive("El PVP debe ser mayor que cero."),
+
                 discount:z
                     .number()
                     .min(0),

@@ -7,3 +7,4 @@ export * from "./products-error-state";
 export * from "./product-form";
 export * from "./product-form-modal";
 export * from "./delete-product-dialog";
+export * from "./product-view-modal";

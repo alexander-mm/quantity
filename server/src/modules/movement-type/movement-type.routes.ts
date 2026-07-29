@@ -2,6 +2,8 @@ import { Router } from "express";
 import { z } from "zod";
 import { validate } from "../../middleware/validate.js";
 import { authenticate } from "../../middleware/authenticate.js";
+import { authorize } from "../../middleware/authorize.js";
+import { ROLES } from "../../shared/constants/roles.js";
 import { MovementTypeController } from "./movement-type.controller.js";
 import { createMovementTypeSchema } from "./movement-type.validator.js";
 
@@ -24,6 +26,7 @@ router.get(
 router.post(
     "/",
     authenticate,
+    authorize(ROLES.ADMIN),
     validate(createMovementTypeSchema),
     controller.create.bind(controller)
 );
@@ -31,6 +34,7 @@ router.post(
 router.put(
     "/:id",
     authenticate,
+    authorize(ROLES.ADMIN),
     validate(createMovementTypeSchema),
     controller.update.bind(controller)
 );
@@ -38,6 +42,7 @@ router.put(
 router.delete(
     "/:id",
     authenticate,
+    authorize(ROLES.ADMIN),
     controller.delete.bind(controller)
 );
 

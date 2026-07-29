@@ -13,6 +13,10 @@ export interface AuthenticatedRequest extends Request {
 
         roleId: string;
 
+        roleName: string;
+
+        storeId: string;
+
     };
 
 }

@@ -20,6 +20,14 @@ export class InventoryStockService {
         return this.repository.findAll();
     }
 
+    async findAllForStore(
+        storeId: string
+    ): Promise<InventoryStock[]> {
+        return this.repository.findAllForStore(
+            BigInt(storeId)
+        );
+    }
+
     async findById(
         id: string
     ): Promise<InventoryStock> {
@@ -61,8 +69,12 @@ export class InventoryStockService {
         );
     }
 
-    async findLowStock(): Promise<InventoryStock[]> {
-        return this.repository.findLowStock();
+    async findLowStock(
+        storeId?: string
+    ): Promise<InventoryStock[]> {
+        return this.repository.findLowStock(
+            storeId ? BigInt(storeId) : undefined
+        );
     }
 
     // ============================

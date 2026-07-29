@@ -8,6 +8,7 @@ import {
     ProductsEmptyState,
     ProductFormModal,
     DeleteProductDialog,
+    ProductViewModal
 } from "@/components";
 import { useState } from "react";
 import { useProducts, useDeleteProduct } from "@/hooks";
@@ -21,6 +22,7 @@ export function ProductsPage() {
     const [open, setOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+    const [productToView, setProductToView] = useState<Product | null>(null);
 
     if (isLoading) {
         return (
@@ -75,9 +77,11 @@ export function ProductsPage() {
                             <>
                                 <ProductsTable
                                     products={products}
+                                    onView={(product) => setProductToView(product)}
                                     onEdit={(product) => {
                                         setSelectedProduct(product);
                                         setOpen(true);
+
                                     }}
                                     onDelete={(product) => {
 
@@ -124,6 +128,13 @@ export function ProductsPage() {
                             }
                         }
                     );
+                }}
+            />
+            <ProductViewModal
+                product={productToView}
+                open={!!productToView}
+                onOpenChange={(open) => {
+                    if (!open) setProductToView(null);
                 }}
             />
         </PageContainer>

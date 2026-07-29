@@ -30,6 +30,7 @@ export type CreateProductRequest = {
     unitOfMeasure: string;
     marginProfileIds: string[];
     costPrice: number;
+    pvp: number;
     minimumStock: number;
 };
 
@@ -62,6 +63,7 @@ export type UpdateProductRequest = {
     unitOfMeasure: string;
     marginProfileIds: string[];
     costPrice: number;
+    pvp: number;
     minimumStock: number;
 };
 

@@ -64,6 +64,7 @@ export class ProductQueryRepository extends BaseRepository {
                 name: true,
                 description: true,
                 costPrice: true,
+                pvp: true,
                 minimumStock: true,
                 categoryId: true,
 
@@ -107,6 +108,7 @@ export class ProductQueryRepository extends BaseRepository {
                 p => p.marginProfileId
             ),
             costPrice: product.costPrice,
+            pvp: product.pvp,
             minimumStock: product.minimumStock
         };
     }

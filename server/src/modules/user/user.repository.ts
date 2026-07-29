@@ -10,12 +10,17 @@ export class UserRepository extends BaseRepository {
         super(prismaClient);
     }
 
-    async findAll(): Promise<User[]> {
+    async findAll() {
 
         return this.prisma.user.findMany({
 
             where: {
                 isActive: true
+            },
+
+            include: {
+                role: true,
+                store: true
             },
 
             orderBy: {
@@ -28,12 +33,17 @@ export class UserRepository extends BaseRepository {
 
     async findById(
         id: bigint
-    ): Promise<User | null> {
+    ) {
 
         return this.prisma.user.findUnique({
 
             where: {
                 id
+            },
+
+            include: {
+                role: true,
+                store: true
             }
 
         });
@@ -56,12 +66,16 @@ export class UserRepository extends BaseRepository {
 
     async findByUsername(
         username: string
-    ): Promise<User | null> {
+    ) {
 
         return this.prisma.user.findUnique({
 
             where: {
                 username
+            },
+
+            include: {
+                role: true
             }
 
         });

@@ -3,6 +3,8 @@ import { validate } from "../../middleware/validate.js";
 import { ProductController } from "./product.controller.js";
 import { createProductSchema } from "./product.validator.js";
 import { authenticate } from "../../middleware/authenticate.js";
+import { authorize } from "../../middleware/authorize.js";
+import { ROLES } from "../../shared/constants/roles.js";
 
 const router = Router();
 const controller = new ProductController();
@@ -21,6 +23,8 @@ router.get(
 
 router.post(
     "/",
+    authenticate,
+    authorize(ROLES.ADMIN),
     validate(createProductSchema),
     controller.create.bind(controller)
 );
@@ -28,6 +32,7 @@ router.post(
 router.put(
     "/:id",
     authenticate,
+    authorize(ROLES.ADMIN),
     validate(createProductSchema),
     controller.update.bind(controller)
 );
@@ -35,6 +40,7 @@ router.put(
 router.delete(
     "/:id",
     authenticate,
+    authorize(ROLES.ADMIN),
     controller.delete.bind(controller)
 );
 

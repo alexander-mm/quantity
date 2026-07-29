@@ -73,6 +73,7 @@ export class ProductService {
             unitOfMeasure: string;
             marginProfileIds: bigint[];
             costPrice: number;
+            pvp: number;
             minimumStock: number;
         }
     ): Promise<Product> {
@@ -178,6 +179,7 @@ export class ProductService {
                         categoryId: data.categoryId,
                         unitOfMeasureId: unit.id,
                         costPrice: data.costPrice,
+                        pvp: data.pvp,
                         minimumStock: data.minimumStock
                     }
                 );
@@ -203,8 +205,8 @@ export class ProductService {
                     productId: updatedProduct.id,
                     marginProfileId: profile!.id,
                     price: new Prisma.Decimal(
-                        PriceCalculator.calculateSalePrice(
-                            data.costPrice,
+                        PriceCalculator.calculateSalePriceFromDiscount(
+                            data.pvp,
                             Number(profile!.percentage)
                         )
                     ),
@@ -231,6 +233,7 @@ export class ProductService {
         unitOfMeasure: string;
         marginProfileIds: bigint[];
         costPrice: number;
+        pvp: number;
         minimumStock: number;
     }): Promise<Product> {
 
@@ -313,6 +316,7 @@ export class ProductService {
             categoryId: data.categoryId,
             unitOfMeasureId: unit.id,
             costPrice: data.costPrice,
+            pvp: data.pvp,
             minimumStock: data.minimumStock
         });
 
@@ -328,8 +332,8 @@ export class ProductService {
                 productId: product.id,
                 marginProfileId: profile!.id,
                 price: new Prisma.Decimal(
-                    PriceCalculator.calculateSalePrice(
-                        data.costPrice,
+                    PriceCalculator.calculateSalePriceFromDiscount(
+                        data.pvp,
                         Number(profile!.percentage)
                     )
                 ),

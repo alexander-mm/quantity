@@ -2,6 +2,16 @@ import { NextFunction, Request, Response } from "express";
 import { ApiResponse } from "../../shared/responses/index.js";
 import { ProductService } from "./product.service.js";
 import { ProductQueryService } from "./product.query.service.js";
+import { AuthenticatedRequest } from "../../middleware/authenticate.js";
+import { ROLES } from "../../shared/constants/roles.js";
+
+function hideCostPrice<T extends { costPrice?: unknown }>(product: T) {
+
+    const { costPrice, ...rest } = product;
+
+    return rest;
+
+}
 
 export class ProductController {
 
@@ -16,6 +26,7 @@ export class ProductController {
 
         try {
             const products = await this.queryService.findAll();
+
             res.status(200).json(
                 ApiResponse.success(
                     "Productos obtenidos correctamente.",
@@ -28,7 +39,7 @@ export class ProductController {
     }
 
     async findById(
-        req: Request,
+        req: AuthenticatedRequest,
         res: Response,
         next: NextFunction
     ): Promise<void> {
@@ -52,10 +63,15 @@ export class ProductController {
                 return;
             }
 
+            const data =
+                req.user?.roleName === ROLES.STORE
+                    ? hideCostPrice(product)
+                    : product;
+
             res.status(200).json(
                 ApiResponse.success(
                     "Producto obtenido correctamente.",
-                    product
+                    data
                 )
             );
 

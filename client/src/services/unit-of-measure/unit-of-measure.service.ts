@@ -15,3 +15,19 @@ export async function getUnitsOfMeasure(): Promise<ApiResponse<UnitOfMeasure[]>>
     return data;
 
 }
+
+export type CreateUnitOfMeasureRequest = {
+    code: string;
+    name: string;
+    description?: string;
+};
+
+export async function createUnitOfMeasure(
+    payload: CreateUnitOfMeasureRequest
+): Promise<ApiResponse<UnitOfMeasure>> {
+    const { data } = await api.post<ApiResponse<UnitOfMeasure>>(
+        "/units-of-measure",
+        payload
+    );
+    return data;
+}

@@ -19,7 +19,7 @@ export class UserService {
 
     private readonly storeRepository = new StoreRepository();
 
-    async findAll(): Promise<User[]> {
+    async findAll() {
 
         return this.repository.findAll();
 
@@ -27,7 +27,7 @@ export class UserService {
 
     async findById(
         id: string
-    ): Promise<User | null> {
+    ) {
 
         return this.repository.findById(
             BigInt(id)

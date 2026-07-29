@@ -1,18 +1,23 @@
 import { NextFunction, Request, Response } from "express";
 import { ApiResponse } from "../../shared/responses/index.js";
 import { InventoryStockService } from "./inventory-stock.service.js";
+import { AuthenticatedRequest } from "../../middleware/authenticate.js";
+import { ROLES } from "../../shared/constants/roles.js";
 
 export class InventoryStockController {
 
     private readonly service = new InventoryStockService();
 
     async findAll(
-        _req: Request,
+        req: AuthenticatedRequest,
         res: Response,
         next: NextFunction
     ): Promise<void> {
         try {
-            const stock = await this.service.findAll();
+            const stock =
+                req.user?.roleName === ROLES.STORE
+                    ? await this.service.findAllForStore(req.user.storeId)
+                    : await this.service.findAll();
             res.status(200).json(
                 ApiResponse.success(
                     "Inventario obtenido correctamente.",
@@ -106,12 +111,15 @@ export class InventoryStockController {
     }
 
     async findLowStock(
-        _req: Request,
+        req: AuthenticatedRequest,
         res: Response,
         next: NextFunction
     ): Promise<void> {
         try {
-            const stock = await this.service.findLowStock();
+            const stock =
+                req.user?.roleName === ROLES.STORE
+                    ? await this.service.findLowStock(req.user.storeId)
+                    : await this.service.findLowStock();
             res.status(200).json(
                 ApiResponse.success(
                     "Productos con bajo inventario obtenidos correctamente.",

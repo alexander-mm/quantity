@@ -49,6 +49,12 @@ export const createProductSchema = z.object({
         })
         .nonnegative("El costo no puede ser negativo."),
 
+    pvp: z
+        .number({
+            error: "El precio al público (PVP) es obligatorio."
+        })
+        .positive("El PVP debe ser mayor que cero."),
+
     minimumStock: z
         .number({
             error: "El stock mínimo es obligatorio."

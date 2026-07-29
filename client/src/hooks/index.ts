@@ -10,6 +10,7 @@ export * from "./inventory-adjustments";
 export * from "./stores";
 export * from "./movement-types";
 export * from "./users";
+export * from "./roles";
 export * from "./inventory-stock";
 export * from "./kardex";
 export * from "./supplier";

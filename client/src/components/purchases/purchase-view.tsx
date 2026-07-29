@@ -94,6 +94,9 @@ export function PurchaseView({
                             Costo
                         </th>
                         <th className="p-2">
+                            PVP
+                        </th>
+                        <th className="p-2">
                             Desc.
                         </th>
                         <th className="p-2">
@@ -120,6 +123,9 @@ export function PurchaseView({
                                 </td>
                                 <td className="p-2 text-center">
                                     ${Number(detail.unitCost).toFixed(2)}
+                                </td>
+                                <td className="p-2 text-center">
+                                    {detail.pvp ? `$${Number(detail.pvp).toFixed(2)}` : "-"}
                                 </td>
                                 <td className="p-2 text-center">
                                     ${Number(detail.discount).toFixed(2)}

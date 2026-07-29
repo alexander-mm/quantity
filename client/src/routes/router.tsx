@@ -10,6 +10,13 @@ import { SuppliersPage } from "@/pages";
 import { PurchasesPage } from "@/pages/purchases";
 import { SalesPage } from "@/pages/sales";
 import { InventoryAdjustmentsPage } from "@/pages/inventory-adjustments";
+import { UsersPage } from "@/pages/users";
+import { BrandsPage } from "@/pages/brands";
+import { UnitsOfMeasurePage } from "@/pages/units-of-measure";
+import { CategoriesPage } from "@/pages/categories";
+import { MarginProfilesPage } from "@/pages/margin-profiles";
+import { StoresPage } from "@/pages/stores";
+import { ROLES } from "@/constants/roles";
 
 const router = createBrowserRouter([
 
@@ -32,7 +39,13 @@ const router = createBrowserRouter([
 
     {
         path: "/products",
-        element: <ProductsPage />
+        element: (
+            <ProtectedRoute>
+                <DashboardLayout>
+                    <ProductsPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
     },
 
     {
@@ -107,6 +120,72 @@ const router = createBrowserRouter([
             <ProtectedRoute>
                 <DashboardLayout>
                     <SuppliersPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
+
+    {
+        path: "/users",
+        element: (
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+                <DashboardLayout>
+                    <UsersPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
+
+    {
+        path: "/brands",
+        element: (
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+                <DashboardLayout>
+                    <BrandsPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
+
+    {
+        path: "/units-of-measure",
+        element: (
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+                <DashboardLayout>
+                    <UnitsOfMeasurePage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
+
+    {
+        path: "/categories",
+        element: (
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+                <DashboardLayout>
+                    <CategoriesPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
+
+    {
+        path: "/margin-profiles",
+        element: (
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+                <DashboardLayout>
+                    <MarginProfilesPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
+
+    {
+        path: "/stores",
+        element: (
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+                <DashboardLayout>
+                    <StoresPage />
                 </DashboardLayout>
             </ProtectedRoute>
         )

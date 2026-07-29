@@ -2,6 +2,8 @@ import { Router } from "express";
 
 import { validate } from "../../middleware/validate.js";
 import { authenticate } from "../../middleware/authenticate.js";
+import { authorize } from "../../middleware/authorize.js";
+import { ROLES } from "../../shared/constants/roles.js";
 
 import {
     createCategorySchema
@@ -28,6 +30,7 @@ router.get(
 router.post(
     "/",
     authenticate,
+    authorize(ROLES.ADMIN),
     validate(createCategorySchema),
     controller.create.bind(controller)
 );

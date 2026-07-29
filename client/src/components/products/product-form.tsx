@@ -43,6 +43,7 @@ export function ProductForm({
             unitOfMeasure: "",
             marginProfileIds: [],
             costPrice: 0,
+            pvp: 0,
             minimumStock: 0
         }
     });
@@ -78,6 +79,7 @@ export function ProductForm({
             unitOfMeasure: productData.data.unitOfMeasure,
             marginProfileIds: productData.data.marginProfileIds,
             costPrice: Number(productData.data.costPrice),
+            pvp: Number(productData.data.pvp),
             minimumStock: Number(productData.data.minimumStock)
         });
     }, [
@@ -91,6 +93,7 @@ export function ProductForm({
         const payload = {
             ...data,
             costPrice: Number(data.costPrice),
+            pvp: Number(data.pvp),
             minimumStock: Number(data.minimumStock)
         };
 
@@ -288,7 +291,7 @@ export function ProductForm({
                                         }}
                                     />
 
-                                    {profile.name}
+                                    {profile.name} (-{Number(profile.percentage)}%)
 
                                 </label>
 
@@ -317,6 +320,23 @@ export function ProductForm({
                 />
                 <p className="text-sm text-red-500">
                     {errors.costPrice?.message}
+                </p>
+            </div>
+
+            <div>
+                <Label>
+                    PVP (precio al público)
+                </Label>
+                <Input
+                    type="number"
+                    step="0.01"
+                    {...register("pvp")}
+                />
+                <p className="text-sm text-muted-foreground">
+                    Los perfiles de precio se calculan como descuento sobre este valor.
+                </p>
+                <p className="text-sm text-red-500">
+                    {errors.pvp?.message}
                 </p>
             </div>
 

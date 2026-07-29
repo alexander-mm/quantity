@@ -1,13 +1,14 @@
 import { Prisma, PrismaClient, Sale } from "@prisma/client";
 import { BaseRepository } from "../../repositories/base/BaseRepository.js";
 import { CreateSaleDto, UpdateSaleDto } from "./sale.dto.js";
+import { safeUserSelect } from "../../shared/constants/safe-user-select.js";
 
 type SaleWithRelations =
     Prisma.SaleGetPayload<{
         include: {
             client: true;
             store: true;
-            user: true;
+            user: { select: typeof safeUserSelect };
             details: {
                 include: {
                     product: true;
@@ -32,7 +33,7 @@ export class SaleRepository extends BaseRepository {
             include: {
                 client: true,
                 store: true,
-                user: true,
+                user: { select: safeUserSelect },
                 details: {
                     include: {
                         product: true
@@ -50,7 +51,7 @@ export class SaleRepository extends BaseRepository {
             include: {
                 client: true,
                 store: true,
-                user: true,
+                user: { select: safeUserSelect },
                 details: {
                     include: {
                         product: true
@@ -121,7 +122,7 @@ export class SaleRepository extends BaseRepository {
             include: {
                 client: true,
                 store: true,
-                user: true,
+                user: { select: safeUserSelect },
                 details: {
                     include: {
                         product: true

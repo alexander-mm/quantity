@@ -1,13 +1,14 @@
 import { InventoryMovement, PrismaClient, Prisma } from "@prisma/client";
 import { CreateInventoryMovementDto } from "./inventory-movement.dto.js";
 import { BaseRepository } from "../../repositories/base/BaseRepository.js";
+import { safeUserSelect } from "../../shared/constants/safe-user-select.js";
 type InventoryMovementWithRelations =
     Prisma.InventoryMovementGetPayload<{
         include: {
             movementType: true;
             product: true;
             store: true;
-            user: true;
+            user: { select: typeof safeUserSelect };
             client: true;
         };
     }>;
@@ -29,7 +30,7 @@ export class InventoryMovementRepository extends BaseRepository {
                 movementType: true,
                 product: true,
                 store: true,
-                user: true,
+                user: { select: safeUserSelect },
                 client: true
             },
             orderBy: {
@@ -49,7 +50,7 @@ export class InventoryMovementRepository extends BaseRepository {
                 movementType: true,
                 product: true,
                 store: true,
-                user: true,
+                user: { select: safeUserSelect },
                 client: true
             }
         });
@@ -145,7 +146,7 @@ export class InventoryMovementRepository extends BaseRepository {
             },
             include: {
                 movementType: true,
-                user: true,
+                user: { select: safeUserSelect },
                 client: true
             },
             orderBy: {

@@ -43,6 +43,10 @@ export function PurchaseDetailsTable(){
                             </th>
 
                             <th className="p-3 text-left">
+                                PVP
+                            </th>
+
+                            <th className="p-3 text-left">
                                 Desc.
                             </th>
 
@@ -90,6 +94,7 @@ export function PurchaseDetailsTable(){
                     productId:"",
                     quantity:1,
                     unitCost:0,
+                    pvp:0,
                     discount:0,
                     tax:0
 

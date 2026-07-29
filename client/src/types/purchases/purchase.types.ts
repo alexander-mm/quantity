@@ -37,6 +37,7 @@ export interface PurchaseDetail{
 
     quantity:string;
     unitCost:string;
+    pvp:string|null;
 
     discount:string;
     tax:string;
