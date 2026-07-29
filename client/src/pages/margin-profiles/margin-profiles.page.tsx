@@ -5,22 +5,27 @@ import {
     MarginProfilesToolbar,
     MarginProfilesTable,
     MarginProfilesEmptyState,
-    MarginProfileModal
+    MarginProfileModal,
+    DeleteMarginProfileDialog
 } from "@/components";
-import { useMarginProfiles } from "@/hooks";
+import { useMarginProfiles, useDeleteMarginProfile } from "@/hooks";
+import type { MarginProfile } from "@/types";
 
 export function MarginProfilesPage() {
 
     const { data, isLoading, isError } = useMarginProfiles();
+    const deleteMutation = useDeleteMarginProfile();
     const profiles = data?.data ?? [];
     const [open, setOpen] = useState(false);
+    const [selectedProfile, setSelectedProfile] = useState<MarginProfile | null>(null);
+    const [profileToDelete, setProfileToDelete] = useState<MarginProfile | null>(null);
 
     return (
         <PageContainer>
 
             <PageHeader
                 title="Perfiles de margen"
-                description="Administra los perfiles de margen usados para calcular precios de venta."
+                description="Administra los perfiles de descuento usados para calcular precios de venta."
             />
 
             <div className="mt-8">
@@ -33,11 +38,46 @@ export function MarginProfilesPage() {
                 {!isLoading && !isError && (
                     profiles.length === 0
                         ? <MarginProfilesEmptyState />
-                        : <MarginProfilesTable profiles={profiles} />
+                        : (
+                            <MarginProfilesTable
+                                profiles={profiles}
+                                onEdit={(profile) => {
+                                    setSelectedProfile(profile);
+                                    setOpen(true);
+                                }}
+                                onDelete={(profile) => {
+                                    setProfileToDelete(profile);
+                                }}
+                            />
+                        )
                 )}
             </div>
 
-            <MarginProfileModal open={open} onOpenChange={setOpen} />
+            <MarginProfileModal
+                open={open}
+                onOpenChange={(value) => {
+                    setOpen(value);
+                    if (!value) {
+                        setSelectedProfile(null);
+                    }
+                }}
+                mode={selectedProfile ? "edit" : "create"}
+                profileId={selectedProfile?.id}
+            />
+
+            <DeleteMarginProfileDialog
+                open={!!profileToDelete}
+                profileName={profileToDelete?.name ?? ""}
+                onCancel={() => setProfileToDelete(null)}
+                onConfirm={() => {
+                    if (!profileToDelete) {
+                        return;
+                    }
+                    deleteMutation.mutate(profileToDelete.id, {
+                        onSuccess: () => setProfileToDelete(null)
+                    });
+                }}
+            />
 
         </PageContainer>
     );

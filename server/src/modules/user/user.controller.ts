@@ -128,4 +128,91 @@ export class UserController {
 
     }
 
+    async update(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+
+        try {
+
+            const { id } = req.params;
+
+            if (!id || Array.isArray(id)) {
+
+                res.status(400).json(
+                    ApiResponse.error(
+                        "Id inválido."
+                    )
+                );
+
+                return;
+
+            }
+
+            const body = {
+
+                ...req.body,
+
+                roleId: BigInt(req.body.roleId),
+
+                storeId: BigInt(req.body.storeId)
+
+            };
+
+            const user = await this.service.update(id, body);
+
+            res.status(200).json(
+                ApiResponse.success(
+                    "Usuario actualizado correctamente.",
+                    sanitizeUser(user)
+                )
+            );
+
+        } catch (error) {
+
+            next(error);
+
+        }
+
+    }
+
+    async delete(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+
+        try {
+
+            const { id } = req.params;
+
+            if (!id || Array.isArray(id)) {
+
+                res.status(400).json(
+                    ApiResponse.error(
+                        "Id inválido."
+                    )
+                );
+
+                return;
+
+            }
+
+            await this.service.delete(id);
+
+            res.status(200).json(
+                ApiResponse.success(
+                    "Usuario eliminado correctamente."
+                )
+            );
+
+        } catch (error) {
+
+            next(error);
+
+        }
+
+    }
+
 }

@@ -4,10 +4,14 @@ import { Input } from "@/components/ui/input";
 
 type Props={
     onNewSale:()=>void;
+    search:string;
+    onSearchChange:(value:string)=>void;
 };
 
 export function SalesToolbar({
-    onNewSale
+    onNewSale,
+    search,
+    onSearchChange
 }:Props){
 
     return(
@@ -24,6 +28,8 @@ export function SalesToolbar({
                 <Input
                     placeholder="Buscar venta..."
                     className="pl-10"
+                    value={search}
+                    onChange={(e) => onSearchChange(e.target.value)}
                 />
 
             </div>

@@ -1,11 +1,11 @@
 import {
     PageContainer,
     PageHeader,
-    InventoryMovementsToolbar,
     InventoryMovementsTable,
     InventoryMovementsEmptyState,
     InventoryMovementModal
 } from "@/components";
+// import { InventoryMovementsToolbar } from "@/components";
 import { useInventoryMovements } from "@/hooks";
 import { useState } from "react";
 
@@ -67,13 +67,13 @@ export function InventoryMovementsPage() {
                 description="Administra los movimientos del inventario."
             />
 
-            <div className="mt-8">
+            {/* <div className="mt-8">
                 <InventoryMovementsToolbar
                     onNewMovement={() => {
                         setOpen(true);
                     }}
                 />
-            </div>
+            </div> */}
 
             <div className="mt-6">
 

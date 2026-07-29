@@ -7,11 +7,15 @@ type Props = {
 
 export function CategoriesTable({ categories }: Props) {
     return (
-        <EntityTable headers={["Nombre", "Descripción", "Estado"]}>
+        <EntityTable headers={[
+            "Nombre", 
+            // "Descripción",
+            "Estado"
+        ]}>
             {categories.map(category => (
                 <tr key={category.id} className="border-b transition hover:bg-muted/40">
                     <td className="px-6 py-4">{category.name}</td>
-                    <td className="px-6 py-4">{category.description ?? "-"}</td>
+                    {/* <td className="px-6 py-4">{category.description ?? "-"}</td> */}
                     <td className="px-6 py-4">
                         <span
                             className={`rounded-full px-3 py-1 text-xs font-medium ${

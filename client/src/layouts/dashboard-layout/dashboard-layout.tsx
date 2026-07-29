@@ -14,7 +14,6 @@ function navLinkStyle({ isActive }: { isActive: boolean }) {
     };
 }
 
-
 export function DashboardLayout({
     children
 }: PropsWithChildren) {
@@ -38,9 +37,8 @@ export function DashboardLayout({
                 }}
             >
                 <div className="mb-6">
-                    <img src="../../../public/quantity-logo.png"/>
+                    <img src="https://www.masqueunefecto.com/wp-content/uploads/2026/07/quantity-logo.png"/>
                 </div>
-                <h2>ORDEPLUS</h2>
 
                 <hr />
                 <NavLink to="/dashboard" style={navLinkStyle}>Dashboard</NavLink>
@@ -57,6 +55,7 @@ export function DashboardLayout({
                 {isAdmin && (
                     <>
                         <hr style={{ margin: "16px 0", opacity: 0.3 }} />
+                        <NavLink to="/roles" style={navLinkStyle}>Roles</NavLink>
                         <NavLink to="/users" style={navLinkStyle}>Usuarios</NavLink>
                         <NavLink to="/stores" style={navLinkStyle}>Tiendas</NavLink>
                         <NavLink to="/brands" style={navLinkStyle}>Marcas</NavLink>
@@ -74,7 +73,9 @@ export function DashboardLayout({
                         borderBottom: "1px solid #E5E7EB"
                     }}
                 >
-                    ERP ORDEPLUS
+                    <div className="w-60">
+                        <img src="https://www.masqueunefecto.com/wp-content/uploads/2026/07/ordeplus-logo-blue.png"/>
+                    </div>
                 </header>
 
                 <main

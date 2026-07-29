@@ -35,7 +35,7 @@ if (isAuthenticated) {
             >
 
                 <div className="mb-6">
-                    <img src="../../../public/quantity-logo-blue.png"/>
+                    <img src="https://www.masqueunefecto.com/wp-content/uploads/2026/07/quantity-logo-blue.png"/>
                 </div>
                 <LoginForm />
 

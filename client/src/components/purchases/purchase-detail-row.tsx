@@ -10,6 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useProducts } from "@/hooks";
+import { getProductById } from "@/services";
 
 type Props={
     index:number;
@@ -24,7 +25,8 @@ export function PurchaseDetailRow({
     const{
         control,
         register,
-        watch
+        watch,
+        setValue
     }=useFormContext();
 
     const{
@@ -88,9 +90,33 @@ export function PurchaseDetailRow({
                             <Combobox
                                 items={items}
                                 value={selected}
-                                onValueChange={(item)=>
-                                    field.onChange(item?item.value:"")
-                                }
+                                onValueChange={(item)=>{
+
+                                    field.onChange(item?item.value:"");
+
+                                    if(!item){
+                                        return;
+                                    }
+
+                                    getProductById(item.value).then(response=>{
+
+                                        const product=response.data;
+
+                                        setValue(
+                                            `details.${index}.unitCost`,
+                                            Number(product.costPrice)
+                                        );
+
+                                        setValue(
+                                            `details.${index}.pvp`,
+                                            Number(product.pvp)
+                                        );
+
+                                    }).catch(error=>{
+                                        console.error(error);
+                                    });
+
+                                }}
                             >
 
                                 <ComboboxInput

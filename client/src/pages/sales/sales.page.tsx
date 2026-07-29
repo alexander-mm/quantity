@@ -1,6 +1,6 @@
-import { PageContainer, PageHeader, SalesToolbar, SalesTable, SaleModal, SaleViewModal } from "@/components";
+import { PageContainer, PageHeader, SalesToolbar, SalesTable, SaleModal, SaleViewModal, getClientLabel } from "@/components";
 import { useSales } from "@/hooks";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { Sale } from "@/types";
 
 export function SalesPage() {
@@ -11,7 +11,25 @@ export function SalesPage() {
         isError
     } = useSales();
 
-    const sales = data?.data ?? [];
+    const [search, setSearch] = useState("");
+
+    const sales = useMemo(() => {
+
+        const list = data?.data ?? [];
+
+        if (!search) {
+            return list;
+        }
+
+        const term = search.toLowerCase();
+
+        return list.filter(sale =>
+            sale.number.toLowerCase().includes(term) ||
+            sale.store.name.toLowerCase().includes(term) ||
+            getClientLabel(sale.client).toLowerCase().includes(term)
+        );
+
+    }, [data, search]);
 
     const [open, setOpen] =
         useState(false);
@@ -78,6 +96,8 @@ export function SalesPage() {
                     onNewSale={() => {
                         setOpen(true);
                     }}
+                    search={search}
+                    onSearchChange={setSearch}
                 />
 
             </div>

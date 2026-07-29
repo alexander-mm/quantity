@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-
 import type { ComponentProps } from "react";
 
 type AppButtonProps = ComponentProps<typeof Button>;

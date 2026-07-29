@@ -1,14 +1,17 @@
+import { Pencil, Trash2 } from "lucide-react";
 import { EntityTable } from "@/components/ui";
 import type { User } from "@/types";
 
 type Props = {
     users: User[];
+    onEdit: (user: User) => void;
+    onDelete: (user: User) => void;
 };
 
-export function UsersTable({ users }: Props) {
+export function UsersTable({ users, onEdit, onDelete }: Props) {
     return (
         <EntityTable
-            headers={["Usuario", "Nombre", "Rol", "Tienda", "Estado"]}
+            headers={["Usuario", "Nombre", "Rol", "Tienda", "Acciones"]}
         >
             {users.map(user => (
                 <tr key={user.id} className="border-b transition hover:bg-muted/40">
@@ -17,15 +20,18 @@ export function UsersTable({ users }: Props) {
                     <td className="px-6 py-4">{user.role.name}</td>
                     <td className="px-6 py-4">{user.store.name}</td>
                     <td className="px-6 py-4">
-                        <span
-                            className={`rounded-full px-3 py-1 text-xs font-medium ${
-                                user.isActive
-                                    ? "bg-green-100 text-green-700"
-                                    : "bg-red-100 text-red-700"
-                            }`}
-                        >
-                            {user.isActive ? "Activo" : "Inactivo"}
-                        </span>
+                        <div className="flex items-center gap-3">
+                            <Pencil
+                                size={18}
+                                className="cursor-pointer text-slate-500 hover:text-primary"
+                                onClick={() => onEdit(user)}
+                            />
+                            <Trash2
+                                size={18}
+                                className="cursor-pointer text-red-500 hover:text-red-700"
+                                onClick={() => onDelete(user)}
+                            />
+                        </div>
                     </td>
                 </tr>
             ))}

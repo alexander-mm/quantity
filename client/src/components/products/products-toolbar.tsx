@@ -1,23 +1,39 @@
 import { Search, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { StoreSelector } from "@/components/selectors/store-selector";
+import type { Store } from "@/types";
 
 type ProductsToolbarProps = {
 
     onNewProduct: () => void;
 
+    search: string;
+    onSearchChange: (value: string) => void;
+
+    stores: Store[];
+    storeId: string;
+    onStoreChange: (value: string) => void;
+
 };
 
 export function ProductsToolbar(
     {
-        onNewProduct
+        onNewProduct,
+        search,
+        onSearchChange,
+        stores,
+        storeId,
+        onStoreChange
     }: ProductsToolbarProps
 ) {
 
     return (
 
-        <>
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+
+            <div className="flex flex-col gap-4 md:flex-1 md:flex-row md:items-end">
+
                 <div className="relative w-full max-w-md">
                     <Search
                         className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
@@ -27,16 +43,29 @@ export function ProductsToolbar(
                     <Input
                         placeholder="Buscar producto..."
                         className="pl-10"
+                        value={search}
+                        onChange={(e) => onSearchChange(e.target.value)}
                     />
                 </div>
 
-                <Button
-                    onClick={onNewProduct}
-                >
-                    <Plus size={18} />
-                    Nuevo producto
-                </Button>
+                <div className="w-full max-w-xs">
+                    <StoreSelector
+                        stores={stores}
+                        value={storeId}
+                        label="Tienda"
+                        placeholder="Ver existencias por tienda"
+                        onChange={(value) => onStoreChange(value ?? "")}
+                    />
+                </div>
+
             </div>
-        </>
+
+            <Button
+                onClick={onNewProduct}
+            >
+                <Plus size={18} />
+                Nuevo producto
+            </Button>
+        </div>
     );
 }

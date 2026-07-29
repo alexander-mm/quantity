@@ -5,15 +5,20 @@ import {
     UsersToolbar,
     UsersTable,
     UsersEmptyState,
-    UserModal
+    UserModal,
+    DeleteUserDialog
 } from "@/components";
-import { useUsers } from "@/hooks";
+import { useUsers, useDeleteUser } from "@/hooks";
+import type { User } from "@/types";
 
 export function UsersPage() {
 
     const { data, isLoading, isError } = useUsers();
+    const deleteMutation = useDeleteUser();
     const users = data?.data ?? [];
     const [open, setOpen] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
     return (
         <PageContainer>
@@ -33,11 +38,46 @@ export function UsersPage() {
                 {!isLoading && !isError && (
                     users.length === 0
                         ? <UsersEmptyState />
-                        : <UsersTable users={users} />
+                        : (
+                            <UsersTable
+                                users={users}
+                                onEdit={(user) => {
+                                    setSelectedUser(user);
+                                    setOpen(true);
+                                }}
+                                onDelete={(user) => {
+                                    setUserToDelete(user);
+                                }}
+                            />
+                        )
                 )}
             </div>
 
-            <UserModal open={open} onOpenChange={setOpen} />
+            <UserModal
+                open={open}
+                onOpenChange={(value) => {
+                    setOpen(value);
+                    if (!value) {
+                        setSelectedUser(null);
+                    }
+                }}
+                mode={selectedUser ? "edit" : "create"}
+                userId={selectedUser?.id}
+            />
+
+            <DeleteUserDialog
+                open={!!userToDelete}
+                userName={userToDelete ? `${userToDelete.firstName} ${userToDelete.lastName}` : ""}
+                onCancel={() => setUserToDelete(null)}
+                onConfirm={() => {
+                    if (!userToDelete) {
+                        return;
+                    }
+                    deleteMutation.mutate(userToDelete.id, {
+                        onSuccess: () => setUserToDelete(null)
+                    });
+                }}
+            />
 
         </PageContainer>
     );

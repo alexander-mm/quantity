@@ -124,4 +124,62 @@ export class UserRepository extends BaseRepository {
 
     }
 
+    async update(
+        id: bigint,
+        data: {
+
+            username: string;
+
+            password?: string;
+
+            firstName: string;
+
+            lastName: string;
+
+            email?: string;
+
+            phone?: string;
+
+            roleId: bigint;
+
+            storeId: bigint;
+
+        }
+    ): Promise<User> {
+
+        return this.prisma.user.update({
+
+            where: {
+                id
+            },
+
+            data,
+
+            include: {
+                role: true,
+                store: true
+            }
+
+        });
+
+    }
+
+    async delete(
+        id: bigint
+    ): Promise<User> {
+
+        return this.prisma.user.update({
+
+            where: {
+                id
+            },
+
+            data: {
+                isActive: false
+            }
+
+        });
+
+    }
+
 }

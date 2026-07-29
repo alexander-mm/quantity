@@ -15,3 +15,5 @@ export const createRoleSchema = z.object({
         .optional()
 
 });
+
+export const updateRoleSchema = createRoleSchema;

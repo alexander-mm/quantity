@@ -13,7 +13,7 @@ type Props = {
     onView: (sale: Sale) => void;
 };
 
-function getClientLabel(client: Sale["client"]) {
+export function getClientLabel(client: Sale["client"]) {
     return client.companyName
         ?? ([client.firstName, client.lastName].filter(Boolean).join(" ")
             || client.document);

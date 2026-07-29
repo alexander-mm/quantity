@@ -119,4 +119,134 @@ export class UserService {
 
     }
 
+    async update(
+        id: string,
+        data: {
+
+            username: string;
+
+            password?: string;
+
+            firstName: string;
+
+            lastName: string;
+
+            email?: string;
+
+            phone?: string;
+
+            roleId: bigint;
+
+            storeId: bigint;
+
+        }
+    ): Promise<User> {
+
+        const user =
+            await this.repository.findById(
+                BigInt(id)
+            );
+
+        if (!user) {
+
+            throw new NotFoundError(
+                "Usuario no encontrado."
+            );
+
+        }
+
+        const existingUsername =
+            await this.repository.findByUsername(data.username);
+
+        if (
+            existingUsername &&
+            existingUsername.id !== user.id
+        ) {
+
+            throw new ConflictError(
+                "Ya existe un usuario con ese nombre."
+            );
+
+        }
+
+        if (data.email) {
+
+            const existingEmail =
+                await this.repository.findByEmail(data.email);
+
+            if (
+                existingEmail &&
+                existingEmail.id !== user.id
+            ) {
+
+                throw new ConflictError(
+                    "Ya existe un usuario con ese correo."
+                );
+
+            }
+
+        }
+
+        const role =
+            await this.roleRepository.findById(data.roleId);
+
+        if (!role) {
+
+            throw new NotFoundError(
+                "El rol no existe."
+            );
+
+        }
+
+        const store =
+            await this.storeRepository.findById(data.storeId);
+
+        if (!store) {
+
+            throw new NotFoundError(
+                "La tienda no existe."
+            );
+
+        }
+
+        const updateData = {
+
+            ...data,
+
+            password: data.password
+                ? await bcrypt.hash(data.password, 10)
+                : undefined
+
+        };
+
+        return this.repository.update(
+            BigInt(id),
+            updateData
+        );
+
+    }
+
+    async delete(
+        id: string
+    ): Promise<User> {
+
+        const user =
+            await this.repository.findById(
+                BigInt(id)
+            );
+
+        if (!user) {
+
+            throw new NotFoundError(
+                "Usuario no encontrado."
+            );
+
+        }
+
+        return this.repository.delete(
+            BigInt(id)
+        );
+
+    }
+
 }

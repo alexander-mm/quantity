@@ -10,6 +10,7 @@ export class ProductQueryRepository extends BaseRepository {
                 id: true,
                 internalCode: true,
                 name: true,
+                pvp: true,
                 minimumStock: true,
                 isActive: true,
                 brand: {
@@ -44,7 +45,8 @@ export class ProductQueryRepository extends BaseRepository {
 
         return products.map(product => ({
             ...product,
-            price: product.productPrices[0]?.price ?? null
+            price: product.productPrices[0]?.price ?? null,
+            pvp: product.pvp
         }));
     }
 

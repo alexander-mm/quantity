@@ -17,6 +17,7 @@ import { CategoriesPage } from "@/pages/categories";
 import { MarginProfilesPage } from "@/pages/margin-profiles";
 import { StoresPage } from "@/pages/stores";
 import { ROLES } from "@/constants/roles";
+import { RolesPage } from "@/pages/roles";
 
 const router = createBrowserRouter([
 
@@ -190,6 +191,17 @@ const router = createBrowserRouter([
             </ProtectedRoute>
         )
     },
+
+    {
+    path: "/roles",
+    element: (
+        <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+            <DashboardLayout>
+                <RolesPage />
+            </DashboardLayout>
+        </ProtectedRoute>
+    )
+},
 ]);
 
 

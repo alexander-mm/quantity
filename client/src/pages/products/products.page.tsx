@@ -10,19 +10,60 @@ import {
     DeleteProductDialog,
     ProductViewModal
 } from "@/components";
-import { useState } from "react";
-import { useProducts, useDeleteProduct } from "@/hooks";
+import { useMemo, useState } from "react";
+import { useProducts, useDeleteProduct, useStores, useInventoryStock } from "@/hooks";
 import type { Product } from "@/types";
 
 export function ProductsPage() {
 
     const { data, isLoading, isError } = useProducts();
     const deleteProductMutation = useDeleteProduct();
-    const products = data?.data ?? [];
     const [open, setOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [productToDelete, setProductToDelete] = useState<Product | null>(null);
     const [productToView, setProductToView] = useState<Product | null>(null);
+    const [search, setSearch] = useState("");
+    const [storeId, setStoreId] = useState("");
+
+    const { data: storesData } = useStores();
+    const stores = storesData?.data ?? [];
+
+    const { data: stockData } = useInventoryStock();
+
+    const stockByProductId = useMemo(() => {
+
+        if (!storeId) {
+            return undefined;
+        }
+
+        const map: Record<string, string> = {};
+
+        (stockData?.data ?? [])
+            .filter(item => item.store.id === storeId)
+            .forEach(item => {
+                map[item.product.id] = item.quantity;
+            });
+
+        return map;
+
+    }, [stockData, storeId]);
+
+    const filteredProducts = useMemo(() => {
+
+        const list = data?.data ?? [];
+
+        if (!search) {
+            return list;
+        }
+
+        const term = search.toLowerCase();
+
+        return list.filter(product =>
+            product.name.toLowerCase().includes(term) ||
+            product.internalCode.toLowerCase().includes(term)
+        );
+
+    }, [data, search]);
 
     if (isLoading) {
         return (
@@ -34,6 +75,11 @@ export function ProductsPage() {
                 <div className="mt-8">
                     <ProductsToolbar
                         onNewProduct={() => setOpen(true)}
+                        search={search}
+                        onSearchChange={setSearch}
+                        stores={stores}
+                        storeId={storeId}
+                        onStoreChange={setStoreId}
                     />
                 </div>
 
@@ -65,18 +111,24 @@ export function ProductsPage() {
             <div className="mt-8">
                 <ProductsToolbar
                     onNewProduct={() => setOpen(true)}
+                    search={search}
+                    onSearchChange={setSearch}
+                    stores={stores}
+                    storeId={storeId}
+                    onStoreChange={setStoreId}
                 />
             </div>
             <div className="mt-6">
                 {
-                    products.length === 0
+                    filteredProducts.length === 0
                         ? (
                             <ProductsEmptyState />
                         )
                         : (
                             <>
                                 <ProductsTable
-                                    products={products}
+                                    products={filteredProducts}
+                                    stockByProductId={stockByProductId}
                                     onView={(product) => setProductToView(product)}
                                     onEdit={(product) => {
                                         setSelectedProduct(product);
@@ -89,7 +141,7 @@ export function ProductsPage() {
                                     }}
                                 />
                                 <p className="mt-4 text-sm text-muted-foreground">
-                                    Mostrando {products.length} productos
+                                    Mostrando {filteredProducts.length} productos
                                 </p>
                             </>
                         )

@@ -9,26 +9,29 @@ type Props = {
     onView: (product: Product) => void;
     onEdit: (product: Product) => void;
     onDelete: (product: Product) => void;
+    stockByProductId?: Record<string, string>;
 };
 
 export function ProductsTable({
     products,
     onView,
     onEdit,
-    onDelete
+    onDelete,
+    stockByProductId
 
 }: Props) {
     const { user } = useAuth();
     const isAdmin = user?.roleName === ROLES.ADMIN;
+    const showStock = !!stockByProductId;
+
     return (
         <EntityTable
             headers={[
                 "Código",
                 "Producto",
                 "Marca",
-                "Categoría",
-                "Precio",
-                "Estado",
+                "PVP",
+                ...(showStock ? ["Existencias"] : []),
                 "Acciones"
             ]}
         >
@@ -48,25 +51,17 @@ export function ProductsTable({
                             {product.brand.name}
                         </td>
                         <td className="px-6 py-4">
-                            {product.category.name}
-                        </td>
-                        <td className="px-6 py-4">
                             {
-                                product.price
-                                    ? `$${Number(product.price).toLocaleString()}`
+                                product.pvp
+                                    ? `$${Number(product.pvp).toLocaleString()}`
                                     : "-"
                             }
                         </td>
-                        <td className="px-6 py-4">
-                            <span
-                                className={`rounded-full px-3 py-1 text-xs font-medium ${product.isActive
-                                    ? "bg-green-100 text-green-700"
-                                    : "bg-red-100 text-red-700"
-                                    }`}
-                            >
-                                {product.isActive ? "Activo" : "Inactivo"}
-                            </span>
-                        </td>
+                        {showStock && (
+                            <td className="px-6 py-4">
+                                {stockByProductId?.[product.id] ?? "0"}
+                            </td>
+                        )}
                         <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
                                 <Eye

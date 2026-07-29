@@ -7,6 +7,7 @@ export function useCreateMarginProfile() {
         mutationFn: createMarginProfile,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["margin-profiles"] });
+            queryClient.invalidateQueries({ queryKey: ["product-prices"] });
         }
     });
 }

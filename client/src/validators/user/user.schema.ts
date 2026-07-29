@@ -12,3 +12,9 @@ export const userSchema = z.object({
 });
 
 export type UserFormData = z.infer<typeof userSchema>;
+
+export const updateUserSchema = userSchema.extend({
+    password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres.").optional().or(z.literal(""))
+});
+
+export type UpdateUserFormData = z.infer<typeof updateUserSchema>;

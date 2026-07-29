@@ -3,6 +3,7 @@ export interface Product {
     internalCode: string;
     name: string;
     price: string | null;
+    pvp: string | null;
     minimumStock: string;
     isActive: boolean;
     brand: {

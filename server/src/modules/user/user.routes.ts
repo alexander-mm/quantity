@@ -7,7 +7,7 @@ import { ROLES } from "../../shared/constants/roles.js";
 
 import { UserController } from "./user.controller.js";
 
-import { createUserSchema } from "./user.validator.js";
+import { createUserSchema, updateUserSchema } from "./user.validator.js";
 
 const router = Router();
 
@@ -33,6 +33,21 @@ router.post(
     authorize(ROLES.ADMIN),
     validate(createUserSchema),
     controller.create.bind(controller)
+);
+
+router.put(
+    "/:id",
+    authenticate,
+    authorize(ROLES.ADMIN),
+    validate(updateUserSchema),
+    controller.update.bind(controller)
+);
+
+router.delete(
+    "/:id",
+    authenticate,
+    authorize(ROLES.ADMIN),
+    controller.delete.bind(controller)
 );
 
 export default router;

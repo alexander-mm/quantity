@@ -4,16 +4,24 @@ import { UserForm } from "./user-form";
 type Props = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    mode?: "create" | "edit";
+    userId?: string;
 };
 
-export function UserModal({ open, onOpenChange }: Props) {
+export function UserModal({ open, onOpenChange, mode = "create", userId }: Props) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-2xl">
                 <DialogHeader>
-                    <DialogTitle>Nuevo usuario</DialogTitle>
+                    <DialogTitle>
+                        {mode === "create" ? "Nuevo usuario" : "Editar usuario"}
+                    </DialogTitle>
                 </DialogHeader>
-                <UserForm onSuccess={() => onOpenChange(false)} />
+                <UserForm
+                    mode={mode}
+                    userId={userId}
+                    onSuccess={() => onOpenChange(false)}
+                />
             </DialogContent>
         </Dialog>
     );

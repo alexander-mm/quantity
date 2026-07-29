@@ -31,3 +31,21 @@ export async function createMarginProfile(
     );
     return data;
 }
+
+export async function getMarginProfileById(id: string): Promise<ApiResponse<MarginProfile>> {
+    const { data } = await api.get<ApiResponse<MarginProfile>>(`/margin-profiles/${id}`);
+    return data;
+}
+
+export async function updateMarginProfile(
+    id: string,
+    payload: CreateMarginProfileRequest
+): Promise<ApiResponse<MarginProfile>> {
+    const { data } = await api.put<ApiResponse<MarginProfile>>(`/margin-profiles/${id}`, payload);
+    return data;
+}
+
+export async function deleteMarginProfile(id: string): Promise<ApiResponse<void>> {
+    const { data } = await api.delete<ApiResponse<void>>(`/margin-profiles/${id}`);
+    return data;
+}

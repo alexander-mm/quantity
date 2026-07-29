@@ -10,3 +10,4 @@ export * from "./unit-of-measure";
 export * from "./category";
 export * from "./margin-profile";
 export * from "./store";
+ export * from "./role";

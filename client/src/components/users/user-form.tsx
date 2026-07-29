@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-hot-toast";
@@ -7,18 +8,20 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { RoleSelector } from "@/components/selectors/role-selector";
 import { StoreSelector } from "@/components/selectors/store-selector";
-import { userSchema } from "@/validators";
+import { userSchema, updateUserSchema } from "@/validators";
 import type { UserFormData } from "@/validators";
-import { useRoles, useStores, useCreateUser } from "@/hooks";
+import { useRoles, useStores, useCreateUser, useUpdateUser, useUser } from "@/hooks";
 
 type Props = {
     onSuccess?: () => void;
+    mode?: "create" | "edit";
+    userId?: string;
 };
 
-export function UserForm({ onSuccess }: Props) {
+export function UserForm({ onSuccess, mode = "create", userId }: Props) {
 
     const { register, control, handleSubmit, reset, formState: { errors } } = useForm({
-        resolver: zodResolver(userSchema),
+        resolver: zodResolver(mode === "edit" ? updateUserSchema : userSchema),
         defaultValues: {
             username: "",
             password: "",
@@ -34,12 +37,65 @@ export function UserForm({ onSuccess }: Props) {
     const { data: rolesData } = useRoles();
     const { data: storesData } = useStores();
     const createMutation = useCreateUser();
+    const updateMutation = useUpdateUser();
+    const { data: userData } = useUser(mode === "edit" ? userId : undefined);
 
     const roles = rolesData?.data ?? [];
     const stores = storesData?.data ?? [];
-    const loading = createMutation.isPending;
+    const loading = createMutation.isPending || updateMutation.isPending;
+
+    useEffect(() => {
+
+        if (mode !== "edit" || !userData?.data) {
+            return;
+        }
+
+        reset({
+            username: userData.data.username,
+            password: "",
+            firstName: userData.data.firstName,
+            lastName: userData.data.lastName,
+            email: userData.data.email ?? "",
+            phone: userData.data.phone ?? "",
+            roleId: userData.data.roleId,
+            storeId: userData.data.storeId
+        });
+
+    }, [mode, userData, reset]);
 
     const onSubmit = (data: UserFormData) => {
+
+        const onError = (error: unknown) => {
+            const message =
+                axios.isAxiosError<{ message?: string }>(error) &&
+                error.response?.data?.message
+                    ? error.response.data.message
+                    : "No se pudo guardar el usuario.";
+            toast.error(message);
+        };
+
+        if (mode === "edit" && userId) {
+            updateMutation.mutate({
+                id: userId,
+                data: {
+                    username: data.username,
+                    password: data.password || undefined,
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    email: data.email || undefined,
+                    phone: data.phone || undefined,
+                    roleId: Number(data.roleId),
+                    storeId: Number(data.storeId)
+                }
+            }, {
+                onSuccess: () => {
+                    toast.success("Usuario actualizado correctamente.");
+                    onSuccess?.();
+                },
+                onError
+            });
+            return;
+        }
 
         createMutation.mutate({
             username: data.username,
@@ -56,14 +112,7 @@ export function UserForm({ onSuccess }: Props) {
                 reset();
                 onSuccess?.();
             },
-            onError: (error) => {
-                const message =
-                    axios.isAxiosError<{ message?: string }>(error) &&
-                    error.response?.data?.message
-                        ? error.response.data.message
-                        : "No se pudo crear el usuario.";
-                toast.error(message);
-            }
+            onError
         });
 
     };
@@ -91,8 +140,8 @@ export function UserForm({ onSuccess }: Props) {
             </div>
 
             <div>
-                <Label>Contraseña</Label>
-                <Input {...register("password")} />
+                <Label>{mode === "edit" ? "Contraseña (opcional)" : "Contraseña"}</Label>
+                <Input type="password" {...register("password")} />
                 <p className="text-sm text-red-500">{errors.password?.message}</p>
             </div>
 

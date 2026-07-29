@@ -1,13 +1,10 @@
 import { Router } from "express";
-
 import { validate } from "../../middleware/validate.js";
 import { authenticate } from "../../middleware/authenticate.js";
 import { authorize } from "../../middleware/authorize.js";
 import { ROLES } from "../../shared/constants/roles.js";
-
 import { RoleController } from "./role.controller.js";
-
-import { createRoleSchema } from "./role.validator.js";
+import { createRoleSchema, updateRoleSchema } from "./role.validator.js";
 
 const router = Router();
 
@@ -34,5 +31,21 @@ router.post(
     validate(createRoleSchema),
     controller.create.bind(controller)
 );
+
+router.put(
+    "/:id",
+    authenticate,
+    authorize(ROLES.ADMIN),
+    validate(updateRoleSchema),
+    controller.update.bind(controller)
+);
+
+router.delete(
+    "/:id",
+    authenticate,
+    authorize(ROLES.ADMIN),
+    controller.delete.bind(controller)
+);
+
 
 export default router;

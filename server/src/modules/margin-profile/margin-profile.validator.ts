@@ -23,3 +23,5 @@ export const createMarginProfileSchema = z.object({
         .min(1, "El orden debe ser mayor que cero.")
 
 });
+
+export const updateMarginProfileSchema = createMarginProfileSchema;

@@ -20,7 +20,10 @@ export class ProductPriceRepository extends BaseRepository {
         return this.prisma.productPrice.findMany({
             where: {
                 productId,
-                isActive: true
+                isActive: true,
+                marginProfile: {
+                    isActive: true
+                }
             },
             orderBy: {
                 marginProfile: {
