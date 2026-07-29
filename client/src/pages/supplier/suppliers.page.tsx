@@ -10,7 +10,7 @@ import {
     DeleteSupplierDialog,
 } from "@/components";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 import {
     useSuppliers,
@@ -26,7 +26,18 @@ export function SuppliersPage() {
     const deleteSupplierMutation =
         useDeleteSupplier();
 
-    const suppliers = data?.data ?? [];
+    const [search, setSearch] = useState("");
+
+    const suppliers = useMemo(() => {
+        const list = data?.data ?? [];
+        if (!search) return list;
+        const term = search.toLowerCase();
+        return list.filter(s =>
+            s.companyName.toLowerCase().includes(term) ||
+            s.code.toLowerCase().includes(term) ||
+            (s.contactName ?? "").toLowerCase().includes(term)
+        );
+    }, [data, search]);
 
     const [open, setOpen] =
         useState(false);
@@ -52,6 +63,8 @@ export function SuppliersPage() {
 
                     <SuppliersToolbar
                         onNewSupplier={() => setOpen(true)}
+                        search={search}
+                        onSearchChange={setSearch}
                     />
 
                 </div>
@@ -104,6 +117,8 @@ export function SuppliersPage() {
 
                 <SuppliersToolbar
                     onNewSupplier={() => setOpen(true)}
+                    search={search}
+                    onSearchChange={setSearch}
                 />
 
             </div>

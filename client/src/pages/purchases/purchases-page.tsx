@@ -1,6 +1,6 @@
 import { PageContainer, PageHeader, PurchasesToolbar, PurchasesTable, PurchaseModal, PurchaseViewModal } from "@/components";
 import { usePurchases } from "@/hooks";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { Purchase } from "@/types";
 
 export function PurchasesPage() {
@@ -11,7 +11,18 @@ export function PurchasesPage() {
         isError
     } = usePurchases();
 
-    const purchases = data?.data ?? [];
+    const [search, setSearch] = useState("");
+
+    const purchases = useMemo(() => {
+        const list = data?.data ?? [];
+        if (!search) return list;
+        const term = search.toLowerCase();
+        return list.filter(p =>
+            p.number.toLowerCase().includes(term) ||
+            p.supplier.companyName.toLowerCase().includes(term) ||
+            p.store.name.toLowerCase().includes(term)
+        );
+    }, [data, search]);
 
     const [open, setOpen] =
         useState(false);
@@ -78,6 +89,8 @@ export function PurchasesPage() {
                     onNewPurchase={() => {
                         setOpen(true);
                     }}
+                    search={search}
+                    onSearchChange={setSearch}
                 />
 
             </div>
