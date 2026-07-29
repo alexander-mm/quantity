@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useEffect, useRef } from "react";
+import { Controller, useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-hot-toast";
 import axios from "axios";
@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { RoleSelector } from "@/components/selectors/role-selector";
 import { StoreSelector } from "@/components/selectors/store-selector";
 import { userSchema, updateUserSchema } from "@/validators";
-import type { UserFormData } from "@/validators";
+import type { UpdateUserFormData } from "@/validators";
 import { useRoles, useStores, useCreateUser, useUpdateUser, useUser } from "@/hooks";
 
 type Props = {
@@ -20,8 +20,14 @@ type Props = {
 
 export function UserForm({ onSuccess, mode = "create", userId }: Props) {
 
-    const { register, control, handleSubmit, reset, formState: { errors } } = useForm({
-        resolver: zodResolver(mode === "edit" ? updateUserSchema : userSchema),
+    const resolver = (
+        mode === "edit"
+            ? zodResolver(updateUserSchema)
+            : zodResolver(userSchema)
+    ) as Resolver<UpdateUserFormData>;
+
+    const { register, control, handleSubmit, reset, formState: { errors } } = useForm<UpdateUserFormData>({
+        resolver,
         defaultValues: {
             username: "",
             password: "",
@@ -44,11 +50,19 @@ export function UserForm({ onSuccess, mode = "create", userId }: Props) {
     const stores = storesData?.data ?? [];
     const loading = createMutation.isPending || updateMutation.isPending;
 
+    const initializedUserId = useRef<string | undefined>(undefined);
+
     useEffect(() => {
 
         if (mode !== "edit" || !userData?.data) {
             return;
         }
+
+        if (initializedUserId.current === userData.data.id) {
+            return;
+        }
+
+        initializedUserId.current = userData.data.id;
 
         reset({
             username: userData.data.username,
@@ -63,7 +77,7 @@ export function UserForm({ onSuccess, mode = "create", userId }: Props) {
 
     }, [mode, userData, reset]);
 
-    const onSubmit = (data: UserFormData) => {
+    const onSubmit = (data: UpdateUserFormData) => {
 
         const onError = (error: unknown) => {
             const message =
@@ -99,7 +113,7 @@ export function UserForm({ onSuccess, mode = "create", userId }: Props) {
 
         createMutation.mutate({
             username: data.username,
-            password: data.password,
+            password: data.password ?? "",
             firstName: data.firstName,
             lastName: data.lastName,
             email: data.email || undefined,
@@ -135,13 +149,13 @@ export function UserForm({ onSuccess, mode = "create", userId }: Props) {
 
             <div>
                 <Label>Usuario</Label>
-                <Input {...register("username")} />
+                <Input autoComplete="username" {...register("username")} />
                 <p className="text-sm text-red-500">{errors.username?.message}</p>
             </div>
 
             <div>
                 <Label>{mode === "edit" ? "Contraseña (opcional)" : "Contraseña"}</Label>
-                <Input type="password" {...register("password")} />
+                <Input type="password" autoComplete="new-password" {...register("password")} />
                 <p className="text-sm text-red-500">{errors.password?.message}</p>
             </div>
 
