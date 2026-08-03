@@ -4,6 +4,7 @@ export interface Product {
     name: string;
     price: string | null;
     pvp: string | null;
+    pvpCop: string | null;
     minimumStock: string;
     isActive: boolean;
     brand: {
@@ -19,4 +20,5 @@ export interface ProductPrice {
     marginProfileName: string;
     marginProfilePercentage: string;
     price: string;
+    priceCop: string | null;
 }

@@ -67,6 +67,7 @@ export class ProductRepository extends BaseRepository {
         unitOfMeasureId: bigint;
         costPrice: number;
         pvp: number;
+        pvpCop?: number;
         minimumStock: number;
     }): Promise<Product> {
         return this.prisma.product.create({
@@ -104,6 +105,7 @@ export class ProductRepository extends BaseRepository {
             unitOfMeasureId: bigint;
             costPrice: number;
             pvp: number;
+            pvpCop?: number;
             minimumStock: number;
         }
     ): Promise<Product> {

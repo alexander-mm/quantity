@@ -18,6 +18,10 @@ import { MarginProfilesPage } from "@/pages/margin-profiles";
 import { StoresPage } from "@/pages/stores";
 import { ROLES } from "@/constants/roles";
 import { RolesPage } from "@/pages/roles";
+import { StockTransfersPage } from "@/pages/stock-transfers";
+import { PendingReceptionsPage } from "@/pages/pending-receptions";
+import { TransferIssuesPage } from "@/pages/transfer-issues";
+import { ClientsPage } from "@/pages/clients";
 
 const router = createBrowserRouter([
 
@@ -44,6 +48,17 @@ const router = createBrowserRouter([
             <ProtectedRoute>
                 <DashboardLayout>
                     <ProductsPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
+
+    {
+        path: "/clients",
+        element: (
+            <ProtectedRoute>
+                <DashboardLayout>
+                    <ClientsPage />
                 </DashboardLayout>
             </ProtectedRoute>
         )
@@ -202,6 +217,39 @@ const router = createBrowserRouter([
         </ProtectedRoute>
     )
 },
+
+{
+    path: "/stock-transfers",
+    element: (
+        <ProtectedRoute>
+            <DashboardLayout>
+                <StockTransfersPage />
+            </DashboardLayout>
+        </ProtectedRoute>
+    )
+},
+
+    {
+        path: "/pending-receptions",
+        element: (
+            <ProtectedRoute>
+                <DashboardLayout>
+                    <PendingReceptionsPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
+
+    {
+        path: "/transfer-issues",
+        element: (
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+                <DashboardLayout>
+                    <TransferIssuesPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
 ]);
 
 

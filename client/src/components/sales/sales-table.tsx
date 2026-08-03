@@ -7,17 +7,13 @@ import { toast } from "react-hot-toast";
 import { useState } from "react";
 import { ConfirmSaleDialog } from "./confirm-sale-dialog";
 import { CancelSaleDialog } from "./cancel-sale-dialog";
+import { getClientLabel } from "@/lib/client-label";
+import { formatCurrency } from "@/lib/format-currency";
 
 type Props = {
     sales: Sale[];
     onView: (sale: Sale) => void;
 };
-
-export function getClientLabel(client: Sale["client"]) {
-    return client.companyName
-        ?? ([client.firstName, client.lastName].filter(Boolean).join(" ")
-            || client.document);
-}
 
 export function SalesTable({
     sales,
@@ -82,10 +78,7 @@ export function SalesTable({
                                 />
                             </td>
                             <td className="px-6 py-4">
-                                $
-                                {Number(
-                                    sale.total
-                                ).toLocaleString()}
+                                {formatCurrency(sale.total, sale.currency)}
                             </td>
                             <td className="px-6 py-4">
                                 <div className="flex items-center gap-3">

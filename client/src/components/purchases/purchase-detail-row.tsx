@@ -8,6 +8,7 @@ import {
     ComboboxEmpty
 } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useProducts } from "@/hooks";
 import { getProductById } from "@/services";
@@ -35,15 +36,13 @@ export function PurchaseDetailRow({
 
     const products=
         productsData?.data??[];
-        
-        const quantity=
+
+    const quantity=
         Number(
             watch(`details.${index}.quantity`)
         )||0;
-        
 
-        
-        const unitCost=
+    const unitCost=
         Number(
             watch(`details.${index}.unitCost`)
         )||0;
@@ -67,9 +66,11 @@ export function PurchaseDetailRow({
 
     return(
 
-        <tr className="border-b">
+        <div className="space-y-3 rounded-lg border p-3">
 
-            <td className="p-2 min-w-72">
+            <div>
+
+                <Label className="mb-1">Producto</Label>
 
                 <Controller
                     control={control}
@@ -145,96 +146,107 @@ export function PurchaseDetailRow({
                     }}
                 />
 
-            </td>
+            </div>
 
-            <td className="p-2 w-28">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
 
-                <Input
-                    type="number"
-                    min={0}
-                    step="1"
-                    {...register(
-                        `details.${index}.quantity`,
-                        {
-                            valueAsNumber:true
-                        }
-                    )}
-                />
+                <div>
 
-            </td>
+                    <Label className="mb-1">Cantidad</Label>
 
-            <td className="p-2 w-32">
+                    <Input
+                        type="number"
+                        min={0}
+                        step="1"
+                        {...register(
+                            `details.${index}.quantity`,
+                            {
+                                valueAsNumber:true
+                            }
+                        )}
+                    />
 
-                <Input
-                    type="number"
-                    min={0}
-                    step="1"
-                    {...register(
-                        `details.${index}.unitCost`,
-                        {
-                            valueAsNumber:true
-                        }
-                    )}
-                />
+                </div>
 
-            </td>
+                <div>
 
-            <td className="p-2 w-32">
+                    <Label className="mb-1">Costo</Label>
 
-                <Input
-                    type="number"
-                    min={0}
-                    step="0.01"
-                    {...register(
-                        `details.${index}.pvp`,
-                        {
-                            valueAsNumber:true
-                        }
-                    )}
-                />
+                    <Input
+                        type="number"
+                        min={0}
+                        step="1"
+                        {...register(
+                            `details.${index}.unitCost`,
+                            {
+                                valueAsNumber:true
+                            }
+                        )}
+                    />
 
-            </td>
+                </div>
 
-            <td className="p-2 w-28">
+                <div>
 
-                <Input
-                    type="number"
-                    min={0}
-                    step="1"
-                    {...register(
-                        `details.${index}.discount`,
-                        {
-                            valueAsNumber:true
-                        }
-                    )}
-                />
+                    <Label className="mb-1">PVP</Label>
 
-            </td>
+                    <Input
+                        type="number"
+                        min={0}
+                        step="0.01"
+                        {...register(
+                            `details.${index}.pvp`,
+                            {
+                                valueAsNumber:true
+                            }
+                        )}
+                    />
 
-            <td className="p-2 w-28">
+                </div>
 
-                <Input
-                    type="number"
-                    min={0}
-                    step="1"
-                    {...register(
-                        `details.${index}.tax`,
-                        {
-                            valueAsNumber:true
-                        }
-                    )}
-                />
+                <div>
 
-            </td>
+                    <Label className="mb-1">Descuento</Label>
 
-            <td className="p-2 w-32 font-medium">
+                    <Input
+                        type="number"
+                        min={0}
+                        step="1"
+                        {...register(
+                            `details.${index}.discount`,
+                            {
+                                valueAsNumber:true
+                            }
+                        )}
+                    />
 
-                $
-                {total.toFixed(2)}
+                </div>
 
-            </td>
+                <div>
 
-            <td className="p-2 w-16 text-center">
+                    <Label className="mb-1">IVA</Label>
+
+                    <Input
+                        type="number"
+                        min={0}
+                        step="1"
+                        {...register(
+                            `details.${index}.tax`,
+                            {
+                                valueAsNumber:true
+                            }
+                        )}
+                    />
+
+                </div>
+
+            </div>
+
+            <div className="flex items-center justify-between border-t pt-3">
+
+                <span className="font-medium">
+                    Total: ${total.toFixed(2)}
+                </span>
 
                 <Button
                     type="button"
@@ -250,9 +262,9 @@ export function PurchaseDetailRow({
 
                 </Button>
 
-            </td>
+            </div>
 
-        </tr>
+        </div>
 
     );
 

@@ -33,6 +33,7 @@ export type CreateSaleRequest={
     clientId:string;
     storeId:string;
     userId:string;
+    currency:"USD"|"COP";
 
     saleDate:Date;
 

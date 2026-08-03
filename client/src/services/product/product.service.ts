@@ -31,6 +31,7 @@ export type CreateProductRequest = {
     marginProfileIds: string[];
     costPrice: number;
     pvp: number;
+    pvpCop?: number;
     minimumStock: number;
 };
 
@@ -64,6 +65,7 @@ export type UpdateProductRequest = {
     marginProfileIds: string[];
     costPrice: number;
     pvp: number;
+    pvpCop?: number;
     minimumStock: number;
 };
 

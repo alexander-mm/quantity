@@ -16,9 +16,11 @@ import {
     ComboboxEmpty
 } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useProducts, useProductPrices } from "@/hooks";
+import { useProducts, useProductPrices, useClients } from "@/hooks";
 import { getProductById } from "@/services";
+import { formatCurrency } from "@/lib/format-currency";
 
 type Props={
     index:number;
@@ -41,8 +43,16 @@ export function SaleDetailRow({
         data:productsData
     }=useProducts();
 
+    const currency=
+        watch("currency");
+
+    const isCop=
+        currency==="COP";
+
     const products=
-        productsData?.data??[];
+        (productsData?.data??[]).filter(
+            product=>!isCop||!!product.pvpCop
+        );
 
     const productId=
         watch(`details.${index}.productId`);
@@ -52,12 +62,48 @@ export function SaleDetailRow({
     }=useProductPrices(productId||undefined);
 
     const prices=
-        pricesData?.data??[];
+        (pricesData?.data??[]).filter(
+            price=>!isCop||!!price.priceCop
+        );
 
     const [
         marginProfileId,
         setMarginProfileId
     ]=useState("");
+
+    const{
+        data:clientsData
+    }=useClients();
+
+    const clientId=
+        watch("clientId");
+
+    const selectedClient=
+        (clientsData?.data??[]).find(
+            client=>client.id===clientId
+        );
+
+    const clientDiscountPercentage=
+        Number(selectedClient?.discountPercentage??0);
+
+    const hasClientDiscount=
+        clientDiscountPercentage>0;
+
+    const applyClientDiscount=(
+        newQuantity:number,
+        newUnitPrice:number
+    )=>{
+
+        if(!hasClientDiscount){
+            return;
+        }
+
+        setValue(
+            `details.${index}.discount`,
+            newQuantity*newUnitPrice*(clientDiscountPercentage/100)
+        );
+
+    };
 
     const quantity=
         Number(
@@ -88,9 +134,11 @@ export function SaleDetailRow({
 
     return(
 
-        <tr className="border-b">
+        <div className="space-y-3 rounded-lg border p-3">
 
-            <td className="p-2 min-w-72">
+            <div>
+
+                <Label className="mb-1">Producto</Label>
 
                 <Controller
                     control={control}
@@ -124,12 +172,21 @@ export function SaleDetailRow({
 
                                         const product=response.data;
 
-                                        if(product.pvp!==undefined&&product.pvp!==null){
+                                        const priceForCurrency=
+                                            isCop
+                                                ?product.pvpCop
+                                                :product.pvp;
+
+                                        if(priceForCurrency!==undefined&&priceForCurrency!==null){
+
+                                            const newUnitPrice=Number(priceForCurrency);
 
                                             setValue(
                                                 `details.${index}.unitPrice`,
-                                                Number(product.pvp)
+                                                newUnitPrice
                                             );
+
+                                            applyClientDiscount(quantity,newUnitPrice);
 
                                         }
 
@@ -166,139 +223,191 @@ export function SaleDetailRow({
                     }}
                 />
 
-            </td>
+            </div>
 
-            <td className="p-2 min-w-52">
+            <div>
 
-                <Select
-                    value={marginProfileId}
-                    onValueChange={(value)=>{
+                {hasClientDiscount ? (
 
-                        if(!value){
-                            return;
-                        }
+                    <p className="text-sm text-muted-foreground">
+                        Descuento de cliente ({clientDiscountPercentage}%)
+                    </p>
 
-                        setMarginProfileId(value);
+                ) : (
 
-                        const selected=
-                            prices.find(
-                                price=>price.marginProfileId===value
-                            );
+                    <>
 
-                        if(selected){
+                        <Label className="mb-1">Perfil</Label>
 
-                            setValue(
-                                `details.${index}.unitPrice`,
-                                Number(selected.price)
-                            );
+                        <Select
+                            value={marginProfileId}
+                            onValueChange={(value)=>{
 
-                        }
+                                if(!value){
+                                    return;
+                                }
 
-                    }}
-                    disabled={!productId||prices.length===0}
-                >
+                                setMarginProfileId(value);
 
-                    <SelectTrigger>
+                                const selected=
+                                    prices.find(
+                                        price=>price.marginProfileId===value
+                                    );
 
-                        <SelectValue
-                            placeholder="Perfil"
-                        />
+                                if(selected){
 
-                    </SelectTrigger>
+                                    const priceForCurrency=
+                                        isCop
+                                            ?selected.priceCop
+                                            :selected.price;
 
-                    <SelectContent>
+                                    setValue(
+                                        `details.${index}.unitPrice`,
+                                        Number(priceForCurrency)
+                                    );
 
-                        {
-                            prices.map(price=>(
+                                }
 
-                                <SelectItem
-                                    key={price.marginProfileId}
-                                    value={price.marginProfileId}
-                                >
-                                    {price.marginProfileName} ({Number(price.marginProfilePercentage)}%) - ${Number(price.price).toFixed(2)}
-                                </SelectItem>
+                            }}
+                            disabled={!productId||prices.length===0}
+                        >
 
-                            ))
-                        }
+                            <SelectTrigger className="w-full">
 
-                    </SelectContent>
+                                <SelectValue
+                                    placeholder="Perfil"
+                                />
 
-                </Select>
+                            </SelectTrigger>
 
-            </td>
+                            <SelectContent>
 
-            <td className="p-2 w-28">
+                                {
+                                    prices.map(price=>{
 
-                <Input
-                    type="number"
-                    min={0}
-                    step="1"
-                    {...register(
-                        `details.${index}.quantity`,
-                        {
-                            valueAsNumber:true
-                        }
-                    )}
-                />
+                                        const displayPrice=
+                                            isCop
+                                                ?price.priceCop
+                                                :price.price;
 
-            </td>
+                                        return(
 
-            <td className="p-2 w-32">
+                                            <SelectItem
+                                                key={price.marginProfileId}
+                                                value={price.marginProfileId}
+                                            >
+                                                {price.marginProfileName} ({Number(price.marginProfilePercentage)}%) - {formatCurrency(displayPrice??0,currency)}
+                                            </SelectItem>
 
-                <Input
-                    type="number"
-                    min={0}
-                    step="1"
-                    {...register(
-                        `details.${index}.unitPrice`,
-                        {
-                            valueAsNumber:true
-                        }
-                    )}
-                />
+                                        );
 
-            </td>
+                                    })
+                                }
 
-            <td className="p-2 w-28">
+                            </SelectContent>
 
-                <Input
-                    type="number"
-                    min={0}
-                    step="1"
-                    {...register(
-                        `details.${index}.discount`,
-                        {
-                            valueAsNumber:true
-                        }
-                    )}
-                />
+                        </Select>
 
-            </td>
+                    </>
 
-            <td className="p-2 w-28">
+                )}
 
-                <Input
-                    type="number"
-                    min={0}
-                    step="1"
-                    {...register(
-                        `details.${index}.tax`,
-                        {
-                            valueAsNumber:true
-                        }
-                    )}
-                />
+            </div>
 
-            </td>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
 
-            <td className="p-2 w-32 font-medium">
+                <div>
 
-                $
-                {total.toFixed(2)}
+                    <Label className="mb-1">Cantidad</Label>
 
-            </td>
+                    <Input
+                        type="number"
+                        min={0}
+                        step="1"
+                        {...register(
+                            `details.${index}.quantity`,
+                            {
+                                valueAsNumber:true,
+                                onChange:(e)=>{
+                                    applyClientDiscount(
+                                        Number(e.target.value)||0,
+                                        unitPrice
+                                    );
+                                }
+                            }
+                        )}
+                    />
 
-            <td className="p-2 w-16 text-center">
+                </div>
+
+                <div>
+
+                    <Label className="mb-1">Precio unit.</Label>
+
+                    <Input
+                        type="number"
+                        min={0}
+                        step="1"
+                        {...register(
+                            `details.${index}.unitPrice`,
+                            {
+                                valueAsNumber:true,
+                                onChange:(e)=>{
+                                    applyClientDiscount(
+                                        quantity,
+                                        Number(e.target.value)||0
+                                    );
+                                }
+                            }
+                        )}
+                    />
+
+                </div>
+
+                <div>
+
+                    <Label className="mb-1">Descuento</Label>
+
+                    <Input
+                        type="number"
+                        min={0}
+                        step="1"
+                        disabled={hasClientDiscount}
+                        {...register(
+                            `details.${index}.discount`,
+                            {
+                                valueAsNumber:true
+                            }
+                        )}
+                    />
+
+                </div>
+
+                <div>
+
+                    <Label className="mb-1">IVA</Label>
+
+                    <Input
+                        type="number"
+                        min={0}
+                        step="1"
+                        {...register(
+                            `details.${index}.tax`,
+                            {
+                                valueAsNumber:true
+                            }
+                        )}
+                    />
+
+                </div>
+
+            </div>
+
+            <div className="flex items-center justify-between border-t pt-3">
+
+                <span className="font-medium">
+                    Total: {formatCurrency(total,currency)}
+                </span>
 
                 <Button
                     type="button"
@@ -314,9 +423,9 @@ export function SaleDetailRow({
 
                 </Button>
 
-            </td>
+            </div>
 
-        </tr>
+        </div>
 
     );
 

@@ -5,6 +5,7 @@ export const createSaleSchema=z.object({
     clientId:z.string().trim().min(1),
     storeId:z.string().trim().min(1),
     userId:z.string().trim().min(1),
+    currency:z.enum(["USD","COP"]).default("USD"),
     saleDate:z.coerce.date(),
     reference:z.string().trim().max(100).optional(),
     observations:z.string().trim().max(500).optional(),

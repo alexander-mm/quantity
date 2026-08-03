@@ -152,7 +152,7 @@ const total =
 
             <form
                 onSubmit={methods.handleSubmit(onSubmit)}
-                className="space-y-6"
+                className="space-y-6 min-w-0"
             >
 
                 <PurchaseHeader />

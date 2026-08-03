@@ -1,19 +1,19 @@
-type Props={
+import { formatCurrency } from "@/lib/format-currency";
 
+type Props={
     subtotal:number;
     discount:number;
     tax:number;
     total:number;
-
+    currency?:"USD"|"COP";
 };
 
 export function SaleTotals({
-
     subtotal,
     discount,
     tax,
-    total
-
+    total,
+    currency="USD"
 }:Props){
 
     return(
@@ -21,67 +21,41 @@ export function SaleTotals({
         <div className="ml-auto w-full max-w-sm rounded-lg border p-4">
 
             <div className="flex justify-between py-1">
-
                 <span>
                     Subtotal
                 </span>
-
                 <strong>
-
-                    $
-                    {subtotal.toFixed(2)}
-
+                    {formatCurrency(subtotal,currency)}
                 </strong>
-
             </div>
 
             <div className="flex justify-between py-1">
-
                 <span>
                     Descuento
                 </span>
-
                 <strong>
-
-                    $
-                    {discount.toFixed(2)}
-
+                    {formatCurrency(discount,currency)}
                 </strong>
-
             </div>
 
             <div className="flex justify-between py-1">
-
                 <span>
                     IVA
                 </span>
-
                 <strong>
-
-                    $
-                    {tax.toFixed(2)}
-
+                    {formatCurrency(tax,currency)}
                 </strong>
-
             </div>
 
             <div className="mt-3 flex justify-between border-t pt-3 text-lg font-semibold">
-
                 <span>
                     Total
                 </span>
 
                 <span>
-
-                    $
-                    {total.toFixed(2)}
-
+                    {formatCurrency(total,currency)}
                 </span>
-
             </div>
-
         </div>
-
     );
-
 }

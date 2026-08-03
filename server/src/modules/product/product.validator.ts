@@ -55,6 +55,11 @@ export const createProductSchema = z.object({
         })
         .positive("El PVP debe ser mayor que cero."),
 
+    pvpCop: z
+        .number()
+        .positive("El PVP en COP debe ser mayor que cero.")
+        .optional(),
+
     minimumStock: z
         .number({
             error: "El stock mínimo es obligatorio."

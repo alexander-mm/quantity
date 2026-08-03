@@ -74,6 +74,7 @@ export class ProductService {
             marginProfileIds: bigint[];
             costPrice: number;
             pvp: number;
+            pvpCop?: number;
             minimumStock: number;
         }
     ): Promise<Product> {
@@ -180,6 +181,7 @@ export class ProductService {
                         unitOfMeasureId: unit.id,
                         costPrice: data.costPrice,
                         pvp: data.pvp,
+                        pvpCop: data.pvpCop,
                         minimumStock: data.minimumStock
                     }
                 );
@@ -210,6 +212,14 @@ export class ProductService {
                             Number(profile!.percentage)
                         )
                     ),
+                    priceCop: data.pvpCop
+                        ? new Prisma.Decimal(
+                            PriceCalculator.calculateSalePriceFromDiscount(
+                                data.pvpCop,
+                                Number(profile!.percentage)
+                            )
+                        )
+                        : undefined,
                     isActive: true
                 }));
 
@@ -234,6 +244,7 @@ export class ProductService {
         marginProfileIds: bigint[];
         costPrice: number;
         pvp: number;
+        pvpCop?: number;
         minimumStock: number;
     }): Promise<Product> {
 
@@ -317,6 +328,7 @@ export class ProductService {
             unitOfMeasureId: unit.id,
             costPrice: data.costPrice,
             pvp: data.pvp,
+            pvpCop: data.pvpCop,
             minimumStock: data.minimumStock
         });
 
@@ -337,6 +349,14 @@ export class ProductService {
                         Number(profile!.percentage)
                     )
                 ),
+                priceCop: data.pvpCop
+                    ? new Prisma.Decimal(
+                        PriceCalculator.calculateSalePriceFromDiscount(
+                            data.pvpCop,
+                            Number(profile!.percentage)
+                        )
+                    )
+                    : undefined,
                 isActive: true
             }));
 

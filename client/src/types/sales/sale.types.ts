@@ -5,6 +5,7 @@ export interface Sale{
     id:string;
     number:string;
     status:string;
+    currency:"USD"|"COP";
     saleDate:string;
     reference:string|null;
     observations:string|null;

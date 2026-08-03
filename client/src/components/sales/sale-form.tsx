@@ -29,6 +29,7 @@ export function SaleForm({
                 number: "",
                 clientId: "",
                 storeId: "",
+                currency: "USD",
                 saleDate:
                     new Date()
                         .toISOString()
@@ -43,6 +44,12 @@ const details =
     useWatch({
         control: methods.control,
         name: "details"
+    });
+
+const currency =
+    useWatch({
+        control: methods.control,
+        name: "currency"
     });
 
    const items = details ?? [];
@@ -152,7 +159,7 @@ const total =
 
             <form
                 onSubmit={methods.handleSubmit(onSubmit)}
-                className="space-y-6"
+                className="space-y-6 min-w-0"
             >
 
                 <SaleHeader />
@@ -168,6 +175,8 @@ const total =
                     tax={tax}
 
                     total={total}
+
+                    currency={currency}
 
                 />
 

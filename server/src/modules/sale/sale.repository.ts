@@ -98,6 +98,7 @@ export class SaleRepository extends BaseRepository {
                 clientId: BigInt(data.clientId),
                 storeId: BigInt(data.storeId),
                 userId: BigInt(data.userId),
+                currency: data.currency,
                 saleDate: data.saleDate,
                 reference: data.reference,
                 observations: data.observations,

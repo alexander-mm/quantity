@@ -16,3 +16,5 @@ export * from "./categories";
 export * from "./margin-profiles";
 export * from "./stores";
 export * from "./roles";
+export * from "./stock-transfers";
+export * from "./clients";

@@ -22,67 +22,21 @@ export function SaleDetailsTable(){
 
         <div className="space-y-4">
 
-            <div className="overflow-x-auto rounded-lg border">
+            <div className="space-y-3">
 
-                <table className="w-full">
+                {
+                    fields.map((field,index)=>(
 
-                    <thead className="bg-muted/40">
+                        <SaleDetailRow
+                            key={field.id}
+                            index={index}
+                            onRemove={()=>
+                                remove(index)
+                            }
+                        />
 
-                        <tr>
-
-                            <th className="p-3 text-left">
-                                Producto
-                            </th>
-
-                            <th className="p-3 text-left">
-                                Perfil
-                            </th>
-
-                            <th className="p-3 text-left">
-                                Cantidad
-                            </th>
-
-                            <th className="p-3 text-left">
-                                Precio unit.
-                            </th>
-
-                            <th className="p-3 text-left">
-                                Desc.
-                            </th>
-
-                            <th className="p-3 text-left">
-                                IVA
-                            </th>
-
-                            <th className="p-3 text-left">
-                                Total
-                            </th>
-
-                            <th className="w-16"/>
-
-                        </tr>
-
-                    </thead>
-
-                    <tbody>
-
-                        {
-                            fields.map((field,index)=>(
-
-                                <SaleDetailRow
-                                    key={field.id}
-                                    index={index}
-                                    onRemove={()=>
-                                        remove(index)
-                                    }
-                                />
-
-                            ))
-                        }
-
-                    </tbody>
-
-                </table>
+                    ))
+                }
 
             </div>
 

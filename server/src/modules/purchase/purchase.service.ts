@@ -151,7 +151,7 @@ export class PurchaseService {
 
             const movementType =
                 await this.movementTypeRepository.findByCode(
-                    "ENTRY"
+                    "PURCHASE"
                 );
 
             if (!movementType) {

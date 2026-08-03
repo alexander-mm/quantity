@@ -1,6 +1,7 @@
 import type { Sale } from "@/types";
 import { Button } from "@/components/ui/button";
 import { SaleStatusBadge } from "./sale-status-badge";
+import { formatCurrency } from "@/lib/format-currency";
 
 type Props = {
     sale: Sale;
@@ -55,6 +56,15 @@ export function SaleView({
                     </p>
                     <p>
                         {sale.store.name}
+                    </p>
+                </div>
+
+                <div>
+                    <p className="text-sm text-muted-foreground">
+                        Moneda
+                    </p>
+                    <p>
+                        {sale.currency === "COP" ? "Pesos colombianos (COP)" : "Dólares (USD)"}
                     </p>
                 </div>
 
@@ -125,16 +135,16 @@ export function SaleView({
                                     {detail.quantity}
                                 </td>
                                 <td className="p-2 text-center">
-                                    ${Number(detail.unitPrice).toFixed(2)}
+                                    {formatCurrency(detail.unitPrice, sale.currency)}
                                 </td>
                                 <td className="p-2 text-center">
-                                    ${Number(detail.discount).toFixed(2)}
+                                    {formatCurrency(detail.discount, sale.currency)}
                                 </td>
                                 <td className="p-2 text-center">
-                                    ${Number(detail.tax).toFixed(2)}
+                                    {formatCurrency(detail.tax, sale.currency)}
                                 </td>
                                 <td className="p-2 text-center">
-                                    ${Number(detail.lineTotal).toFixed(2)}
+                                    {formatCurrency(detail.lineTotal, sale.currency)}
                                 </td>
                             </tr>
                         ))
@@ -148,9 +158,7 @@ export function SaleView({
                         Subtotal
                     </span>
                     <strong>
-                        ${Number(
-                            sale.subtotal
-                        ).toFixed(2)}
+                        {formatCurrency(sale.subtotal, sale.currency)}
                     </strong>
                 </div>
 
@@ -159,9 +167,7 @@ export function SaleView({
                         Descuento
                     </span>
                     <strong>
-                        ${Number(
-                            sale.discount
-                        ).toFixed(2)}
+                        {formatCurrency(sale.discount, sale.currency)}
                     </strong>
                 </div>
 
@@ -171,9 +177,7 @@ export function SaleView({
                     </span>
 
                     <strong>
-                        ${Number(
-                            sale.tax
-                        ).toFixed(2)}
+                        {formatCurrency(sale.tax, sale.currency)}
                     </strong>
                 </div>
 
@@ -183,9 +187,7 @@ export function SaleView({
                     </span>
 
                     <span>
-                        ${Number(
-                            sale.total
-                        ).toFixed(2)}
+                        {formatCurrency(sale.total, sale.currency)}
                     </span>
                 </div>
                 <div className="flex justify-end">

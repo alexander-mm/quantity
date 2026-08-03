@@ -16,7 +16,8 @@ export class ProductPriceService {
             marginProfileId: price.marginProfileId,
             marginProfileName: price.marginProfile.name,
             marginProfilePercentage: price.marginProfile.percentage,
-            price: price.price
+            price: price.price,
+            priceCop: price.priceCop
         }));
 
     }

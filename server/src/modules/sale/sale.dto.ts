@@ -11,6 +11,7 @@ export interface CreateSaleDto {
     clientId: string;
     storeId: string;
     userId: string;
+    currency: "USD" | "COP";
     saleDate: Date;
     reference?: string;
     observations?: string;
@@ -22,6 +23,7 @@ export interface UpdateSaleDto {
     clientId: string;
     storeId: string;
     userId: string;
+    currency: "USD" | "COP";
     saleDate: Date;
     reference?: string;
     observations?: string;

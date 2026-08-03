@@ -19,6 +19,8 @@ export function SaleHeader() {
     const {
         register,
         control,
+        getValues,
+        setValue,
         formState: { errors }
     } = useFormContext();
 
@@ -31,10 +33,10 @@ export function SaleHeader() {
     } = useStores();
 
     const clients =
-    clientsData?.data ?? [];
+        clientsData?.data ?? [];
 
     const stores =
-    storesData?.data ?? [];
+        storesData?.data ?? [];
 
     return (
 
@@ -79,7 +81,33 @@ export function SaleHeader() {
                         <ClientSelector
                             clients={clients}
                             value={field.value}
-                            onChange={field.onChange}
+                            onChange={(value) => {
+
+                                field.onChange(value);
+
+                                const selectedClient =
+                                    clients.find(client => client.id === value);
+
+                                const discountPercentage =
+                                    Number(selectedClient?.discountPercentage ?? 0);
+
+                                const details = getValues("details") ?? [];
+
+                                details.forEach((detail: { quantity?: number; unitPrice?: number }, index: number) => {
+
+                                    const quantity = Number(detail.quantity) || 0;
+                                    const unitPrice = Number(detail.unitPrice) || 0;
+
+                                    setValue(
+                                        `details.${index}.discount`,
+                                        discountPercentage > 0
+                                            ? quantity * unitPrice * (discountPercentage / 100)
+                                            : 0
+                                    );
+
+                                });
+
+                            }}
                         />
 
                     )}
@@ -137,6 +165,51 @@ export function SaleHeader() {
 
                 <p className="text-sm text-red-500">
                     {errors.storeId?.message as string}
+                </p>
+
+            </div>
+
+            <div>
+
+                <Label>Moneda</Label>
+
+                <Controller
+                    control={control}
+                    name="currency"
+                    render={({ field }) => (
+
+                        <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                        >
+
+                            <SelectTrigger>
+
+                                <SelectValue
+                                    placeholder="Seleccione"
+                                />
+
+                            </SelectTrigger>
+
+                            <SelectContent>
+
+                                <SelectItem value="USD">
+                                    USD
+                                </SelectItem>
+
+                                <SelectItem value="COP">
+                                    COP
+                                </SelectItem>
+
+                            </SelectContent>
+
+                        </Select>
+
+                    )}
+                />
+
+                <p className="text-sm text-red-500">
+                    {errors.currency?.message as string}
                 </p>
 
             </div>

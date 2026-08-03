@@ -1,6 +1,6 @@
 import { Client, Prisma } from "@prisma/client";
 
-import { ConflictError } from "../../shared/errors/index.js";
+import { ConflictError, NotFoundError } from "../../shared/errors/index.js";
 
 import { ClientRepository } from "./client.repository.js";
 
@@ -42,6 +42,74 @@ export class ClientService {
         }
 
         return this.repository.create(data);
+
+    }
+
+    async update(
+        id: string,
+        data: Prisma.ClientUpdateInput
+    ): Promise<Client> {
+
+        const client =
+            await this.repository.findById(
+                BigInt(id)
+            );
+
+        if (!client) {
+
+            throw new NotFoundError(
+                "Cliente no encontrado."
+            );
+
+        }
+
+        if (typeof data.document === "string") {
+
+            const existing =
+                await this.repository.findByDocument(
+                    data.document
+                );
+
+            if (
+                existing &&
+                existing.id !== client.id
+            ) {
+
+                throw new ConflictError(
+                    "Ya existe un cliente con ese documento."
+                );
+
+            }
+
+        }
+
+        return this.repository.update(
+            BigInt(id),
+            data
+        );
+
+    }
+
+    async delete(
+        id: string
+    ): Promise<Client> {
+
+        const client =
+            await this.repository.findById(
+                BigInt(id)
+            );
+
+        if (!client) {
+
+            throw new NotFoundError(
+                "Cliente no encontrado."
+            );
+
+        }
+
+        return this.repository.delete(
+            BigInt(id)
+        );
 
     }
 

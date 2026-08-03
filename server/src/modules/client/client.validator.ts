@@ -43,6 +43,14 @@ export const createClientSchema = z.object({
         .string()
         .trim()
         .max(255, "La dirección no puede superar los 255 caracteres.")
+        .optional(),
+
+    discountPercentage: z
+        .number()
+        .min(0, "El descuento no puede ser negativo.")
+        .max(100, "El descuento no puede superar el 100%.")
         .optional()
 
 });
+
+export const updateClientSchema = createClientSchema;

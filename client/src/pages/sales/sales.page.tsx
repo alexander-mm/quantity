@@ -1,7 +1,8 @@
-import { PageContainer, PageHeader, SalesToolbar, SalesTable, SaleModal, SaleViewModal, getClientLabel } from "@/components";
+import { PageContainer, PageHeader, SalesToolbar, SalesTable, SaleModal, SaleViewModal } from "@/components";
 import { useSales } from "@/hooks";
 import { useMemo, useState } from "react";
 import type { Sale } from "@/types";
+import { getClientLabel } from "@/lib/client-label";
 
 export function SalesPage() {
 

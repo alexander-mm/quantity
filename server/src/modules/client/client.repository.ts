@@ -66,4 +66,39 @@ export class ClientRepository extends BaseRepository {
 
     }
 
+    async update(
+        id: bigint,
+        data: Prisma.ClientUpdateInput
+    ): Promise<Client> {
+
+        return this.prisma.client.update({
+
+            where: {
+                id
+            },
+
+            data
+
+        });
+
+    }
+
+    async delete(
+        id: bigint
+    ): Promise<Client> {
+
+        return this.prisma.client.update({
+
+            where: {
+                id
+            },
+
+            data: {
+                isActive: false
+            }
+
+        });
+
+    }
+
 }

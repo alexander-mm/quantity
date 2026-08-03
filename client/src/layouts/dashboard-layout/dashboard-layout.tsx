@@ -1,6 +1,8 @@
-import type { PropsWithChildren } from "react";
+import { useState } from "react";
+import type { PropsWithChildren, MouseEvent } from "react";
 import { NavLink } from "react-router-dom";
-import { useAuth } from "@/hooks";
+import { Menu, X } from "lucide-react";
+import { useAuth, useStockTransfers } from "@/hooks";
 import { ROLES } from "@/constants/roles";
 
 function navLinkStyle({ isActive }: { isActive: boolean }) {
@@ -20,50 +22,104 @@ export function DashboardLayout({
 
     const { user } = useAuth();
     const isAdmin = user?.roleName === ROLES.ADMIN;
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    const { data: transfersData } = useStockTransfers({ enabled: isAdmin });
+    const issuesCount = isAdmin
+        ? (transfersData?.data ?? []).filter(t => t.status === "WITH_ISSUES").length
+        : 0;
+
+    const closeMenuOnLinkClick = (e: MouseEvent<HTMLElement>) => {
+        if ((e.target as HTMLElement).closest("a")) {
+            setIsMobileMenuOpen(false);
+        }
+    };
 
     return (
-        <div
-            style={{
-                display: "grid",
-                gridTemplateColumns: "260px 1fr",
-                minHeight: "100vh"
-            }}
-        >
+        <div className="min-h-screen md:grid md:grid-cols-[260px_1fr]">
+
+            {isMobileMenuOpen && (
+                <div
+                    className="fixed inset-0 z-40 bg-black/50 md:hidden"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                />
+            )}
+
             <aside
+                onClick={closeMenuOnLinkClick}
+                className={`fixed inset-y-0 left-0 z-50 w-65 overflow-y-auto overscroll-contain transition-transform duration-200 ease-in-out md:sticky md:top-0 md:h-screen md:translate-x-0 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+                    }`}
                 style={{
                     background: "#0170B8",
-                    color: "#FFF",
-                    padding: "24px"
+                    color: "#FFF"
                 }}
             >
-                <div className="mb-6">
-                    <img src="https://www.masqueunefecto.com/wp-content/uploads/2026/07/quantity-logo.png"/>
+
+                <div
+                    className="sticky top-0 z-10 mb-6"
+                    style={{
+                        background: "#0170B8",
+                        padding: "24px 24px 0 24px"
+                    }}
+                >
+                    <button
+                        type="button"
+                        className="md:hidden absolute right-0 top-1 z-20"
+                        aria-label="Cerrar menú"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                        <X color="#FFF" size={30} />
+                    </button>
+                    <NavLink to="/dashboard" style={navLinkStyle}>
+                        <img className="py-4" src="https://www.masqueunefecto.com/wp-content/uploads/2026/07/quantity-logo.png" />
+                    </NavLink>
+                    <hr className="pb-4 sticky" />
                 </div>
 
-                <hr />
-                <NavLink to="/dashboard" style={navLinkStyle}>Dashboard</NavLink>
-                <NavLink to="/products" style={navLinkStyle}>Productos</NavLink>
-                <p style={{ opacity: 0.5 }}>Clientes</p>
-                <NavLink to="/suppliers" style={navLinkStyle}>Proveedores</NavLink>
-                <NavLink to="/purchases" style={navLinkStyle}>Compras</NavLink>
-                <NavLink to="/sales" style={navLinkStyle}>Ventas</NavLink>
-                <NavLink to="/inventory-stock" style={navLinkStyle}>Inventario</NavLink>
-                <NavLink to="/inventory-movements" style={navLinkStyle}>Movimientos</NavLink>
-                <NavLink to="/inventory-adjustments" style={navLinkStyle}>Ajustes</NavLink>
-                <NavLink to="/kardex" style={navLinkStyle}>Kardex</NavLink>
+                <div style={{ padding: "0 24px 24px 24px" }}>
+                    {isAdmin && (
+                        <>
+                            <NavLink to="/products" style={navLinkStyle}>Productos</NavLink>
+                        </>
+                    )}
+                    <NavLink to="/clients" style={navLinkStyle}>Clientes</NavLink>
+                    {isAdmin && (
+                        <>
+                            <NavLink to="/suppliers" style={navLinkStyle}>Proveedores</NavLink>
+                            <NavLink to="/purchases" style={navLinkStyle}>Compras</NavLink>
+                        </>
+                    )}
+                    <NavLink to="/sales" style={navLinkStyle}>Ventas</NavLink>
+                    <NavLink to="/inventory-stock" style={navLinkStyle}>Inventario</NavLink>
+                    {isAdmin && (
+                        <>
+                            <NavLink to="/inventory-movements" style={navLinkStyle}>Movimientos</NavLink>
+                            <NavLink to="/inventory-adjustments" style={navLinkStyle}>Ajustes</NavLink>
+                        </>
+                    )}
+                    <NavLink to="/kardex" style={navLinkStyle}>Kardex</NavLink>
+                    <NavLink to="/pending-receptions" style={navLinkStyle}>Recepciones pendientes</NavLink>
+                    <NavLink to="/stock-transfers" style={navLinkStyle}>Envíos</NavLink>
 
-                {isAdmin && (
-                    <>
-                        <hr style={{ margin: "16px 0", opacity: 0.3 }} />
-                        <NavLink to="/roles" style={navLinkStyle}>Roles</NavLink>
-                        <NavLink to="/users" style={navLinkStyle}>Usuarios</NavLink>
-                        <NavLink to="/stores" style={navLinkStyle}>Tiendas</NavLink>
-                        <NavLink to="/brands" style={navLinkStyle}>Marcas</NavLink>
-                        <NavLink to="/categories" style={navLinkStyle}>Categorías</NavLink>
-                        <NavLink to="/units-of-measure" style={navLinkStyle}>Unidades de Medida</NavLink>
-                        <NavLink to="/margin-profiles" style={navLinkStyle}>Perfiles de Margen</NavLink>
-                    </>
-                )}
+                    {isAdmin && (
+                        <>
+                            <hr style={{ margin: "16px 0", opacity: 0.3 }} />
+                            <NavLink to="/roles" style={navLinkStyle}>Roles</NavLink>
+                            <NavLink to="/users" style={navLinkStyle}>Usuarios</NavLink>
+                            <NavLink to="/stores" style={navLinkStyle}>Tiendas</NavLink>
+                            <NavLink to="/transfer-issues" style={navLinkStyle}>
+                                Novedades de Transferencias{issuesCount > 0 ? ` (${issuesCount})` : ""}
+                            </NavLink>
+                            <NavLink to="/brands" className="mt-4" style={navLinkStyle} >
+                                Marcas
+                            </NavLink>
+                            <NavLink to="/categories" style={navLinkStyle}>Categorías</NavLink>
+                            <NavLink to="/units-of-measure" style={navLinkStyle}>Unidades de Medida</NavLink>
+                            <NavLink to="/margin-profiles" style={navLinkStyle}>Perfiles de Margen</NavLink>
+
+                        </>
+                    )}
+                </div>
             </aside>
 
             <div>
@@ -72,9 +128,19 @@ export function DashboardLayout({
                         padding: "20px",
                         borderBottom: "1px solid #E5E7EB"
                     }}
+                    className="flex items-center gap-4"
                 >
+                    <button
+                        type="button"
+                        className="md:hidden"
+                        aria-label="Abrir menú"
+                        onClick={() => setIsMobileMenuOpen(true)}
+                    >
+                        <Menu size={24} color="#0170B8" />
+                    </button>
+
                     <div className="w-60">
-                        <img src="https://www.masqueunefecto.com/wp-content/uploads/2026/07/ordeplus-logo-blue.png"/>
+                        <img src="https://www.masqueunefecto.com/wp-content/uploads/2026/07/ordeplus-logo-blue.png" />
                     </div>
                 </header>
 

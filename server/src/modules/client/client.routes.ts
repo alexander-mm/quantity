@@ -4,7 +4,7 @@ import { authenticate } from "../../middleware/authenticate.js";
 import { validate } from "../../middleware/validate.js";
 
 import { ClientController } from "./client.controller.js";
-import { createClientSchema } from "./client.validator.js";
+import { createClientSchema, updateClientSchema } from "./client.validator.js";
 
 const router = Router();
 
@@ -27,6 +27,19 @@ router.post(
     authenticate,
     validate(createClientSchema),
     controller.create.bind(controller)
+);
+
+router.put(
+    "/:id",
+    authenticate,
+    validate(updateClientSchema),
+    controller.update.bind(controller)
+);
+
+router.delete(
+    "/:id",
+    authenticate,
+    controller.delete.bind(controller)
 );
 
 export default router;

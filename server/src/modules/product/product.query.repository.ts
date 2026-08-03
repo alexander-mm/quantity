@@ -11,6 +11,7 @@ export class ProductQueryRepository extends BaseRepository {
                 internalCode: true,
                 name: true,
                 pvp: true,
+                pvpCop: true,
                 minimumStock: true,
                 isActive: true,
                 brand: {
@@ -46,7 +47,8 @@ export class ProductQueryRepository extends BaseRepository {
         return products.map(product => ({
             ...product,
             price: product.productPrices[0]?.price ?? null,
-            pvp: product.pvp
+            pvp: product.pvp,
+            pvpCop: product.pvpCop
         }));
     }
 
@@ -67,6 +69,7 @@ export class ProductQueryRepository extends BaseRepository {
                 description: true,
                 costPrice: true,
                 pvp: true,
+                pvpCop: true,
                 minimumStock: true,
                 categoryId: true,
 
@@ -111,6 +114,7 @@ export class ProductQueryRepository extends BaseRepository {
             ),
             costPrice: product.costPrice,
             pvp: product.pvp,
+            pvpCop: product.pvpCop,
             minimumStock: product.minimumStock
         };
     }

@@ -18,3 +18,4 @@ export * from "./supplier";
 export * from "./purchases";
 export * from "./clients";
 export * from "./sales";
+export * from "./stock-transfer";

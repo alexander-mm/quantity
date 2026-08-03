@@ -14,6 +14,9 @@ export const saleSchema=z.object({
         .string()
         .min(1,"Seleccione una bodega."),
 
+    currency:z
+        .enum(["USD","COP"]),
+
     saleDate:z
         .string()
         .min(1,"Seleccione la fecha."),

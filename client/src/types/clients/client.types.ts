@@ -8,6 +8,7 @@ export interface Client {
     phone: string | null;
     email: string | null;
     address: string | null;
+    discountPercentage: string | null;
     isActive: boolean;
     createdAt: string;
     updatedAt: string;

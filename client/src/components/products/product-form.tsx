@@ -44,6 +44,7 @@ export function ProductForm({
             marginProfileIds: [],
             costPrice: 0,
             pvp: 0,
+            pvpCop: 0,
             minimumStock: 0
         }
     });
@@ -80,6 +81,7 @@ export function ProductForm({
             marginProfileIds: productData.data.marginProfileIds,
             costPrice: Number(productData.data.costPrice),
             pvp: Number(productData.data.pvp),
+            pvpCop: productData.data.pvpCop ? Number(productData.data.pvpCop) : 0,
             minimumStock: Number(productData.data.minimumStock)
         });
     }, [
@@ -94,6 +96,7 @@ export function ProductForm({
             ...data,
             costPrice: Number(data.costPrice),
             pvp: Number(data.pvp),
+            pvpCop: Number(data.pvpCop) || undefined,
             minimumStock: Number(data.minimumStock)
         };
 
@@ -136,7 +139,7 @@ export function ProductForm({
     return (
         <form
             onSubmit={handleSubmit(onSubmit)}
-            className="space-y-6"
+            className="space-y-2 h-full"
         >
             <div>
                 <Label>
@@ -337,6 +340,25 @@ export function ProductForm({
                 </p>
                 <p className="text-sm text-red-500">
                     {errors.pvp?.message}
+                </p>
+            </div>
+
+            <div>
+                <Label>
+                    PVP en pesos colombianos (opcional)
+                </Label>
+                <Input
+                    type="number"
+                    step="1"
+                    min="0"
+                    {...register("pvpCop")}
+                />
+                <p className="text-sm text-muted-foreground">
+                    Escribe el valor completo, sin puntos ni comas — ej: <strong>450000</strong> para $450.000.
+                    Déjalo en 0 si este producto no se vende en COP. Los perfiles de precio también se calculan sobre este valor.
+                </p>
+                <p className="text-sm text-red-500">
+                    {errors.pvpCop?.message}
                 </p>
             </div>
 
