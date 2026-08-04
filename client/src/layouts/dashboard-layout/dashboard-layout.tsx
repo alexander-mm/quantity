@@ -126,6 +126,7 @@ export function DashboardLayout({
                             <hr style={{ margin: "16px 0", opacity: 0.3 }} />
                             <NavLink to="/parts" style={navLinkStyle}>Piezas</NavLink>
                             <NavLink to="/part-movements" style={navLinkStyle}>Movimientos de Piezas</NavLink>
+                            <NavLink to="/assembly" style={navLinkStyle}>Ensamblaje</NavLink>
                         </>
                     )}
 

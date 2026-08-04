@@ -1,7 +1,7 @@
 import { Router } from "express";
 
 import { authenticate } from "../../middleware/authenticate.js";
-import { authorize } from "../../middleware/authorize.js";
+import { authorize, blockRoles } from "../../middleware/authorize.js";
 import { validate } from "../../middleware/validate.js";
 import { ROLES } from "../../shared/constants/roles.js";
 
@@ -22,7 +22,7 @@ router.get(
 router.get(
     "/kardex/:productId/:storeId",
     authenticate,
-    authorize(ROLES.ADMIN, ROLES.STORE, ROLES.TECHNICIAN),
+    blockRoles(ROLES.PRODUCTION),
     controller.getKardex.bind(controller)
 );
 

@@ -270,6 +270,20 @@ async function seedMovementTypes() {
       description: "Ajuste de inventario negativo",
       affectsStock: true,
       stockOperation: StockOperation.OUT
+    },
+    {
+      code: "ASSEMBLY_IN",
+      name: "Ensamblaje Entrada",
+      description: "Ingreso de producto terminado por ensamblaje",
+      affectsStock: true,
+      stockOperation: StockOperation.IN
+    },
+    {
+      code: "ASSEMBLY_OUT",
+      name: "Ensamblaje Salida",
+      description: "Salida de componente consumido en ensamblaje",
+      affectsStock: true,
+      stockOperation: StockOperation.OUT
     }
   ];
 

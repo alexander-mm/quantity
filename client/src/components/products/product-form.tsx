@@ -1,13 +1,30 @@
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useFieldArray, useWatch } from "react-hook-form";
 import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+    Combobox,
+    ComboboxInput,
+    ComboboxContent,
+    ComboboxItem,
+    ComboboxEmpty
+} from "@/components/ui/combobox";
 import { productSchema } from "@/validators";
 import type { ProductFormData } from "@/validators";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useCategories, useMarginProfiles, useCreateProduct, useUpdateProduct, useProduct } from "@/hooks";
+import {
+    useCategories,
+    useMarginProfiles,
+    useCreateProduct,
+    useUpdateProduct,
+    useProduct,
+    useProducts,
+    useProductComponents,
+    useSetProductComponents
+} from "@/hooks";
 import { toast } from "react-hot-toast";
 
 type ProductFormProps = {
@@ -28,6 +45,7 @@ export function ProductForm({
         control,
         handleSubmit,
         reset,
+        setValue,
         formState: {
             errors
         }
@@ -45,21 +63,56 @@ export function ProductForm({
             costPrice: 0,
             pvp: 0,
             pvpCop: 0,
-            minimumStock: 0
+            minimumStock: 0,
+            components: []
         }
     });
 
+    const { fields, append, remove } = useFieldArray({ control, name: "components" });
+
     const { data: categoriesData } = useCategories();
     const { data: marginsData } = useMarginProfiles();
+    const { data: productsData } = useProducts();
     const createProductMutation = useCreateProduct();
     const { data: productData } = useProduct(
         mode === "edit"
             ? productId
             : undefined
     );
+    const { data: componentsData } = useProductComponents(
+        mode === "edit"
+            ? productId
+            : undefined
+    );
     const updateProductMutation = useUpdateProduct();
+    const setComponentsMutation = useSetProductComponents();
     const categories = categoriesData?.data ?? [];
     const margins = marginsData?.data ?? [];
+    const products = (productsData?.data ?? []).filter(product => product.id !== productId);
+
+    const watchedComponents = useWatch({ control, name: "components" }) ?? [];
+    const validComponents = watchedComponents.filter(item => item?.componentProductId);
+
+    useEffect(() => {
+
+        if (validComponents.length === 0) {
+            return;
+        }
+
+        const total = validComponents.reduce((sum, item) => {
+
+            const componentProduct = products.find(product => product.id === item.componentProductId);
+            const unitCost = componentProduct ? Number(componentProduct.costPrice ?? 0) : 0;
+
+            return sum + unitCost * (Number(item.quantity) || 0);
+
+        }, 0);
+
+        setValue("costPrice", total);
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [JSON.stringify(validComponents), products]);
+
     useEffect(() => {
 
         if (
@@ -82,27 +135,57 @@ export function ProductForm({
             costPrice: Number(productData.data.costPrice),
             pvp: Number(productData.data.pvp),
             pvpCop: productData.data.pvpCop ? Number(productData.data.pvpCop) : 0,
-            minimumStock: Number(productData.data.minimumStock)
+            minimumStock: Number(productData.data.minimumStock),
+            components: (componentsData?.data ?? []).map(item => ({
+                componentProductId: item.componentProductId,
+                quantity: Number(item.quantity)
+            }))
         });
     }, [
         mode,
         productData,
+        componentsData,
         reset
     ]);
 
+    async function saveComponents(targetProductId: string, components: ProductFormData["components"]) {
+
+        await setComponentsMutation.mutateAsync({
+            productId: targetProductId,
+            data: {
+                components: (components ?? [])
+                    .filter(item => item.componentProductId)
+                    .map(item => ({
+                        componentProductId: item.componentProductId,
+                        quantity: Number(item.quantity)
+                    }))
+            }
+        });
+
+    }
+
     async function onSubmit(data: ProductFormData) {
 
+        const { components, ...productData } = data;
+
         const payload = {
-            ...data,
-            costPrice: Number(data.costPrice),
-            pvp: Number(data.pvp),
-            pvpCop: Number(data.pvpCop) || undefined,
-            minimumStock: Number(data.minimumStock)
+            ...productData,
+            costPrice: Number(productData.costPrice),
+            pvp: Number(productData.pvp),
+            pvpCop: Number(productData.pvpCop) || undefined,
+            minimumStock: Number(productData.minimumStock)
         };
 
         if (mode === "create") {
             createProductMutation.mutate(payload, {
-                onSuccess: () => {
+                onSuccess: async (response) => {
+
+                    try {
+                        await saveComponents(response.data.id, components);
+                    } catch {
+                        toast.error("El producto se creó, pero no se pudo guardar la receta de componentes.");
+                    }
+
                     toast.success("Producto creado correctamente.");
                     reset();
                     onSuccess?.();
@@ -124,7 +207,14 @@ export function ProductForm({
             id: productId,
             data: payload
         }, {
-            onSuccess: () => {
+            onSuccess: async () => {
+
+                try {
+                    await saveComponents(productId, components);
+                } catch {
+                    toast.error("El producto se actualizó, pero no se pudo guardar la receta de componentes.");
+                }
+
                 toast.success("Producto actualizado correctamente.");
                 reset();
                 onSuccess?.();
@@ -142,7 +232,7 @@ export function ProductForm({
             className="space-y-2 h-full"
         >
             <div>
-                <Label>
+                <Label className="mb-1">
                     Código interno
                 </Label>
                 <Input
@@ -153,7 +243,7 @@ export function ProductForm({
                 </p>
             </div>
             <div>
-                <Label>
+                <Label className="mb-1">
                     Código de barras
                 </Label>
                 <Input
@@ -162,7 +252,7 @@ export function ProductForm({
             </div>
 
             <div>
-                <Label>
+                <Label className="mb-1">
                     Nombre
                 </Label>
                 <Input
@@ -174,7 +264,7 @@ export function ProductForm({
             </div>
 
             <div>
-                <Label>
+                <Label className="mb-1">
                     Descripción
                 </Label>
                 <Input
@@ -183,7 +273,7 @@ export function ProductForm({
             </div>
 
             <div>
-                <Label>
+                <Label className="mb-1">
                     Marca
                 </Label>
 
@@ -198,7 +288,7 @@ export function ProductForm({
             </div>
 
             <div>
-                <Label>
+                <Label className="mb-1">
                     Categoría
                 </Label>
                 <Controller
@@ -232,7 +322,7 @@ export function ProductForm({
             </div>
 
             <div>
-                <Label>
+                <Label className="mb-1">
                     Unidad de medida
                 </Label>
 
@@ -248,7 +338,7 @@ export function ProductForm({
 
             <div>
 
-                <Label>
+                <Label className="mb-1">
                     Perfiles de precio
                 </Label>
 
@@ -258,50 +348,34 @@ export function ProductForm({
                     render={({ field }) => (
 
                         <div className="space-y-2">
-
                             {margins.map(profile => (
-
                                 <label
                                     key={profile.id}
                                     className="flex items-center gap-2"
                                 >
-
                                     <input
                                         type="checkbox"
                                         value={profile.id}
                                         checked={field.value.includes(profile.id)}
                                         onChange={(e) => {
-
                                             if (e.target.checked) {
-
                                                 field.onChange([
                                                     ...field.value,
                                                     profile.id
                                                 ]);
-
                                             } else {
-
                                                 field.onChange(
-
                                                     field.value.filter(
                                                         id => id !== profile.id
                                                     )
-
                                                 );
-
                                             }
-
                                         }}
                                     />
-
                                     {profile.name} (-{Number(profile.percentage)}%)
-
                                 </label>
-
                             ))}
-
                         </div>
-
                     )}
                 />
 
@@ -313,6 +387,90 @@ export function ProductForm({
 
             </div>
 
+
+            <div className="space-y-3 rounded-lg border p-3">
+
+                <div>
+                    <Label className="mb-1">Componentes (opcional)</Label>
+                    <p className="text-xs text-muted-foreground">
+                        Si este producto se arma a partir de otros productos del inventario (ej. un kit o producto
+                        terminado), defínelos aquí. Esto habilita el ensamblaje: al producirlo, se descontará
+                        automáticamente cada componente de la bodega principal.
+                    </p>
+                </div>
+
+                {fields.map((field, index) => (
+
+                    <div key={field.id} className="flex items-end gap-2 rounded-md border p-2">
+
+                        <div className="flex-1">
+                            <Label className="mb-1">Producto componente</Label>
+                            <Controller
+                                control={control}
+                                name={`components.${index}.componentProductId`}
+                                render={({ field: controllerField }) => {
+
+                                    const items = products.map(product => ({
+                                        value: product.id,
+                                        label: `${product.internalCode} - ${product.name}`
+                                    }));
+
+                                    const selected = items.find(item => item.value === controllerField.value) ?? null;
+
+                                    return (
+                                        <Combobox
+                                            items={items}
+                                            value={selected}
+                                            onValueChange={(item) => controllerField.onChange(item ? item.value : "")}
+                                        >
+                                            <ComboboxInput placeholder="Buscar producto..." />
+                                            <ComboboxContent>
+                                                {(item) => (
+                                                    <ComboboxItem key={item.value} value={item}>
+                                                        {item.label}
+                                                    </ComboboxItem>
+                                                )}
+                                            </ComboboxContent>
+                                            <ComboboxEmpty>
+                                                No se encontraron productos.
+                                            </ComboboxEmpty>
+                                        </Combobox>
+                                    );
+
+                                }}
+                            />
+                        </div>
+
+                        <div className="w-28">
+                            <Label className="mb-1">Cantidad</Label>
+                            <Input
+                                type="number"
+                                min={0}
+                                step="1"
+                                {...register(`components.${index}.quantity`, { valueAsNumber: true })}
+                            />
+                        </div>
+
+                        <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                            <Trash2 size={18} className="text-red-500" />
+                        </Button>
+
+                    </div>
+
+                ))}
+
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => append({ componentProductId: "", quantity: 1 })}
+                >
+                    <Plus size={18} />
+                    Agregar componente
+                </Button>
+
+            </div>
+
+
             <div>
                 <Label>
                     Costo
@@ -321,6 +479,11 @@ export function ProductForm({
                     type="number"
                     {...register("costPrice")}
                 />
+                {validComponents.length > 0 && (
+                    <p className="text-sm text-muted-foreground">
+                        Calculado automáticamente sumando el costo de los componentes definidos abajo.
+                    </p>
+                )}
                 <p className="text-sm text-red-500">
                     {errors.costPrice?.message}
                 </p>
@@ -374,6 +537,8 @@ export function ProductForm({
                     {errors.minimumStock?.message}
                 </p>
             </div>
+
+
 
             <div className="flex justify-end gap-2 pt-4">
                 <Button

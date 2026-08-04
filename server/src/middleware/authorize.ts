@@ -40,3 +40,41 @@ export function authorize(...allowedRoles: string[]) {
     };
 
 }
+
+export function blockRoles(...blockedRoles: string[]) {
+
+    return (
+        req: AuthenticatedRequest,
+        res: Response,
+        next: NextFunction
+    ): void => {
+
+        if (!req.user) {
+
+            res.status(401).json(
+                ApiResponse.error(
+                    "Token no proporcionado."
+                )
+            );
+
+            return;
+
+        }
+
+        if (blockedRoles.includes(req.user.roleName)) {
+
+            res.status(403).json(
+                ApiResponse.error(
+                    "No tienes permisos para realizar esta acción."
+                )
+            );
+
+            return;
+
+        }
+
+        next();
+
+    };
+
+}

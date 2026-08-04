@@ -25,6 +25,7 @@ import { TransferIssuesPage } from "@/pages/transfer-issues";
 import { ClientsPage } from "@/pages/clients";
 import { PartsPage } from "@/pages/parts";
 import { PartMovementsPage } from "@/pages/part-movements";
+import { AssemblyPage } from "@/pages/assembly";
 
 function DashboardRoute() {
 
@@ -73,7 +74,7 @@ const router = createBrowserRouter([
     {
         path: "/clients",
         element: (
-            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.STORE, ROLES.TECHNICIAN]}>
+            <ProtectedRoute blockedRoles={[ROLES.PRODUCTION]}>
                 <DashboardLayout>
                     <ClientsPage />
                 </DashboardLayout>
@@ -95,7 +96,7 @@ const router = createBrowserRouter([
     {
         path: "/sales",
         element: (
-            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.STORE, ROLES.TECHNICIAN]}>
+            <ProtectedRoute blockedRoles={[ROLES.PRODUCTION]}>
                 <DashboardLayout>
                     <SalesPage />
                 </DashboardLayout>
@@ -128,7 +129,7 @@ const router = createBrowserRouter([
     {
         path: "/inventory-stock",
         element: (
-            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.STORE, ROLES.TECHNICIAN]}>
+            <ProtectedRoute blockedRoles={[ROLES.PRODUCTION]}>
                 <DashboardLayout>
                     <InventoryStockPage />
                 </DashboardLayout>
@@ -139,7 +140,7 @@ const router = createBrowserRouter([
     {
         path: "/kardex",
         element: (
-            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.STORE, ROLES.TECHNICIAN]}>
+            <ProtectedRoute blockedRoles={[ROLES.PRODUCTION]}>
                 <DashboardLayout>
                     <KardexPage />
                 </DashboardLayout>
@@ -238,7 +239,7 @@ const router = createBrowserRouter([
 {
     path: "/stock-transfers",
     element: (
-        <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.STORE, ROLES.TECHNICIAN]}>
+        <ProtectedRoute blockedRoles={[ROLES.PRODUCTION]}>
             <DashboardLayout>
                 <StockTransfersPage />
             </DashboardLayout>
@@ -249,7 +250,7 @@ const router = createBrowserRouter([
     {
         path: "/pending-receptions",
         element: (
-            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.STORE, ROLES.TECHNICIAN]}>
+            <ProtectedRoute blockedRoles={[ROLES.PRODUCTION]}>
                 <DashboardLayout>
                     <PendingReceptionsPage />
                 </DashboardLayout>
@@ -285,6 +286,17 @@ const router = createBrowserRouter([
             <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.PRODUCTION]}>
                 <DashboardLayout>
                     <PartMovementsPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
+
+    {
+        path: "/assembly",
+        element: (
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.PRODUCTION]}>
+                <DashboardLayout>
+                    <AssemblyPage />
                 </DashboardLayout>
             </ProtectedRoute>
         )

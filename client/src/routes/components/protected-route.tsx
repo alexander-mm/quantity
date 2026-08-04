@@ -4,13 +4,16 @@ import type { PropsWithChildren } from "react";
 
 type Props = PropsWithChildren<{
     allowedRoles?: string[];
+    blockedRoles?: string[];
 }>;
 
 export function ProtectedRoute({
 
     children,
 
-    allowedRoles
+    allowedRoles,
+
+    blockedRoles
 
 }: Props) {
 
@@ -25,6 +28,16 @@ export function ProtectedRoute({
     if (
         allowedRoles &&
         (!user || !allowedRoles.includes(user.roleName))
+    ) {
+
+        return <Navigate to="/dashboard" replace />;
+
+    }
+
+    if (
+        blockedRoles &&
+        user &&
+        blockedRoles.includes(user.roleName)
     ) {
 
         return <Navigate to="/dashboard" replace />;

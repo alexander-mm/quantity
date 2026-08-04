@@ -2,6 +2,7 @@ export interface Product {
     id: string;
     internalCode: string;
     name: string;
+    costPrice: string | null;
     price: string | null;
     pvp: string | null;
     pvpCop: string | null;
@@ -21,4 +22,13 @@ export interface ProductPrice {
     marginProfilePercentage: string;
     price: string;
     priceCop: string | null;
+}
+
+export interface ProductComponent {
+    id: string;
+    uuid: string;
+    productId: string;
+    componentProductId: string;
+    quantity: string;
+    componentProduct: Product;
 }

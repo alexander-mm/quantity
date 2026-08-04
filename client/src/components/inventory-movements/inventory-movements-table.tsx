@@ -18,12 +18,11 @@ export function InventoryMovementsTable({
             headers={[
                 "Fecha",
                 "Movimiento",
-                "Producto",
                 "Bodega",
+                "Producto",
                 "Cantidad",
                 "Costo",
-                "Usuario",
-                "Acciones"
+                "Usuario"
             ]}
         >
 
@@ -46,11 +45,11 @@ export function InventoryMovementsTable({
                         </td>
 
                         <td className="px-6 py-4">
-                            {movement.product.name}
+                            {movement.store.name}
                         </td>
 
                         <td className="px-6 py-4">
-                            {movement.store.name}
+                            {movement.product.name}
                         </td>
 
                         <td className="px-6 py-4">

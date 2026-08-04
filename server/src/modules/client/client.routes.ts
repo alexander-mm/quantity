@@ -1,7 +1,7 @@
 import { Router } from "express";
 
 import { authenticate } from "../../middleware/authenticate.js";
-import { authorize } from "../../middleware/authorize.js";
+import { authorize, blockRoles } from "../../middleware/authorize.js";
 import { validate } from "../../middleware/validate.js";
 import { ROLES } from "../../shared/constants/roles.js";
 
@@ -15,21 +15,21 @@ const controller = new ClientController();
 router.get(
     "/",
     authenticate,
-    authorize(ROLES.ADMIN, ROLES.STORE, ROLES.TECHNICIAN),
+    blockRoles(ROLES.PRODUCTION),
     controller.findAll.bind(controller)
 );
 
 router.get(
     "/:id",
     authenticate,
-    authorize(ROLES.ADMIN, ROLES.STORE, ROLES.TECHNICIAN),
+    blockRoles(ROLES.PRODUCTION),
     controller.findById.bind(controller)
 );
 
 router.post(
     "/",
     authenticate,
-    authorize(ROLES.ADMIN, ROLES.STORE, ROLES.TECHNICIAN),
+    blockRoles(ROLES.PRODUCTION),
     validate(createClientSchema),
     controller.create.bind(controller)
 );
@@ -37,7 +37,7 @@ router.post(
 router.put(
     "/:id",
     authenticate,
-    authorize(ROLES.ADMIN, ROLES.STORE, ROLES.TECHNICIAN),
+    blockRoles(ROLES.PRODUCTION),
     validate(updateClientSchema),
     controller.update.bind(controller)
 );

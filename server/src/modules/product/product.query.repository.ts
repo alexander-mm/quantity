@@ -10,6 +10,7 @@ export class ProductQueryRepository extends BaseRepository {
                 id: true,
                 internalCode: true,
                 name: true,
+                costPrice: true,
                 pvp: true,
                 pvpCop: true,
                 minimumStock: true,

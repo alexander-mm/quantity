@@ -21,6 +21,8 @@ import inventoryAdjustmentRoutes from "../modules/inventory-adjustment/inventory
 import stockTransferRoutes from "../modules/stock-transfer/stock-transfer.routes.js";
 import partRoutes from "../modules/part/part.routes.js";
 import partMovementRoutes from "../modules/part-movement/part-movement.routes.js";
+import productComponentRoutes from "../modules/product-component/product-component.routes.js";
+import productAssemblyRoutes from "../modules/product-assembly/product-assembly.routes.js";
 
 const router = Router();
 
@@ -69,5 +71,9 @@ router.use("/stock-transfers", stockTransferRoutes);
 router.use("/parts", partRoutes);
 
 router.use("/part-movements", partMovementRoutes);
+
+router.use("/product-components", productComponentRoutes);
+
+router.use("/product-assemblies", productAssemblyRoutes);
 
 export default router;

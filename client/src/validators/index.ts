@@ -14,3 +14,4 @@ export * from "./store";
 export * from "./stock-transfer";
 export * from "./clients";
 export * from "./parts";
+export * from "./product-assembly.schema";

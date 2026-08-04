@@ -20,3 +20,5 @@ export * from "./sales";
 export * from "./stock-transfers";
 export * from "./parts";
 export * from "./part-movements";
+export * from "./product-components";
+export * from "./product-assembly";
