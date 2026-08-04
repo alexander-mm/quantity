@@ -17,7 +17,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
     "prisma:seed": "tsx prisma/seed.ts",
-    "products:import": "tsx scripts/import-products.ts"
+    "products:import": "tsx scripts/import-products.ts",
+    "prisma:deploy:prod": "dotenv -e .env.production -- prisma migrate deploy"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",
@@ -44,6 +45,7 @@
     "@types/morgan": "^1.9.10",
     "@types/multer": "^2.2.0",
     "@types/node": "^26.1.0",
+    "dotenv-cli": "^11.0.0",
     "nodemon": "^3.1.14",
     "prisma": "^6.16.2",
     "ts-node": "^10.9.2",
