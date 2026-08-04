@@ -1,14 +1,20 @@
 import { LoginForm } from "@/features/auth";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks";
+import { ROLES } from "@/constants/roles";
 
 export function LoginPage() {
 
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user } = useAuth();
 
 if (isAuthenticated) {
 
-    return <Navigate to="/dashboard" replace />;
+    return (
+        <Navigate
+            to={user?.roleName === ROLES.PRODUCTION ? "/parts" : "/dashboard"}
+            replace
+        />
+    );
 
 }
 

@@ -1,7 +1,8 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import { LoginPage, DashboardPage } from "@/pages";
 import { ProtectedRoute } from "@/routes/components";
 import { DashboardLayout } from "@/layouts/dashboard-layout";
+import { useAuth } from "@/hooks";
 import { ProductsPage } from "@/pages/products/products.page";
 import { InventoryMovementsPage } from "@/pages/inventory-movements";
 import { InventoryStockPage } from "@/pages/inventory-stock";
@@ -22,6 +23,24 @@ import { StockTransfersPage } from "@/pages/stock-transfers";
 import { PendingReceptionsPage } from "@/pages/pending-receptions";
 import { TransferIssuesPage } from "@/pages/transfer-issues";
 import { ClientsPage } from "@/pages/clients";
+import { PartsPage } from "@/pages/parts";
+import { PartMovementsPage } from "@/pages/part-movements";
+
+function DashboardRoute() {
+
+    const { user } = useAuth();
+
+    if (user?.roleName === ROLES.PRODUCTION) {
+        return <Navigate to="/parts" replace />;
+    }
+
+    return (
+        <DashboardLayout>
+            <DashboardPage />
+        </DashboardLayout>
+    );
+
+}
 
 const router = createBrowserRouter([
 
@@ -35,9 +54,7 @@ const router = createBrowserRouter([
         path: "/dashboard",
         element: (
             <ProtectedRoute>
-                <DashboardLayout>
-                    <DashboardPage />
-                </DashboardLayout>
+                <DashboardRoute />
             </ProtectedRoute>
         )
     },
@@ -56,7 +73,7 @@ const router = createBrowserRouter([
     {
         path: "/clients",
         element: (
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.STORE, ROLES.TECHNICIAN]}>
                 <DashboardLayout>
                     <ClientsPage />
                 </DashboardLayout>
@@ -78,7 +95,7 @@ const router = createBrowserRouter([
     {
         path: "/sales",
         element: (
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.STORE, ROLES.TECHNICIAN]}>
                 <DashboardLayout>
                     <SalesPage />
                 </DashboardLayout>
@@ -111,7 +128,7 @@ const router = createBrowserRouter([
     {
         path: "/inventory-stock",
         element: (
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.STORE, ROLES.TECHNICIAN]}>
                 <DashboardLayout>
                     <InventoryStockPage />
                 </DashboardLayout>
@@ -122,7 +139,7 @@ const router = createBrowserRouter([
     {
         path: "/kardex",
         element: (
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.STORE, ROLES.TECHNICIAN]}>
                 <DashboardLayout>
                     <KardexPage />
                 </DashboardLayout>
@@ -221,7 +238,7 @@ const router = createBrowserRouter([
 {
     path: "/stock-transfers",
     element: (
-        <ProtectedRoute>
+        <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.STORE, ROLES.TECHNICIAN]}>
             <DashboardLayout>
                 <StockTransfersPage />
             </DashboardLayout>
@@ -232,7 +249,7 @@ const router = createBrowserRouter([
     {
         path: "/pending-receptions",
         element: (
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.STORE, ROLES.TECHNICIAN]}>
                 <DashboardLayout>
                     <PendingReceptionsPage />
                 </DashboardLayout>
@@ -246,6 +263,28 @@ const router = createBrowserRouter([
             <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
                 <DashboardLayout>
                     <TransferIssuesPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
+
+    {
+        path: "/parts",
+        element: (
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.PRODUCTION]}>
+                <DashboardLayout>
+                    <PartsPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
+
+    {
+        path: "/part-movements",
+        element: (
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.PRODUCTION]}>
+                <DashboardLayout>
+                    <PartMovementsPage />
                 </DashboardLayout>
             </ProtectedRoute>
         )

@@ -22,6 +22,7 @@ export function DashboardLayout({
 
     const { user, logout } = useAuth();
     const isAdmin = user?.roleName === ROLES.ADMIN;
+    const isProduction = user?.roleName === ROLES.PRODUCTION;
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const { data: transfersData } = useStockTransfers({ enabled: isAdmin });
@@ -92,29 +93,41 @@ export function DashboardLayout({
                 </div>
 
                 <div style={{ padding: "0px 24px 24px 24px" }}>
-                    {isAdmin && (
+                    {!isProduction && (
                         <>
-                            <NavLink to="/products" style={navLinkStyle}>Productos</NavLink>
+                            {isAdmin && (
+                                <>
+                                    <NavLink to="/products" style={navLinkStyle}>Productos</NavLink>
+                                </>
+                            )}
+                            <NavLink to="/clients" style={navLinkStyle}>Clientes</NavLink>
+                            {isAdmin && (
+                                <>
+                                    <NavLink to="/suppliers" style={navLinkStyle}>Proveedores</NavLink>
+                                    <NavLink to="/purchases" style={navLinkStyle}>Compras</NavLink>
+                                </>
+                            )}
+                            <NavLink to="/sales" style={navLinkStyle}>Ventas</NavLink>
+                            <NavLink to="/inventory-stock" style={navLinkStyle}>Inventario</NavLink>
+                            {isAdmin && (
+                                <>
+                                    <NavLink to="/inventory-movements" style={navLinkStyle}>Movimientos</NavLink>
+                                    <NavLink to="/inventory-adjustments" style={navLinkStyle}>Ajustes</NavLink>
+                                </>
+                            )}
+                            <NavLink to="/kardex" style={navLinkStyle}>Kardex</NavLink>
+                            <NavLink to="/pending-receptions" style={navLinkStyle}>Recepciones pendientes</NavLink>
+                            <NavLink to="/stock-transfers" style={navLinkStyle}>Envíos</NavLink>
                         </>
                     )}
-                    <NavLink to="/clients" style={navLinkStyle}>Clientes</NavLink>
-                    {isAdmin && (
+
+                    {(isAdmin || isProduction) && (
                         <>
-                            <NavLink to="/suppliers" style={navLinkStyle}>Proveedores</NavLink>
-                            <NavLink to="/purchases" style={navLinkStyle}>Compras</NavLink>
+                            <hr style={{ margin: "16px 0", opacity: 0.3 }} />
+                            <NavLink to="/parts" style={navLinkStyle}>Piezas</NavLink>
+                            <NavLink to="/part-movements" style={navLinkStyle}>Movimientos de Piezas</NavLink>
                         </>
                     )}
-                    <NavLink to="/sales" style={navLinkStyle}>Ventas</NavLink>
-                    <NavLink to="/inventory-stock" style={navLinkStyle}>Inventario</NavLink>
-                    {isAdmin && (
-                        <>
-                            <NavLink to="/inventory-movements" style={navLinkStyle}>Movimientos</NavLink>
-                            <NavLink to="/inventory-adjustments" style={navLinkStyle}>Ajustes</NavLink>
-                        </>
-                    )}
-                    <NavLink to="/kardex" style={navLinkStyle}>Kardex</NavLink>
-                    <NavLink to="/pending-receptions" style={navLinkStyle}>Recepciones pendientes</NavLink>
-                    <NavLink to="/stock-transfers" style={navLinkStyle}>Envíos</NavLink>
 
                     {isAdmin && (
                         <>

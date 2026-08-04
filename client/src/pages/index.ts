@@ -19,3 +19,5 @@ export * from "./stock-transfers";
 export * from "./pending-receptions";
 export * from "./transfer-issues";
 export * from "./clients";
+export * from "./parts";
+export * from "./part-movements";

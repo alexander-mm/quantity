@@ -13,21 +13,23 @@ import {
 const router = Router();
 const controller = new StockTransferController();
 
-router.get("/", authenticate, controller.findAll.bind(controller));
-router.get("/:id", authenticate, controller.findById.bind(controller));
+router.get("/", authenticate, authorize(ROLES.ADMIN, ROLES.STORE, ROLES.TECHNICIAN), controller.findAll.bind(controller));
+router.get("/:id", authenticate, authorize(ROLES.ADMIN, ROLES.STORE, ROLES.TECHNICIAN), controller.findById.bind(controller));
 
 router.post(
     "/",
     authenticate,
+    authorize(ROLES.ADMIN, ROLES.STORE, ROLES.TECHNICIAN),
     validate(createStockTransferSchema),
     controller.create.bind(controller)
 );
 
-router.post("/:id/confirm", authenticate, controller.confirm.bind(controller));
+router.post("/:id/confirm", authenticate, authorize(ROLES.ADMIN, ROLES.STORE, ROLES.TECHNICIAN), controller.confirm.bind(controller));
 
 router.post(
     "/:id/report-issue",
     authenticate,
+    authorize(ROLES.ADMIN, ROLES.STORE, ROLES.TECHNICIAN),
     validate(reportIssueSchema),
     controller.reportIssue.bind(controller)
 );

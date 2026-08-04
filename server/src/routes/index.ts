@@ -19,6 +19,8 @@ import saleRoutes from "../modules/sale/sale.routes.js";
 import productPriceRoutes from "../modules/product-prices/product-price.routes.js";
 import inventoryAdjustmentRoutes from "../modules/inventory-adjustment/inventory-adjustment.routes.js";
 import stockTransferRoutes from "../modules/stock-transfer/stock-transfer.routes.js";
+import partRoutes from "../modules/part/part.routes.js";
+import partMovementRoutes from "../modules/part-movement/part-movement.routes.js";
 
 const router = Router();
 
@@ -63,5 +65,9 @@ router.use("/product-prices", productPriceRoutes);
 router.use("/inventory-adjustments", inventoryAdjustmentRoutes);
 
 router.use("/stock-transfers", stockTransferRoutes);
+
+router.use("/parts", partRoutes);
+
+router.use("/part-movements", partMovementRoutes);
 
 export default router;

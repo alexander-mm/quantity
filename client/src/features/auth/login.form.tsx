@@ -8,6 +8,7 @@ import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ROLES } from "@/constants/roles";
 
 
 export function LoginForm() {
@@ -46,8 +47,12 @@ export function LoginForm() {
             );
 
             toast.success(response.message);
-            navigate("/dashboard");
-            console.log(response);
+
+            navigate(
+                response.data.user.roleName === ROLES.PRODUCTION
+                    ? "/parts"
+                    : "/dashboard"
+            );
 
         } catch {
 

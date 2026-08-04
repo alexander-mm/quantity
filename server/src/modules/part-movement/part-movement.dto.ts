@@ -1,0 +1,13 @@
+export interface CreatePartMovementDetailDto {
+    partId: string;
+    quantity: number;
+}
+
+export interface CreatePartMovementDto {
+    number: string;
+    type: "IN" | "OUT";
+    userId: string;
+    movementDate: Date;
+    observations?: string;
+    details: CreatePartMovementDetailDto[];
+}

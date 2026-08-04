@@ -13,3 +13,4 @@ export * from "./store";
  export * from "./role";
 export * from "./stock-transfer";
 export * from "./clients";
+export * from "./parts";

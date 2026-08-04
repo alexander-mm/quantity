@@ -22,6 +22,7 @@ router.get(
 router.get(
     "/kardex/:productId/:storeId",
     authenticate,
+    authorize(ROLES.ADMIN, ROLES.STORE, ROLES.TECHNICIAN),
     controller.getKardex.bind(controller)
 );
 
