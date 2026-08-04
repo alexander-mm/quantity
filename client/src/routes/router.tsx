@@ -45,7 +45,7 @@ const router = createBrowserRouter([
     {
         path: "/products",
         element: (
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
                 <DashboardLayout>
                     <ProductsPage />
                 </DashboardLayout>
@@ -67,7 +67,7 @@ const router = createBrowserRouter([
     {
         path: "/purchases",
         element: (
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
                 <DashboardLayout>
                     <PurchasesPage />
                 </DashboardLayout>
@@ -89,7 +89,7 @@ const router = createBrowserRouter([
     {
         path: "/inventory-movements",
         element: (
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
                 <DashboardLayout>
                     <InventoryMovementsPage />
                 </DashboardLayout>
@@ -100,7 +100,7 @@ const router = createBrowserRouter([
     {
         path: "/inventory-adjustments",
         element: (
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
                 <DashboardLayout>
                     <InventoryAdjustmentsPage />
                 </DashboardLayout>
@@ -133,7 +133,7 @@ const router = createBrowserRouter([
     {
         path: "/suppliers",
         element: (
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
                 <DashboardLayout>
                     <SuppliersPage />
                 </DashboardLayout>

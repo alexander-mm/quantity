@@ -9,11 +9,10 @@ type Props = {
 
 export function BrandsTable({ brands, onDelete }: Props) {
     return (
-        <EntityTable headers={["Nombre", "Descripción", "Estado", "Acciones"]}>
+        <EntityTable headers={["Nombre", "Estado", "Acciones"]}>
             {brands.map(brand => (
                 <tr key={brand.id} className="border-b transition hover:bg-muted/40">
                     <td className="px-6 py-4">{brand.name}</td>
-                    <td className="px-6 py-4">{brand.description ?? "-"}</td>
                     <td className="px-6 py-4">
                         <span
                             className={`rounded-full px-3 py-1 text-xs font-medium ${

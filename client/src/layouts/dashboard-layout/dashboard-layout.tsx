@@ -1,14 +1,14 @@
 import { useState } from "react";
 import type { PropsWithChildren, MouseEvent } from "react";
 import { NavLink } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut } from "lucide-react";
 import { useAuth, useStockTransfers } from "@/hooks";
 import { ROLES } from "@/constants/roles";
 
 function navLinkStyle({ isActive }: { isActive: boolean }) {
     return {
         display: "block",
-        padding: "8px 0",
+        padding: "5px 0",
         color: "#FFF",
         textDecoration: "none",
         fontWeight: isActive ? "bold" : "normal",
@@ -20,7 +20,7 @@ export function DashboardLayout({
     children
 }: PropsWithChildren) {
 
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
     const isAdmin = user?.roleName === ROLES.ADMIN;
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -28,11 +28,14 @@ export function DashboardLayout({
     const issuesCount = isAdmin
         ? (transfersData?.data ?? []).filter(t => t.status === "WITH_ISSUES").length
         : 0;
-
     const closeMenuOnLinkClick = (e: MouseEvent<HTMLElement>) => {
         if ((e.target as HTMLElement).closest("a")) {
             setIsMobileMenuOpen(false);
         }
+    };
+    const handleLogout = () => {
+        logout();
+        setIsMobileMenuOpen(false);
     };
 
     return (
@@ -56,12 +59,24 @@ export function DashboardLayout({
             >
 
                 <div
-                    className="sticky top-0 z-10 mb-6"
+                    className="sticky top-0 z-10 mb-2"
                     style={{
                         background: "#0170B8",
                         padding: "24px 24px 0 24px"
                     }}
                 >
+                    <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="flex items-center gap-2 text-white/85 hover:opacity-100"
+                        style={{ background: "transparent", border: "none", cursor: "pointer" }}
+                    >
+                        <LogOut size={18} />
+                        <span className="text-sm text-white/85 truncate">
+                           || {user?.firstName} {user?.lastName}
+                        </span>
+                    </button>
+                    <hr className="sticky mt-4" />
                     <button
                         type="button"
                         className="md:hidden absolute right-0 top-1 z-20"
@@ -71,12 +86,12 @@ export function DashboardLayout({
                         <X color="#FFF" size={30} />
                     </button>
                     <NavLink to="/dashboard" style={navLinkStyle}>
-                        <img className="py-4" src="https://www.masqueunefecto.com/wp-content/uploads/2026/07/quantity-logo.png" />
+                        <img className="py-2" src="https://www.masqueunefecto.com/wp-content/uploads/2026/07/quantity-logo.png" />
                     </NavLink>
-                    <hr className="pb-4 sticky" />
+                    <hr className="sticky" />
                 </div>
 
-                <div style={{ padding: "0 24px 24px 24px" }}>
+                <div style={{ padding: "0px 24px 24px 24px" }}>
                     {isAdmin && (
                         <>
                             <NavLink to="/products" style={navLinkStyle}>Productos</NavLink>
@@ -104,22 +119,25 @@ export function DashboardLayout({
                     {isAdmin && (
                         <>
                             <hr style={{ margin: "16px 0", opacity: 0.3 }} />
-                            <NavLink to="/roles" style={navLinkStyle}>Roles</NavLink>
-                            <NavLink to="/users" style={navLinkStyle}>Usuarios</NavLink>
-                            <NavLink to="/stores" style={navLinkStyle}>Tiendas</NavLink>
                             <NavLink to="/transfer-issues" style={navLinkStyle}>
                                 Novedades de Transferencias{issuesCount > 0 ? ` (${issuesCount})` : ""}
                             </NavLink>
+                            <NavLink to="/roles" style={navLinkStyle}>Roles</NavLink>
+                            <NavLink to="/users" style={navLinkStyle}>Usuarios</NavLink>
+                            <NavLink to="/stores" style={navLinkStyle}>Tiendas</NavLink>
                             <NavLink to="/brands" className="mt-4" style={navLinkStyle} >
                                 Marcas
                             </NavLink>
                             <NavLink to="/categories" style={navLinkStyle}>Categorías</NavLink>
                             <NavLink to="/units-of-measure" style={navLinkStyle}>Unidades de Medida</NavLink>
-                            <NavLink to="/margin-profiles" style={navLinkStyle}>Perfiles de Margen</NavLink>
+                            <NavLink to="/margin-profiles" style={navLinkStyle}>Perfiles de Descuento</NavLink>
 
                         </>
                     )}
                 </div>
+
+
+
             </aside>
 
             <div>

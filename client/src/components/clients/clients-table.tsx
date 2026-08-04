@@ -1,5 +1,7 @@
 import { Pencil, Trash2 } from "lucide-react";
 import { EntityTable } from "@/components/ui";
+import { useAuth } from "@/hooks";
+import { ROLES } from "@/constants/roles";
 import type { Client } from "@/types";
 
 type Props = {
@@ -15,6 +17,9 @@ function getClientLabel(client: Client) {
 }
 
 export function ClientsTable({ clients, onEdit, onDelete }: Props) {
+    const { user } = useAuth();
+    const isAdmin = user?.roleName === ROLES.ADMIN;
+
     return (
         <EntityTable headers={["Cliente", "Documento", "Teléfono", "Descuento", "Acciones"]}>
             {clients.map(client => (
@@ -34,11 +39,13 @@ export function ClientsTable({ clients, onEdit, onDelete }: Props) {
                                 className="cursor-pointer text-slate-500 hover:text-primary"
                                 onClick={() => onEdit(client)}
                             />
-                            <Trash2
-                                size={18}
-                                className="cursor-pointer text-red-500 hover:text-red-700"
-                                onClick={() => onDelete(client)}
-                            />
+                            {isAdmin && (
+                                <Trash2
+                                    size={18}
+                                    className="cursor-pointer text-red-500 hover:text-red-700"
+                                    onClick={() => onDelete(client)}
+                                />
+                            )}
                         </div>
                     </td>
                 </tr>
