@@ -29,6 +29,10 @@ export const saleSchema=z.object({
         .string()
         .optional(),
 
+    accountReceivableNumber:z
+        .string()
+        .optional(),
+
     details:z
         .array(
 

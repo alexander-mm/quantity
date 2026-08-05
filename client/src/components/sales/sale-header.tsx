@@ -21,6 +21,7 @@ export function SaleHeader() {
         control,
         getValues,
         setValue,
+        watch,
         formState: { errors }
     } = useFormContext();
 
@@ -37,6 +38,11 @@ export function SaleHeader() {
 
     const stores =
         storesData?.data ?? [];
+
+    const clientId = watch("clientId");
+    const selectedClient = clients.find(client => client.id === clientId);
+    const requiresAccountReceivable = !!selectedClient?.isWholesaler && !!selectedClient?.usesCredit;
+    const currencyLocked = !!selectedClient?.isWholesaler && !!selectedClient?.currency;
 
     return (
 
@@ -85,11 +91,11 @@ export function SaleHeader() {
 
                                 field.onChange(value);
 
-                                const selectedClient =
+                                const selected =
                                     clients.find(client => client.id === value);
 
                                 const discountPercentage =
-                                    Number(selectedClient?.discountPercentage ?? 0);
+                                    Number(selected?.discountPercentage ?? 0);
 
                                 const details = getValues("details") ?? [];
 
@@ -106,6 +112,14 @@ export function SaleHeader() {
                                     );
 
                                 });
+
+                                if (selected?.isWholesaler && selected?.currency) {
+                                    setValue("currency", selected.currency);
+                                }
+
+                                if (!(selected?.isWholesaler && selected?.usesCredit)) {
+                                    setValue("accountReceivableNumber", "");
+                                }
 
                             }}
                         />
@@ -181,6 +195,7 @@ export function SaleHeader() {
                         <Select
                             value={field.value}
                             onValueChange={field.onChange}
+                            disabled={currencyLocked}
                         >
 
                             <SelectTrigger>
@@ -208,11 +223,37 @@ export function SaleHeader() {
                     )}
                 />
 
+                {currencyLocked && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                        Moneda fija según el mayorista seleccionado.
+                    </p>
+                )}
+
                 <p className="text-sm text-red-500">
                     {errors.currency?.message as string}
                 </p>
 
             </div>
+
+            {requiresAccountReceivable && (
+                <div>
+
+                    <Label>Número de cuenta de cobro</Label>
+
+                    <Input
+                        {...register("accountReceivableNumber")}
+                    />
+
+                    <p className="mt-1 text-xs text-muted-foreground">
+                        Este cliente mayorista maneja crédito — la venta pasará a Mayoristas con esta cuenta de cobro pendiente de pago.
+                    </p>
+
+                    <p className="text-sm text-red-500">
+                        {errors.accountReceivableNumber?.message as string}
+                    </p>
+
+                </div>
+            )}
 
             <div>
 

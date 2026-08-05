@@ -45,6 +45,37 @@ export class ProductPriceRepository extends BaseRepository {
         });
     }
 
+    async upsertForProductAndProfile(
+        productId: bigint,
+        marginProfileId: bigint,
+        data: {
+            price: Prisma.Decimal;
+            priceCop?: Prisma.Decimal;
+        }
+    ): Promise<void> {
+
+        await this.prisma.productPrice.upsert({
+            where: {
+                productId_marginProfileId: {
+                    productId,
+                    marginProfileId
+                }
+            },
+            create: {
+                productId,
+                marginProfileId,
+                price: data.price,
+                priceCop: data.priceCop,
+                isActive: true
+            },
+            update: {
+                price: data.price,
+                priceCop: data.priceCop
+            }
+        });
+
+    }
+
     async deleteByProductId(
         productId: bigint
     ): Promise<void> {

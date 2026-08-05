@@ -22,3 +22,4 @@ export * from "./stock-transfer";
 export * from "./parts";
 export * from "./product-components";
 export * from "./product-assembly";
+export * from "./account-receivable";

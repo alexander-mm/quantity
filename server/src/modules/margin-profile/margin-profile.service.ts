@@ -1,10 +1,16 @@
-import { MarginProfile } from "@prisma/client";
+import { MarginProfile, Prisma } from "@prisma/client";
 import { ConflictError, NotFoundError } from "../../shared/errors/index.js";
 import { MarginProfileRepository } from "./margin-profile.repository.js";
+import { ProductRepository } from "../product/product.repository.js";
+import { ProductPriceRepository } from "../product-prices/product-price.repository.js";
+import { PriceCalculator } from "../../shared/pricing/index.js";
+import { prisma } from "../../database/index.js";
 
 export class MarginProfileService {
 
     private readonly repository = new MarginProfileRepository();
+    private readonly productRepository = new ProductRepository();
+    private readonly productPriceRepository = new ProductPriceRepository();
 
     async findAll(): Promise<MarginProfile[]> {
         return this.repository.findAll();
@@ -33,7 +39,46 @@ export class MarginProfileService {
                 "Ya existe un perfil de margen con ese nombre."
             );
         }
-        return this.repository.create(data);
+
+        return prisma.$transaction(async (tx) => {
+
+            const repository = this.repository.withTransaction(tx);
+            const productRepository = this.productRepository.withTransaction(tx);
+            const productPriceRepository = this.productPriceRepository.withTransaction(tx);
+
+            const profile = await repository.create(data);
+
+            const products = await productRepository.findAll();
+
+            const prices = products
+                .filter(product => product.pvp !== null)
+                .map(product => ({
+                    productId: product.id,
+                    marginProfileId: profile.id,
+                    price: new Prisma.Decimal(
+                        PriceCalculator.calculateSalePriceFromDiscount(
+                            Number(product.pvp),
+                            Number(profile.percentage)
+                        )
+                    ),
+                    priceCop: product.pvpCop
+                        ? new Prisma.Decimal(
+                            PriceCalculator.calculateSalePriceFromDiscount(
+                                Number(product.pvpCop),
+                                Number(profile.percentage)
+                            )
+                        )
+                        : undefined,
+                    isActive: true
+                }));
+
+            if (prices.length > 0) {
+                await productPriceRepository.createMany(prices);
+            }
+
+            return profile;
+
+        });
     }
 
     async update(
@@ -66,10 +111,53 @@ export class MarginProfileService {
                 "Ya existe un perfil de margen con ese nombre."
             );
         }
-        return this.repository.update(
-            BigInt(id),
-            data
-        );
+
+        return prisma.$transaction(async (tx) => {
+
+            const repository = this.repository.withTransaction(tx);
+            const productRepository = this.productRepository.withTransaction(tx);
+            const productPriceRepository = this.productPriceRepository.withTransaction(tx);
+
+            const updated = await repository.update(
+                BigInt(id),
+                data
+            );
+
+            const products = await productRepository.findAll();
+
+            for (const product of products) {
+
+                if (product.pvp === null) {
+                    continue;
+                }
+
+                await productPriceRepository.upsertForProductAndProfile(
+                    product.id,
+                    updated.id,
+                    {
+                        price: new Prisma.Decimal(
+                            PriceCalculator.calculateSalePriceFromDiscount(
+                                Number(product.pvp),
+                                Number(updated.percentage)
+                            )
+                        ),
+                        priceCop: product.pvpCop
+                            ? new Prisma.Decimal(
+                                PriceCalculator.calculateSalePriceFromDiscount(
+                                    Number(product.pvpCop),
+                                    Number(updated.percentage)
+                                )
+                            )
+                            : undefined
+                    }
+                );
+
+            }
+
+            return updated;
+
+        });
+
     }
 
     async delete(

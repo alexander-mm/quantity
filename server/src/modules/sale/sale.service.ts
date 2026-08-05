@@ -5,6 +5,8 @@ import { ConflictError, NotFoundError, ValidationError } from "../../shared/erro
 import { prisma } from "../../database/index.js";
 import { InventoryMovementService } from "../inventory-movement/inventory-movement.service.js";
 import { MovementTypeRepository } from "../movement-type/movement-type.repository.js";
+import { ClientRepository } from "../client/client.repository.js";
+import { AccountReceivableRepository } from "../account-receivable/account-receivable.repository.js";
 
 export class SaleService {
 
@@ -14,6 +16,12 @@ export class SaleService {
 
     private readonly movementTypeRepository =
         new MovementTypeRepository();
+
+    private readonly clientRepository =
+        new ClientRepository();
+
+    private readonly accountReceivableRepository =
+        new AccountReceivableRepository();
 
     async findAll(): Promise<Sale[]> {
         return this.repository.findAll();
@@ -51,7 +59,69 @@ export class SaleService {
             );
         }
 
-        return this.repository.create(data);
+        const client = await this.clientRepository.findById(
+            BigInt(data.clientId)
+        );
+
+        if (!client) {
+            throw new NotFoundError(
+                "El cliente no existe."
+            );
+        }
+
+        const requiresAccountReceivable =
+            client.isWholesaler && client.usesCredit;
+
+        if (requiresAccountReceivable) {
+
+            if (!data.accountReceivableNumber) {
+                throw new ValidationError(
+                    "Debe indicar el número de cuenta de cobro para este cliente mayorista."
+                );
+            }
+
+            const existingReceivable = await this.accountReceivableRepository.findByNumber(
+                data.accountReceivableNumber
+            );
+
+            if (existingReceivable) {
+                throw new ConflictError(
+                    "Ya existe una cuenta de cobro con ese número."
+                );
+            }
+
+        }
+
+        const saleData: CreateSaleDto = {
+            ...data,
+            currency: client.isWholesaler && client.currency
+                ? client.currency
+                : data.currency
+        };
+
+        return prisma.$transaction(async (tx) => {
+
+            const saleRepository = this.repository.withTransaction(tx);
+            const sale = await saleRepository.create(saleData);
+
+            if (requiresAccountReceivable) {
+
+                const accountReceivableRepository =
+                    this.accountReceivableRepository.withTransaction(tx);
+
+                await accountReceivableRepository.create({
+                    number: data.accountReceivableNumber!,
+                    clientId: sale.clientId,
+                    saleId: sale.id,
+                    amount: Number(sale.total),
+                    currency: sale.currency
+                });
+
+            }
+
+            return sale;
+
+        });
 
     }
 

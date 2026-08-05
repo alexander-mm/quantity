@@ -28,7 +28,6 @@ export type CreateProductRequest = {
     brand: string;
     categoryId: string;
     unitOfMeasure: string;
-    marginProfileIds: string[];
     costPrice: number;
     pvp: number;
     pvpCop?: number;
@@ -41,8 +40,7 @@ export async function createProduct(
 
     const request = {
         ...payload,
-        categoryId: Number(payload.categoryId),
-        marginProfileIds: payload.marginProfileIds.map(id => Number(id))
+        categoryId: Number(payload.categoryId)
     };
 
     const { data } = await api.post<ApiResponse<Product>>(
@@ -62,7 +60,6 @@ export type UpdateProductRequest = {
     brand: string;
     categoryId: string;
     unitOfMeasure: string;
-    marginProfileIds: string[];
     costPrice: number;
     pvp: number;
     pvpCop?: number;
@@ -76,10 +73,7 @@ export async function updateProduct(
 
     const request = {
         ...payload,
-        categoryId: Number(payload.categoryId),
-        marginProfileIds: payload.marginProfileIds.map(
-            id => Number(id)
-        )
+        categoryId: Number(payload.categoryId)
     };
 
     const { data } = await api.put<ApiResponse<Product>>(

@@ -39,6 +39,7 @@ export type CreateSaleRequest={
 
     reference?:string;
     observations?:string;
+    accountReceivableNumber?:string;
 
     details:{
         productId:string;

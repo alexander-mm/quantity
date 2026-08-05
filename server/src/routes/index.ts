@@ -23,6 +23,7 @@ import partRoutes from "../modules/part/part.routes.js";
 import partMovementRoutes from "../modules/part-movement/part-movement.routes.js";
 import productComponentRoutes from "../modules/product-component/product-component.routes.js";
 import productAssemblyRoutes from "../modules/product-assembly/product-assembly.routes.js";
+import accountReceivableRoutes from "../modules/account-receivable/account-receivable.routes.js";
 
 const router = Router();
 
@@ -75,5 +76,7 @@ router.use("/part-movements", partMovementRoutes);
 router.use("/product-components", productComponentRoutes);
 
 router.use("/product-assemblies", productAssemblyRoutes);
+
+router.use("/accounts-receivable", accountReceivableRoutes);
 
 export default router;

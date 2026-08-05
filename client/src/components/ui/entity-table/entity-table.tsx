@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 type EntityTableProps = {
 
-    headers: string[];
+    headers: ReactNode[];
 
     children: ReactNode;
 
@@ -28,10 +28,10 @@ export function EntityTable({
 
                         <tr>
 
-                            {headers.map(header => (
+                            {headers.map((header, index) => (
 
                                 <th
-                                    key={header}
+                                    key={index}
                                     className="px-6 py-4 text-left text-sm font-semibold"
                                 >
 

@@ -84,15 +84,6 @@ export class ProductQueryRepository extends BaseRepository {
                     select: {
                         name: true
                     }
-                },
-
-                productPrices: {
-                    where: {
-                        isActive: true
-                    },
-                    select: {
-                        marginProfileId: true
-                    }
                 }
             }
         });
@@ -110,9 +101,6 @@ export class ProductQueryRepository extends BaseRepository {
             brand: product.brand.name,
             categoryId: product.categoryId,
             unitOfMeasure: product.unitOfMeasure.name,
-            marginProfileIds: product.productPrices.map(
-                p => p.marginProfileId
-            ),
             costPrice: product.costPrice,
             pvp: product.pvp,
             pvpCop: product.pvpCop,

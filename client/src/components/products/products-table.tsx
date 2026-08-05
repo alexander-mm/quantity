@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { EntityTable } from "@/components/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { formatCurrency } from "@/lib/format-currency";
 import type { Product } from "@/types";
 import { useAuth } from "@/hooks";
 import { ROLES } from "@/constants/roles";
@@ -23,6 +26,7 @@ export function ProductsTable({
     const { user } = useAuth();
     const isAdmin = user?.roleName === ROLES.ADMIN;
     const showStock = !!stockByProductId;
+    const [pvpCurrency, setPvpCurrency] = useState<"USD" | "COP">("USD");
 
     return (
         <EntityTable
@@ -30,7 +34,19 @@ export function ProductsTable({
                 "Código",
                 "Producto",
                 "Marca",
-                "PVP",
+                <Select
+                    key="pvp-currency"
+                    value={pvpCurrency}
+                    onValueChange={(value) => setPvpCurrency(value as "USD" | "COP")}
+                >
+                    <SelectTrigger className="h-8 w-28 border-none bg-transparent p-0 text-sm font-semibold shadow-none focus-visible:ring-0">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="USD">PVP (USD)</SelectItem>
+                        <SelectItem value="COP">PVP (COP)</SelectItem>
+                    </SelectContent>
+                </Select>,
                 ...(showStock ? ["Existencias"] : []),
                 "Acciones"
             ]}
@@ -52,9 +68,10 @@ export function ProductsTable({
                         </td>
                         <td className="px-6 py-4">
                             {
-                                product.pvp
-                                    ? `$${Number(product.pvp).toLocaleString()}`
-                                    : "-"
+                                (() => {
+                                    const value = pvpCurrency === "COP" ? product.pvpCop : product.pvp;
+                                    return value ? formatCurrency(value, pvpCurrency) : "-";
+                                })()
                             }
                         </td>
                         {showStock && (

@@ -9,6 +9,7 @@ export const createSaleSchema=z.object({
     saleDate:z.coerce.date(),
     reference:z.string().trim().max(100).optional(),
     observations:z.string().trim().max(500).optional(),
+    accountReceivableNumber:z.string().trim().max(50).optional(),
     details:z.array(z.object({
         productId:z.string().trim().min(1),
         quantity:z.coerce.number().positive(),

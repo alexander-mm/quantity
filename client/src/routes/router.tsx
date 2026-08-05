@@ -26,6 +26,7 @@ import { ClientsPage } from "@/pages/clients";
 import { PartsPage } from "@/pages/parts";
 import { PartMovementsPage } from "@/pages/part-movements";
 import { AssemblyPage } from "@/pages/assembly";
+import { WholesalersPage, WholesalerDetailPage } from "@/pages/wholesalers";
 
 function DashboardRoute() {
 
@@ -297,6 +298,28 @@ const router = createBrowserRouter([
             <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.PRODUCTION]}>
                 <DashboardLayout>
                     <AssemblyPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
+
+    {
+        path: "/wholesalers",
+        element: (
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+                <DashboardLayout>
+                    <WholesalersPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
+
+    {
+        path: "/wholesalers/:clientId",
+        element: (
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+                <DashboardLayout>
+                    <WholesalerDetailPage />
                 </DashboardLayout>
             </ProtectedRoute>
         )

@@ -26,6 +26,9 @@ export type CreateClientRequest = {
     email?: string;
     address?: string;
     discountPercentage?: number;
+    isWholesaler?: boolean;
+    usesCredit?: boolean;
+    currency?: "USD" | "COP";
 };
 
 export async function createClient(

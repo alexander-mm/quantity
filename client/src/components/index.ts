@@ -21,3 +21,4 @@ export * from "./clients";
 export * from "./parts";
 export * from "./part-movements";
 export * from "./assembly";
+export * from "./wholesalers";

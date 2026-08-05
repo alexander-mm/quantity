@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { toast } from "react-hot-toast";
 import { purchaseSchema } from "@/validators";
 import type { PurchaseFormData } from "@/validators";
-
 import { useCreatePurchase, useUsers } from "@/hooks";
 import { PurchaseHeader } from "./purchase-header";
 import { PurchaseDetailsTable } from "./purchase-details-table";
@@ -103,45 +102,32 @@ const total =
             );
 
             return;
-
         }
 
         createMutation.mutate({
-
             ...data,
-
             userId:
                 users[0]!.id,
-
             purchaseDate:
                 new Date(
                     data.purchaseDate
                 )
-
         }, {
 
             onSuccess: () => {
-
                 toast.success(
                     "Compra registrada."
                 );
-
                 methods.reset();
-
                 onSuccess?.();
-
             },
 
             onError: () => {
-
                 toast.error(
                     "No se pudo registrar la compra."
                 );
-
             }
-
         });
-
     };
 
     return (
@@ -149,49 +135,32 @@ const total =
         <FormProvider
             {...methods}
         >
-
             <form
                 onSubmit={methods.handleSubmit(onSubmit)}
                 className="space-y-6 min-w-0"
             >
-
                 <PurchaseHeader />
-
                 <PurchaseDetailsTable />
-
                 <PurchaseTotals
-
                     subtotal={subtotal}
-
                     discount={discount}
-
                     tax={tax}
-
                     total={total}
-
                 />
 
                 <div className="flex justify-end">
-
                     <Button
                         type="submit"
                         disabled={loading}
                     >
-
                         {
                             loading
                                 ? "Guardando..."
                                 : "Guardar compra"
                         }
-
                     </Button>
-
                 </div>
-
             </form>
-
         </FormProvider>
-
     );
-
 }

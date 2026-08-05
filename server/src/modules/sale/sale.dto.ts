@@ -15,6 +15,7 @@ export interface CreateSaleDto {
     saleDate: Date;
     reference?: string;
     observations?: string;
+    accountReceivableNumber?: string;
     details: CreateSaleDetailDto[];
 }
 

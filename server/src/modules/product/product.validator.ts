@@ -64,9 +64,5 @@ export const createProductSchema = z.object({
         .number({
             error: "El stock mínimo es obligatorio."
         })
-        .nonnegative("El stock mínimo no puede ser negativo."),
-
-    marginProfileIds: z
-        .array(z.number().int().positive())
-        .min(1, "Debe seleccionar al menos un perfil de precio.")
+        .nonnegative("El stock mínimo no puede ser negativo.")
 });

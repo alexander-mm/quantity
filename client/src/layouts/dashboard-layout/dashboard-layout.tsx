@@ -136,6 +136,7 @@ export function DashboardLayout({
                             <NavLink to="/transfer-issues" style={navLinkStyle}>
                                 Novedades de Transferencias{issuesCount > 0 ? ` (${issuesCount})` : ""}
                             </NavLink>
+                            <NavLink to="/wholesalers" style={navLinkStyle}>Mayoristas</NavLink>
                             <NavLink to="/roles" style={navLinkStyle}>Roles</NavLink>
                             <NavLink to="/users" style={navLinkStyle}>Usuarios</NavLink>
                             <NavLink to="/stores" style={navLinkStyle}>Tiendas</NavLink>

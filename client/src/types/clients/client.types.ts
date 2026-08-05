@@ -9,6 +9,9 @@ export interface Client {
     email: string | null;
     address: string | null;
     discountPercentage: string | null;
+    isWholesaler: boolean;
+    usesCredit: boolean;
+    currency: "USD" | "COP" | null;
     isActive: boolean;
     createdAt: string;
     updatedAt: string;

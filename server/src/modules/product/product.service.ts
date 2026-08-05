@@ -71,7 +71,6 @@ export class ProductService {
             brand: string;
             categoryId: bigint;
             unitOfMeasure: string;
-            marginProfileIds: bigint[];
             costPrice: number;
             pvp: number;
             pvpCop?: number;
@@ -190,19 +189,9 @@ export class ProductService {
             );
 
 
-            const marginProfiles = await Promise.all(
-                data.marginProfileIds.map(id =>
-                    marginRepository.findById(id)
-                )
-            );
+            const marginProfiles = await marginRepository.findAll();
 
             const prices = marginProfiles
-                .filter(
-                    (
-                        profile
-                    ): profile is NonNullable<typeof profile> =>
-                        profile !== null
-                )
                 .map(profile => ({
                     productId: updatedProduct.id,
                     marginProfileId: profile!.id,
@@ -241,7 +230,6 @@ export class ProductService {
         brand: string;
         categoryId: bigint;
         unitOfMeasure: string;
-        marginProfileIds: bigint[];
         costPrice: number;
         pvp: number;
         pvpCop?: number;
@@ -332,14 +320,9 @@ export class ProductService {
             minimumStock: data.minimumStock
         });
 
-        const marginProfiles = await Promise.all(
-            data.marginProfileIds.map(id =>
-                marginRepository.findById(id)
-            )
-        );
+        const marginProfiles = await marginRepository.findAll();
 
         const prices = marginProfiles
-            .filter(profile => profile !== null)
             .map(profile => ({
                 productId: product.id,
                 marginProfileId: profile!.id,

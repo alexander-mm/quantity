@@ -17,7 +17,6 @@ import type { ProductFormData } from "@/validators";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
     useCategories,
-    useMarginProfiles,
     useCreateProduct,
     useUpdateProduct,
     useProduct,
@@ -59,7 +58,6 @@ export function ProductForm({
             brand: "",
             categoryId: "",
             unitOfMeasure: "",
-            marginProfileIds: [],
             costPrice: 0,
             pvp: 0,
             pvpCop: 0,
@@ -71,7 +69,6 @@ export function ProductForm({
     const { fields, append, remove } = useFieldArray({ control, name: "components" });
 
     const { data: categoriesData } = useCategories();
-    const { data: marginsData } = useMarginProfiles();
     const { data: productsData } = useProducts();
     const createProductMutation = useCreateProduct();
     const { data: productData } = useProduct(
@@ -87,7 +84,6 @@ export function ProductForm({
     const updateProductMutation = useUpdateProduct();
     const setComponentsMutation = useSetProductComponents();
     const categories = categoriesData?.data ?? [];
-    const margins = marginsData?.data ?? [];
     const products = (productsData?.data ?? []).filter(product => product.id !== productId);
 
     const watchedComponents = useWatch({ control, name: "components" }) ?? [];
@@ -131,7 +127,6 @@ export function ProductForm({
             brand: productData.data.brand,
             categoryId: productData.data.categoryId,
             unitOfMeasure: productData.data.unitOfMeasure,
-            marginProfileIds: productData.data.marginProfileIds,
             costPrice: Number(productData.data.costPrice),
             pvp: Number(productData.data.pvp),
             pvpCop: productData.data.pvpCop ? Number(productData.data.pvpCop) : 0,
@@ -231,7 +226,7 @@ export function ProductForm({
             onSubmit={handleSubmit(onSubmit)}
             className="space-y-2 h-full"
         >
-            <div>
+            <div className="mb-3">
                 <Label className="mb-1">
                     Código interno
                 </Label>
@@ -242,7 +237,7 @@ export function ProductForm({
                     {errors.internalCode?.message}
                 </p>
             </div>
-            <div>
+            <div className="mb-3">
                 <Label className="mb-1">
                     Código de barras
                 </Label>
@@ -251,7 +246,7 @@ export function ProductForm({
                 />
             </div>
 
-            <div>
+            <div className="mb-3">
                 <Label className="mb-1">
                     Nombre
                 </Label>
@@ -263,7 +258,7 @@ export function ProductForm({
                 </p>
             </div>
 
-            <div>
+            <div className="mb-3">
                 <Label className="mb-1">
                     Descripción
                 </Label>
@@ -272,7 +267,7 @@ export function ProductForm({
                 />
             </div>
 
-            <div>
+            <div className="mb-3">
                 <Label className="mb-1">
                     Marca
                 </Label>
@@ -287,7 +282,7 @@ export function ProductForm({
                 </p>
             </div>
 
-            <div>
+            <div className="mb-3">
                 <Label className="mb-1">
                     Categoría
                 </Label>
@@ -321,7 +316,7 @@ export function ProductForm({
                 </p>
             </div>
 
-            <div>
+            <div className="mb-6">
                 <Label className="mb-1">
                     Unidad de medida
                 </Label>
@@ -336,59 +331,7 @@ export function ProductForm({
                 </p>
             </div>
 
-            <div>
-
-                <Label className="mb-1">
-                    Perfiles de precio
-                </Label>
-
-                <Controller
-                    control={control}
-                    name="marginProfileIds"
-                    render={({ field }) => (
-
-                        <div className="space-y-2">
-                            {margins.map(profile => (
-                                <label
-                                    key={profile.id}
-                                    className="flex items-center gap-2"
-                                >
-                                    <input
-                                        type="checkbox"
-                                        value={profile.id}
-                                        checked={field.value.includes(profile.id)}
-                                        onChange={(e) => {
-                                            if (e.target.checked) {
-                                                field.onChange([
-                                                    ...field.value,
-                                                    profile.id
-                                                ]);
-                                            } else {
-                                                field.onChange(
-                                                    field.value.filter(
-                                                        id => id !== profile.id
-                                                    )
-                                                );
-                                            }
-                                        }}
-                                    />
-                                    {profile.name} (-{Number(profile.percentage)}%)
-                                </label>
-                            ))}
-                        </div>
-                    )}
-                />
-
-                <p className="text-sm text-red-500">
-
-                    {errors.marginProfileIds?.message}
-
-                </p>
-
-            </div>
-
-
-            <div className="space-y-3 rounded-lg border p-3">
+            <div className="space-y-3 rounded-lg border p-3 mb-6">
 
                 <div>
                     <Label className="mb-1">Componentes (opcional)</Label>
@@ -471,8 +414,8 @@ export function ProductForm({
             </div>
 
 
-            <div>
-                <Label>
+            <div className="mb-3">
+                <Label className="mb-1">
                     Costo
                 </Label>
                 <Input
@@ -489,9 +432,9 @@ export function ProductForm({
                 </p>
             </div>
 
-            <div>
-                <Label>
-                    PVP (precio al público)
+            <div className="mb-3">
+                <Label className="mb-1">
+                    PVP (USD)
                 </Label>
                 <Input
                     type="number"
@@ -499,16 +442,17 @@ export function ProductForm({
                     {...register("pvp")}
                 />
                 <p className="text-sm text-muted-foreground">
-                    Los perfiles de precio se calculan como descuento sobre este valor.
+                    Se calcula automáticamente el precio para todos los perfiles de precio activos, como
+                    descuento sobre este valor.
                 </p>
                 <p className="text-sm text-red-500">
                     {errors.pvp?.message}
                 </p>
             </div>
 
-            <div>
-                <Label>
-                    PVP en pesos colombianos (opcional)
+            <div className="mb-3">
+                <Label className="mb-1">
+                    PVP (COP)
                 </Label>
                 <Input
                     type="number"

@@ -97,10 +97,7 @@ export class ProductController {
 
             const body = {
                 ...req.body,
-                categoryId: BigInt(req.body.categoryId),
-                marginProfileIds: req.body.marginProfileIds.map(
-                    (id: number | string) => BigInt(id)
-                )
+                categoryId: BigInt(req.body.categoryId)
             };
 
             const product =
@@ -156,10 +153,7 @@ export class ProductController {
         try {
             const body = {
                 ...req.body,
-                categoryId: BigInt(req.body.categoryId),
-                marginProfileIds: req.body.marginProfileIds.map(
-                    (id: number | string) => BigInt(id)
-                )
+                categoryId: BigInt(req.body.categoryId)
             };
 
             const product =

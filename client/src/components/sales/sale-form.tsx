@@ -2,6 +2,7 @@ import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-hot-toast";
+import axios from "axios";
 import { saleSchema } from "@/validators";
 import type { SaleFormData } from "@/validators";
 
@@ -36,6 +37,7 @@ export function SaleForm({
                         .split("T")[0],
                 reference: "",
                 observations: "",
+                accountReceivableNumber: "",
                 details: []
             }
         });
@@ -139,11 +141,14 @@ const total =
 
             },
 
-            onError: () => {
+            onError: (error) => {
 
-                toast.error(
-                    "No se pudo registrar la venta."
-                );
+                const message =
+                    axios.isAxiosError<{ message?: string }>(error) && error.response?.data?.message
+                        ? error.response.data.message
+                        : "No se pudo registrar la venta.";
+
+                toast.error(message);
 
             }
 

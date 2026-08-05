@@ -49,7 +49,53 @@ export const createClientSchema = z.object({
         .number()
         .min(0, "El descuento no puede ser negativo.")
         .max(100, "El descuento no puede superar el 100%.")
+        .optional(),
+
+    isWholesaler: z
+        .boolean()
         .optional()
+        .default(false),
+
+    usesCredit: z
+        .boolean()
+        .optional()
+        .default(false),
+
+    currency: z
+        .enum(["USD", "COP"])
+        .optional()
+
+}).superRefine((data, ctx) => {
+
+    if (!data.isWholesaler) {
+
+        if (data.usesCredit) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "El crédito solo aplica a clientes mayoristas.",
+                path: ["usesCredit"]
+            });
+        }
+
+        if (data.discountPercentage) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "El % de descuento propio solo aplica a clientes mayoristas.",
+                path: ["discountPercentage"]
+            });
+        }
+
+        return;
+
+    }
+
+    if (!data.currency) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Seleccione la moneda que maneja el mayorista.",
+            path: ["currency"]
+        });
+    }
 
 });
 

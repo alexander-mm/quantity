@@ -20,58 +20,49 @@ export function PurchaseHeader() {
         control,
         formState: { errors }
     } = useFormContext();
-    
+
     const {
         data: suppliersData
     } = useSuppliers();
-    
+
     const {
         data: storesData
     } = useStores();
-    
+
     const suppliers =
-    suppliersData?.data ?? [];
-    
+        suppliersData?.data ?? [];
+
     const stores =
-    storesData?.data ?? [];
-    
+        storesData?.data ?? [];
+
     return (
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            
+
             <div>
-
-                <Label>Número</Label>
-
+                <Label className="mb-1">Número</Label>
                 <Input
                     {...register("number")}
                 />
-
                 <p className="text-sm text-red-500">
                     {errors.number?.message as string}
                 </p>
-
             </div>
 
             <div>
 
-                <Label>Fecha</Label>
-
+                <Label className="mb-1">Fecha</Label>
                 <Input
                     type="date"
                     {...register("purchaseDate")}
                 />
-
                 <p className="text-sm text-red-500">
                     {errors.purchaseDate?.message as string}
                 </p>
-
             </div>
 
             <div>
-
-                <Label>Proveedor</Label>
-
+                <Label className="mb-1">Proveedor</Label>
                 <Controller
                     control={control}
                     name="supplierId"
@@ -81,17 +72,13 @@ export function PurchaseHeader() {
                             value={field.value}
                             onValueChange={field.onChange}
                         >
-
                             <SelectTrigger>
-
                                 <SelectValue
                                     placeholder="Seleccione"
                                 />
-
                             </SelectTrigger>
 
                             <SelectContent>
-
                                 {
                                     suppliers.map(item => (
 
@@ -101,27 +88,19 @@ export function PurchaseHeader() {
                                         >
                                             {item.companyName}
                                         </SelectItem>
-
                                     ))
                                 }
-
                             </SelectContent>
-
                         </Select>
-
                     )}
                 />
-
                 <p className="text-sm text-red-500">
                     {errors.supplierId?.message as string}
                 </p>
-
             </div>
 
             <div>
-
-                <Label>Bodega</Label>
-
+                <Label className="mb-1">Bodega</Label>
                 <Controller
                     control={control}
                     name="storeId"
@@ -131,17 +110,13 @@ export function PurchaseHeader() {
                             value={field.value}
                             onValueChange={field.onChange}
                         >
-
                             <SelectTrigger>
-
                                 <SelectValue
                                     placeholder="Seleccione"
                                 />
-
                             </SelectTrigger>
 
                             <SelectContent>
-
                                 {
                                     stores.map(item => (
 
@@ -151,45 +126,30 @@ export function PurchaseHeader() {
                                         >
                                             {item.name}
                                         </SelectItem>
-
                                     ))
                                 }
-
                             </SelectContent>
-
                         </Select>
-
                     )}
                 />
-
                 <p className="text-sm text-red-500">
                     {errors.storeId?.message as string}
                 </p>
-
             </div>
 
             <div>
-
-                <Label>Referencia</Label>
-
+                <Label className="mb-1">Referencia</Label>
                 <Input
                     {...register("reference")}
                 />
-
             </div>
 
             <div>
-
                 <Label>Observaciones</Label>
-
                 <Input
                     {...register("observations")}
                 />
-
             </div>
-
         </div>
-
     );
-
 }
