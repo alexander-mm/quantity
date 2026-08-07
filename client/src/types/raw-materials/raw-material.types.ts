@@ -1,4 +1,4 @@
-export type RawMaterialShape = "SHEET" | "TUBE";
+export type RawMaterialShape = "SHEET" | "TUBE" | "ROD";
 export type TubeProfile = "ROUND" | "SQUARE" | "RECTANGULAR";
 
 export interface RawMaterial {

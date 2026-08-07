@@ -42,7 +42,7 @@ export class RawMaterialService {
             thickness: data.thickness,
             width: data.width ?? null,
             height: (data.shape === "SHEET" ? data.height : (data.profile === "RECTANGULAR" ? data.height : null)) ?? null,
-            length: (data.shape === "TUBE" ? data.length : null) ?? null,
+            length: ((data.shape === "TUBE" || data.shape === "ROD") ? data.length : null) ?? null,
             profile: (data.shape === "TUBE" ? data.profile : null) ?? null
         };
 

@@ -18,7 +18,13 @@ import { partRecipeSchema } from "@/validators";
 import type { PartRecipeFormData } from "@/validators";
 import { useRawMaterials } from "@/hooks";
 import { usePartRecipe, useSetPartRecipe } from "@/hooks";
-import type { Part } from "@/types";
+import type { Part, RawMaterialShape } from "@/types";
+
+const RAW_MATERIAL_SHAPE_LABELS: Record<RawMaterialShape, string> = {
+    SHEET: "lámina",
+    TUBE: "tubo",
+    ROD: "varilla"
+};
 
 type Props = {
     part: Part;
@@ -121,7 +127,7 @@ export function PartRecipeForm({ part, onSuccess }: Props) {
 
                         const items = rawMaterials.map(item => ({
                             value: item.id,
-                            label: `${item.code} - ${item.name} (${item.shape === "SHEET" ? "lámina" : "tubo"})`
+                            label: `${item.code} - ${item.name} (${RAW_MATERIAL_SHAPE_LABELS[item.shape]})`
                         }));
 
                         const selected = items.find(item => item.value === field.value) ?? null;
@@ -170,7 +176,7 @@ export function PartRecipeForm({ part, onSuccess }: Props) {
                 </div>
             )}
 
-            {rawMaterialShape === "TUBE" && (
+            {(rawMaterialShape === "TUBE" || rawMaterialShape === "ROD") && (
                 <div>
                     <Label>Longitud de la pieza</Label>
                     <Input type="number" step="0.01" min={0} placeholder="0" {...register("pieceLength", {

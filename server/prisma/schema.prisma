@@ -730,6 +730,7 @@ model ProductAssemblyDetail {
 enum RawMaterialShape {
   SHEET
   TUBE
+  ROD
 }
 
 enum TubeProfile {
@@ -752,7 +753,7 @@ model RawMaterial {
   shape     RawMaterialShape
   material  String
   thickness Decimal          @db.Decimal(8, 3)
-  // SHEET: width/height = dimensiones de la lamina. TUBE: width = diametro (ROUND) o lado (SQUARE/RECTANGULAR), height = segundo lado (solo RECTANGULAR), length = longitud del tubo.
+  // SHEET: width/height = dimensiones de la lamina. TUBE: width = diametro (ROUND) o lado (SQUARE/RECTANGULAR), height = segundo lado (solo RECTANGULAR), length = longitud del tubo. ROD: length = longitud de la varilla, thickness = calibre.
   width     Decimal?         @db.Decimal(10, 2)
   height    Decimal?         @db.Decimal(10, 2)
   length    Decimal?         @db.Decimal(10, 2)

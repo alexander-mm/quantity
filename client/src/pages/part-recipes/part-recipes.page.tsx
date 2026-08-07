@@ -38,7 +38,7 @@ export function PartRecipesPage() {
 
             <PageHeader
                 title="Recetas de corte"
-                description="Define de qué lámina o tubo se corta cada pieza y cuántas salen por unidad."
+                description="Define de qué lámina, tubo o varilla se corta cada pieza y cuántas salen por unidad."
             />
 
             <div className="mt-8 relative w-full max-w-md">

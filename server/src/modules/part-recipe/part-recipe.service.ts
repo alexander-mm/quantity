@@ -35,8 +35,8 @@ export class PartRecipeService {
             throw new ValidationError("Para una lámina debe indicar el ancho y el alto de la pieza.");
         }
 
-        if (rawMaterial.shape === "TUBE" && data.pieceLength === undefined) {
-            throw new ValidationError("Para un tubo debe indicar la longitud de la pieza.");
+        if ((rawMaterial.shape === "TUBE" || rawMaterial.shape === "ROD") && data.pieceLength === undefined) {
+            throw new ValidationError("Para un tubo o varilla debe indicar la longitud de la pieza.");
         }
 
         return this.repository.upsert(BigInt(partId), data);

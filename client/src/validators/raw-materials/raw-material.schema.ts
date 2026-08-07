@@ -4,7 +4,7 @@ export const rawMaterialSchema = z.object({
 
     code: z.string().trim().min(1, "El código es obligatorio.").max(50, "Máximo 50 caracteres."),
     name: z.string().trim().min(1, "El nombre es obligatorio.").max(150, "Máximo 150 caracteres."),
-    shape: z.enum(["SHEET", "TUBE"]),
+    shape: z.enum(["SHEET", "TUBE", "ROD"]),
     material: z.string().trim().min(1, "El material es obligatorio.").max(100, "Máximo 100 caracteres."),
     thickness: z.coerce.number({ error: "El calibre/espesor es obligatorio." }).positive("El calibre/espesor debe ser mayor que cero."),
     width: z.coerce.number().positive("Debe ser mayor que cero.").optional(),
@@ -46,6 +46,14 @@ export const rawMaterialSchema = z.object({
 
         if (data.profile === "RECTANGULAR" && data.height === undefined) {
             ctx.addIssue({ code: z.ZodIssueCode.custom, message: "El segundo lado es obligatorio para perfil rectangular.", path: ["height"] });
+        }
+
+    }
+
+    if (data.shape === "ROD") {
+
+        if (data.length === undefined) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "La longitud de la varilla es obligatoria.", path: ["length"] });
         }
 
     }

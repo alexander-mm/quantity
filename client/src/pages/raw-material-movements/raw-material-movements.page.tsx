@@ -23,7 +23,7 @@ export function RawMaterialMovementsPage() {
 
             <PageHeader
                 title="Movimientos de materia prima"
-                description="Registra la entrada (compra) y salida (consumo) de láminas y tubos."
+                description="Registra la entrada (compra) y salida (consumo) de láminas, tubos y varillas."
             />
 
             <div className="mt-8">

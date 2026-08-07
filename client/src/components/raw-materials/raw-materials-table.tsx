@@ -8,10 +8,20 @@ type Props = {
     onDelete: (rawMaterial: RawMaterial) => void;
 };
 
+const SHAPE_LABELS: Record<RawMaterial["shape"], string> = {
+    SHEET: "Lámina",
+    TUBE: "Tubo",
+    ROD: "Varilla"
+};
+
 function formatDimensions(item: RawMaterial): string {
 
     if (item.shape === "SHEET") {
         return `${Number(item.width)} x ${Number(item.height)} x ${Number(item.thickness)}`;
+    }
+
+    if (item.shape === "ROD") {
+        return `${Number(item.length)} m (calibre ${Number(item.thickness)})`;
     }
 
     const profileLabel = item.profile === "ROUND" ? "Ø" : item.profile === "RECTANGULAR" ? "▭" : "□";
@@ -27,7 +37,7 @@ export function RawMaterialsTable({ rawMaterials, onEdit, onDelete }: Props) {
                 <tr key={item.id} className="border-b transition hover:bg-muted/40">
                     <td className="px-6 py-4 font-medium">{item.code}</td>
                     <td className="px-6 py-4">{item.name}</td>
-                    <td className="px-6 py-4">{item.shape === "SHEET" ? "Lámina" : "Tubo"}</td>
+                    <td className="px-6 py-4">{SHAPE_LABELS[item.shape]}</td>
                     <td className="px-6 py-4">{item.material}</td>
                     <td className="px-6 py-4 text-sm text-muted-foreground">{formatDimensions(item)}</td>
                     <td className="px-6 py-4">{Number(item.quantity)}</td>

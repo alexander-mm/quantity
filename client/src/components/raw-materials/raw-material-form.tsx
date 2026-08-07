@@ -150,14 +150,19 @@ export function RawMaterialForm({ onSuccess, mode = "create", rawMaterialId }: P
                                 onValueChange={(value) => {
                                     field.onChange(value);
 
+                                    setValue("profile", undefined);
+                                    setValue("length", undefined);
+
                                     if (value === "SHEET") {
                                         setValue("width", 1220);
                                         setValue("height", 2440);
-                                        setValue("length", undefined);
-                                        setValue("profile", undefined);
                                     } else {
                                         setValue("width", undefined);
                                         setValue("height", undefined);
+
+                                        if (value === "TUBE") {
+                                            setValue("length", 6);
+                                        }
                                     }
 
                                 }}
@@ -168,6 +173,7 @@ export function RawMaterialForm({ onSuccess, mode = "create", rawMaterialId }: P
                                 <SelectContent>
                                     <SelectItem value="SHEET">Lámina</SelectItem>
                                     <SelectItem value="TUBE">Tubo</SelectItem>
+                                    <SelectItem value="ROD">Varilla</SelectItem>
                                 </SelectContent>
                             </Select>
                         )}
@@ -229,7 +235,7 @@ export function RawMaterialForm({ onSuccess, mode = "create", rawMaterialId }: P
                         </div>
 
                         <div>
-                            <Label className="mb-1">Longitud del tubo (mm)</Label>
+                            <Label className="mb-1">Longitud del tubo (m)</Label>
                             <Input type="number" step="0.01" min={0} defaultValue="6" {...register("length", { setValueAs: toOptionalNumber })} />
                             <p className="text-sm text-red-500">{errors.length?.message}</p>
                         </div>
@@ -266,6 +272,14 @@ export function RawMaterialForm({ onSuccess, mode = "create", rawMaterialId }: P
                             </>
                         )}
                     </>
+                )}
+
+                {shape === "ROD" && (
+                    <div>
+                        <Label className="mb-1">Longitud de la varilla (m)</Label>
+                        <Input type="number" step="0.01" min={0} placeholder="0" {...register("length", { setValueAs: toOptionalNumber })} />
+                        <p className="text-sm text-red-500">{errors.length?.message}</p>
+                    </div>
                 )}
 
                 {mode === "create" && (

@@ -44,7 +44,7 @@ export function PartCuttingOrdersPage() {
 
             <PageHeader
                 title="Órdenes de corte"
-                description="Registra el consumo de láminas o tubos y la producción de piezas resultante."
+                description="Registra el consumo de láminas, tubos o varillas y la producción de piezas resultante."
             />
 
             <div className="mt-8">

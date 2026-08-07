@@ -3,7 +3,7 @@ import { z } from "zod";
 export const partRecipeSchema = z.object({
 
     rawMaterialId: z.string().trim().min(1, "Seleccione la materia prima de origen."),
-    rawMaterialShape: z.enum(["SHEET", "TUBE"]).optional(),
+    rawMaterialShape: z.enum(["SHEET", "TUBE", "ROD"]).optional(),
     pieceWidth: z.coerce.number().positive("Debe ser mayor que cero.").optional(),
     pieceHeight: z.coerce.number().positive("Debe ser mayor que cero.").optional(),
     pieceLength: z.coerce.number().positive("Debe ser mayor que cero.").optional(),
@@ -23,7 +23,7 @@ export const partRecipeSchema = z.object({
 
     }
 
-    if (data.rawMaterialShape === "TUBE" && data.pieceLength === undefined) {
+    if ((data.rawMaterialShape === "TUBE" || data.rawMaterialShape === "ROD") && data.pieceLength === undefined) {
         ctx.addIssue({ code: z.ZodIssueCode.custom, message: "La longitud de la pieza es obligatoria.", path: ["pieceLength"] });
     }
 

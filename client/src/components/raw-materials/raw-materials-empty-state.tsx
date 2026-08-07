@@ -6,7 +6,7 @@ export function RawMaterialsEmptyState() {
             <Layers size={48} className="mx-auto text-muted-foreground" />
             <h2 className="mt-4 text-xl font-semibold">No existe materia prima registrada</h2>
             <p className="mt-2 text-muted-foreground">
-                Haz clic en "Nueva materia prima" para registrar la primera lámina o tubo.
+                Haz clic en "Nueva materia prima" para registrar la primera lámina, tubo o varilla.
             </p>
         </div>
     );

@@ -45,7 +45,7 @@ export function RawMaterialsPage() {
 
             <PageHeader
                 title="Materia Prima"
-                description="Láminas y tubos vírgenes usados para cortar piezas."
+                description="Láminas, tubos y varillas vírgenes usados para cortar piezas."
             />
 
             <div className="mt-8">

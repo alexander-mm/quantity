@@ -14,7 +14,7 @@ const baseRawMaterialSchema = z.object({
         .min(1, "El nombre es obligatorio.")
         .max(150, "El nombre no puede superar los 150 caracteres."),
 
-    shape: z.enum(["SHEET", "TUBE"]),
+    shape: z.enum(["SHEET", "TUBE", "ROD"]),
 
     material: z
         .string()
@@ -53,7 +53,7 @@ const baseRawMaterialSchema = z.object({
 });
 
 function applyShapeRules<T extends z.ZodType<{
-    shape: "SHEET" | "TUBE";
+    shape: "SHEET" | "TUBE" | "ROD";
     width?: number;
     height?: number;
     length?: number;
@@ -90,6 +90,14 @@ function applyShapeRules<T extends z.ZodType<{
 
             if (data.profile === "RECTANGULAR" && data.height === undefined) {
                 ctx.addIssue({ code: z.ZodIssueCode.custom, message: "El segundo lado es obligatorio para perfil rectangular.", path: ["height"] });
+            }
+
+        }
+
+        if (data.shape === "ROD") {
+
+            if (data.length === undefined) {
+                ctx.addIssue({ code: z.ZodIssueCode.custom, message: "La longitud de la varilla es obligatoria.", path: ["length"] });
             }
 
         }
