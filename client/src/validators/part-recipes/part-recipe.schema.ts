@@ -7,7 +7,7 @@ export const partRecipeSchema = z.object({
     pieceWidth: z.coerce.number().positive("Debe ser mayor que cero.").optional(),
     pieceHeight: z.coerce.number().positive("Debe ser mayor que cero.").optional(),
     pieceLength: z.coerce.number().positive("Debe ser mayor que cero.").optional(),
-    piecesPerUnit: z.coerce.number().positive("Debe ser mayor que cero.")
+    piecesPerUnit: z.coerce.number({ error: "Este campo es obligatorio." }).positive("Debe ser mayor que cero.")
 
 }).superRefine((data, ctx) => {
 

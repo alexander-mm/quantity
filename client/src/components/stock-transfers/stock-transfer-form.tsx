@@ -1,4 +1,5 @@
 import { FormProvider, useForm } from "react-hook-form";
+import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-hot-toast";
 import axios from "axios";
@@ -55,7 +56,7 @@ export function StockTransferForm({ onSuccess }: Props) {
 
     return (
         <FormProvider {...methods}>
-            <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-6 min-w-0">
+            <form onSubmit={methods.handleSubmit(onSubmit, onFormError)} className="space-y-6 min-w-0">
                 <StockTransferHeader />
                 <StockTransferDetailsTable />
                 <div className="flex justify-end">

@@ -31,6 +31,36 @@ export function useConfirmPurchase(){
                 ]
             });
 
+            queryClient.invalidateQueries({
+                queryKey:[
+                    "products"
+                ]
+            });
+
+            queryClient.invalidateQueries({
+                queryKey:[
+                    "product-prices"
+                ]
+            });
+
+            queryClient.invalidateQueries({
+                queryKey:[
+                    "product-price-entries"
+                ]
+            });
+
+            queryClient.invalidateQueries({
+                queryKey:[
+                    "product-price-entry-labels"
+                ]
+            });
+
+            queryClient.invalidateQueries({
+                queryKey:[
+                    "dashboard"
+                ]
+            });
+
         }
 
     });

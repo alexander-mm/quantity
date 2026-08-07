@@ -65,6 +65,8 @@ export function SupplierFormModal({
 
                     onSuccess={() => onOpenChange(false)}
 
+                    onCancel={() => onOpenChange(false)}
+
                 />
 
             </DialogContent>

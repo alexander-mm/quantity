@@ -26,6 +26,9 @@ export function useUpdateProduct() {
             queryClient.invalidateQueries({
                 queryKey: ["product", variables.id]
             });
+            queryClient.invalidateQueries({
+                queryKey: ["product-prices"]
+            });
         }
     });
 }

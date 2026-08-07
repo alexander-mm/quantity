@@ -315,6 +315,22 @@ export class StockTransferService {
                         movementDate: new Date()
                     });
 
+                } else if (transfer.destType === "STORE" && excess < 0) {
+
+                    // Llegó menos de lo que el origen registró como enviado: la diferencia se
+                    // devuelve al origen, porque el descargo original se hizo por lo enviado,
+                    // no por lo que el admin terminó confirmando como recibido.
+                    await movementService.createWithTransaction({
+                        movementTypeId: inMovementType!.id,
+                        productId: detail.productId,
+                        storeId: transfer.originStoreId,
+                        userId: transfer.userId,
+                        quantity: new Prisma.Decimal(-excess),
+                        unitCost: detail.product.costPrice,
+                        observations: `Corrección de envío ${transfer.number}: se confirmaron ${item.quantityReceived} recibidos vs ${detail.quantitySent} despachados originalmente.`,
+                        movementDate: new Date()
+                    });
+
                 }
 
                 // Destino técnico: no se mueve stock al resolver (la devolución es otra función, pendiente).

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Controller, useForm, type Resolver } from "react-hook-form";
+import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-hot-toast";
 import axios from "axios";
@@ -132,7 +133,7 @@ export function UserForm({ onSuccess, mode = "create", userId }: Props) {
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit, onFormError)} className="space-y-5">
 
             <div className="grid gap-4 sm:grid-cols-2">
                 <div>

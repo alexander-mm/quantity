@@ -6,7 +6,7 @@ export const rawMaterialSchema = z.object({
     name: z.string().trim().min(1, "El nombre es obligatorio.").max(150, "Máximo 150 caracteres."),
     shape: z.enum(["SHEET", "TUBE"]),
     material: z.string().trim().min(1, "El material es obligatorio.").max(100, "Máximo 100 caracteres."),
-    thickness: z.coerce.number().positive("El calibre/espesor debe ser mayor que cero."),
+    thickness: z.coerce.number({ error: "El calibre/espesor es obligatorio." }).positive("El calibre/espesor debe ser mayor que cero."),
     width: z.coerce.number().positive("Debe ser mayor que cero.").optional(),
     height: z.coerce.number().positive("Debe ser mayor que cero.").optional(),
     length: z.coerce.number().positive("Debe ser mayor que cero.").optional(),
@@ -38,6 +38,10 @@ export const rawMaterialSchema = z.object({
 
         if (data.width === undefined) {
             ctx.addIssue({ code: z.ZodIssueCode.custom, message: "El diámetro/lado del tubo es obligatorio.", path: ["width"] });
+        }
+
+        if (data.profile === undefined) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "El perfil del tubo es obligatorio.", path: ["profile"] });
         }
 
         if (data.profile === "RECTANGULAR" && data.height === undefined) {

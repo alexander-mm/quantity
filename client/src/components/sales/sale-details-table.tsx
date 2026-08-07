@@ -43,10 +43,10 @@ export function SaleDetailsTable(){
                 onClick={()=>append({
 
                     productId:"",
-                    quantity:1,
-                    unitPrice:0,
-                    discount:0,
-                    tax:0
+                    quantity:undefined,
+                    unitPrice:undefined,
+                    discount:undefined,
+                    tax:undefined
 
                 })}
             >

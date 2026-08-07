@@ -31,6 +31,18 @@ export function useConfirmSale(){
                 ]
             });
 
+            queryClient.invalidateQueries({
+                queryKey:[
+                    "accounts-receivable"
+                ]
+            });
+
+            queryClient.invalidateQueries({
+                queryKey:[
+                    "dashboard"
+                ]
+            });
+
         }
 
     });

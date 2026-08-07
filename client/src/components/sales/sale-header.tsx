@@ -1,4 +1,5 @@
 import { Controller, useFormContext } from "react-hook-form";
+import { toast } from "react-hot-toast";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,6 +13,7 @@ import {
 import {
     useClients,
     useStores,
+    useProducts,
     useProductPriceEntryLabels
 } from "@/hooks";
 import { getProductPriceEntries } from "@/services";
@@ -39,6 +41,10 @@ export function SaleHeader() {
         data: priceEntryLabelsData
     } = useProductPriceEntryLabels();
 
+    const {
+        data: productsData
+    } = useProducts();
+
     const clients =
         clientsData?.data ?? [];
 
@@ -48,12 +54,21 @@ export function SaleHeader() {
     const priceEntryLabels =
         priceEntryLabelsData?.data ?? [];
 
+    const products =
+        productsData?.data ?? [];
+
     const clientId = watch("clientId");
     const selectedClient = clients.find(client => client.id === clientId);
     const requiresAccountReceivable = !!selectedClient?.isWholesaler && !!selectedClient?.usesCredit;
     const currencyLocked = !!selectedClient?.isWholesaler && !!selectedClient?.currency;
+    const clientCurrency = currencyLocked ? selectedClient!.currency : null;
     const clientDiscountPercentage = Number(selectedClient?.discountPercentage ?? 0);
     const hasClientDiscount = clientDiscountPercentage > 0;
+    const totalDiscountPercentage = Number(watch("totalDiscountPercentage") ?? 0);
+
+    const filteredPriceEntryLabels = clientCurrency
+        ? priceEntryLabels.filter(entry => entry.currency === clientCurrency)
+        : priceEntryLabels;
 
     const applyTotalDiscountToAllLines = (percentage: number) => {
 
@@ -85,7 +100,9 @@ export function SaleHeader() {
 
         const [entryCurrency, entrySequenceRaw] = priceEntryKey.split("-");
         const entrySequence = Number(entrySequenceRaw);
+        const entryLabel = `PVP ${entryCurrency} ${entrySequenceRaw}`;
         const details = getValues("details") ?? [];
+        const productsMissingPrice: string[] = [];
 
         for (let index = 0; index < details.length; index++) {
 
@@ -102,15 +119,45 @@ export function SaleHeader() {
                     entry => entry.currency === entryCurrency && entry.sequence === entrySequence
                 );
 
-                setValue(
-                    `details.${index}.unitPrice`,
-                    match ? Number(match.price) : undefined
-                );
+                const newUnitPrice = match ? Number(match.price) : undefined;
+
+                setValue(`details.${index}.unitPrice`, newUnitPrice);
+
+                if (!match) {
+
+                    const product = products.find(item => item.id === productId);
+                    productsMissingPrice.push(product ? `${product.internalCode} - ${product.name}` : productId);
+
+                } else if (hasClientDiscount) {
+
+                    const quantity = Number(details[index]?.quantity) || 0;
+
+                    setValue(
+                        `details.${index}.discount`,
+                        quantity * newUnitPrice * (clientDiscountPercentage / 100)
+                    );
+
+                } else if (totalDiscountPercentage > 0) {
+
+                    const quantity = Number(details[index]?.quantity) || 0;
+
+                    setValue(
+                        `details.${index}.discount`,
+                        quantity * newUnitPrice * (totalDiscountPercentage / 100)
+                    );
+
+                }
 
             } catch (error) {
                 console.error(error);
             }
 
+        }
+
+        if (productsMissingPrice.length > 0) {
+            toast.error(
+                `Sin precio "${entryLabel}" para: ${productsMissingPrice.join(", ")}. Ingresa el precio manualmente en cada línea.`
+            );
         }
 
     };
@@ -181,6 +228,22 @@ export function SaleHeader() {
                                     setValue("currency", selected.currency);
                                 }
 
+                                const newClientCurrency =
+                                    selected?.isWholesaler && selected?.currency
+                                        ? selected.currency
+                                        : null;
+
+                                const currentPriceEntryKey: string = getValues("priceEntryKey") ?? "";
+                                const [currentEntryCurrency] = currentPriceEntryKey.split("-");
+
+                                if (
+                                    newClientCurrency &&
+                                    currentPriceEntryKey &&
+                                    currentEntryCurrency !== newClientCurrency
+                                ) {
+                                    setValue("priceEntryKey", "");
+                                }
+
                                 if (!(selected?.isWholesaler && selected?.usesCredit)) {
                                     setValue("accountReceivableNumber", "");
                                 }
@@ -214,7 +277,7 @@ export function SaleHeader() {
                                 <SelectValue placeholder="Precio base del producto" />
                             </SelectTrigger>
                             <SelectContent>
-                                {priceEntryLabels.map(entry => (
+                                {filteredPriceEntryLabels.map(entry => (
                                     <SelectItem key={`${entry.currency}-${entry.sequence}`} value={`${entry.currency}-${entry.sequence}`}>
                                         {entry.label}
                                     </SelectItem>
@@ -225,7 +288,9 @@ export function SaleHeader() {
                 />
 
                 <p className="mt-1 text-xs text-muted-foreground">
-                    Se aplica de inmediato a todos los productos ya agregados a la venta. Es independiente de la moneda.
+                    {clientCurrency
+                        ? `Se aplica de inmediato a todos los productos ya agregados a la venta. Solo se muestran precios en ${clientCurrency}, la moneda asignada al cliente.`
+                        : "Se aplica de inmediato a todos los productos ya agregados a la venta. Es independiente de la moneda."}
                 </p>
             </div>
 
@@ -241,6 +306,7 @@ export function SaleHeader() {
                                 type="number"
                                 min={0}
                                 step="0.01"
+                                placeholder="0"
                                 value={field.value ?? ""}
                                 onChange={(e) => {
                                     const percentage = Number(e.target.value) || 0;

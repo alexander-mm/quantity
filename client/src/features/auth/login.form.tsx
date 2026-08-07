@@ -1,4 +1,5 @@
 import { useForm } from "react-hook-form";
+import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginSchema } from "./login.schema";
 import { useState } from "react";
@@ -67,7 +68,7 @@ export function LoginForm() {
     }
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit, onFormError)}>
             <div className="flex justify-between">
                 <Label className="mr-2">Usuario:</Label>
                 <Input

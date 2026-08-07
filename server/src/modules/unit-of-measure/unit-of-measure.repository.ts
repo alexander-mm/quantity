@@ -9,7 +9,7 @@ export class UnitOfMeasureRepository extends BaseRepository {
                 isActive: true
             },
             orderBy: {
-                name: "asc"
+                createdAt: "desc"
             }
         });
     }

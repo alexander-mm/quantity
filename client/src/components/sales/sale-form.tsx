@@ -1,4 +1,5 @@
 import { FormProvider, useForm, useWatch } from "react-hook-form";
+import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-hot-toast";
@@ -40,7 +41,7 @@ export function SaleForm({
                 // Solo controla qué precio (PVP USD N / PVP COP N) se aplica a todas las líneas de esta venta.
                 priceEntryKey: "",
                 // Solo controla el % de descuento que se reparte entre las líneas de esta venta.
-                totalDiscountPercentage: 0,
+                totalDiscountPercentage: undefined,
                 details: []
             }
         });
@@ -142,7 +143,7 @@ const total =
             {...methods}
         >
             <form
-                onSubmit={methods.handleSubmit(onSubmit)}
+                onSubmit={methods.handleSubmit(onSubmit, onFormError)}
                 noValidate
                 className="space-y-6 min-w-0"
             >

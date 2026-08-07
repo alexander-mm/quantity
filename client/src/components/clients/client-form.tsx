@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-hot-toast";
 import axios from "axios";
@@ -29,7 +30,7 @@ export function ClientForm({ onSuccess, mode = "create", clientId }: Props) {
             phone: "",
             email: "",
             address: "",
-            discountPercentage: 0,
+            discountPercentage: undefined,
             isWholesaler: false,
             usesCredit: false,
             currency: undefined
@@ -126,7 +127,7 @@ export function ClientForm({ onSuccess, mode = "create", clientId }: Props) {
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit, onFormError)} className="space-y-5">
 
             <div>
                 <Label className="mb-1">Documento</Label>
@@ -216,7 +217,10 @@ export function ClientForm({ onSuccess, mode = "create", clientId }: Props) {
                                 min={0}
                                 max={100}
                                 step="0.01"
-                                {...register("discountPercentage", { valueAsNumber: true })}
+                                placeholder="0"
+                                {...register("discountPercentage", {
+                                    setValueAs: (v) => (v === "" ? undefined : Number(v))
+                                })}
                             />
                             <p className="text-xs text-muted-foreground">
                                 En Ventas no se aplicará ningún perfil de margen a este cliente — en su lugar, se

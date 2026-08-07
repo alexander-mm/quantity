@@ -18,6 +18,11 @@ export function useCreateInventoryMovement() {
                     "inventory-stock"
                 ]
             });
+            queryClient.invalidateQueries({
+                queryKey: [
+                    "dashboard"
+                ]
+            });
         }
     });
 }

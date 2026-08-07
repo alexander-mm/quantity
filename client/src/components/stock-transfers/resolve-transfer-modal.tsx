@@ -118,8 +118,8 @@ function ResolveTransferModalContent({ transfer, onDone }: ContentProps) {
 
                 <p className="text-xs text-muted-foreground">
                     La "cantidad final" es lo que efectivamente se confirma como recibido, luego de confirmar con la tienda
-                    o bodega correspondiente. Si es mayor a lo enviado, el origen se ajusta automáticamente por la diferencia.
-                    Si es menor (pérdida real), esa diferencia no se descuenta sola — usa Ajustes de Inventario para eso.
+                    o bodega correspondiente. El origen se ajusta automáticamente por la diferencia: si es mayor a lo
+                    enviado, se descarga la diferencia adicional del origen; si es menor, la diferencia se devuelve al origen.
                 </p>
 
                 <div className="flex justify-end">

@@ -27,7 +27,7 @@ export function StockTransferDetailsTable() {
                 </table>
             </div>
 
-            <Button type="button" variant="outline" onClick={() => append({ productId: "", quantitySent: 1 })}>
+            <Button type="button" variant="outline" onClick={() => append({ productId: "", quantitySent: undefined })}>
                 <Plus size={18} />
                 Agregar producto
             </Button>

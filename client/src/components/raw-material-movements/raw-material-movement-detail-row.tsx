@@ -85,7 +85,10 @@ export function RawMaterialMovementDetailRow({ index, onRemove }: Props) {
                     type="number"
                     min={0}
                     step="0.01"
-                    {...register(`details.${index}.quantity`, { valueAsNumber: true })}
+                    placeholder="0"
+                    {...register(`details.${index}.quantity`, {
+                        setValueAs: (v) => (v === "" ? undefined : Number(v))
+                    })}
                 />
                 {insufficient && (
                     <p className="mt-1 text-xs text-red-500">

@@ -72,7 +72,10 @@ export function EquipmentPartRow({ index, onRemove }: Props) {
                     type="number"
                     min={0}
                     step="1"
-                    {...register(`parts.${index}.quantity`, { valueAsNumber: true })}
+                    placeholder="0"
+                    {...register(`parts.${index}.quantity`, {
+                        setValueAs: (v) => (v === "" ? undefined : Number(v))
+                    })}
                 />
             </div>
 

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
+import { toast } from "react-hot-toast";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import {
     Combobox,
@@ -32,7 +33,8 @@ export function SaleDetailRow({
         control,
         register,
         watch,
-        setValue
+        setValue,
+        formState:{errors}
     }=useFormContext();
 
     const{
@@ -209,6 +211,10 @@ export function SaleDetailRow({
 
                                             if(newUnitPrice!==undefined){
                                                 applyClientDiscount(quantity,newUnitPrice);
+                                            } else {
+                                                toast.error(
+                                                    `${item.label} no tiene precio registrado en "${selectedEntryLabel}". Ingresa el precio manualmente.`
+                                                );
                                             }
 
                                         }).catch(error=>{
@@ -282,7 +288,7 @@ export function SaleDetailRow({
                 </p>
             )}
 
-            {!hasClientDiscount && priceEntryKey && productId && (
+            {priceEntryKey && productId && (
 
                 missingPriceForEntry ? (
                     <p className="text-sm text-red-500">
@@ -344,10 +350,11 @@ export function SaleDetailRow({
                         type="number"
                         min={0}
                         step="1"
+                        placeholder="0"
                         {...register(
                             `details.${index}.quantity`,
                             {
-                                valueAsNumber:true,
+                                setValueAs: (v) => (v === "" ? undefined : Number(v)),
                                 onChange:(e)=>{
                                     applyClientDiscount(
                                         Number(e.target.value)||0,
@@ -368,10 +375,11 @@ export function SaleDetailRow({
                         type="number"
                         min={0}
                         step="1"
+                        placeholder="0"
                         {...register(
                             `details.${index}.unitPrice`,
                             {
-                                valueAsNumber:true,
+                                setValueAs: (v) => (v === "" ? undefined : Number(v)),
                                 onChange:(e)=>{
                                     applyClientDiscount(
                                         quantity,
@@ -381,6 +389,9 @@ export function SaleDetailRow({
                             }
                         )}
                     />
+                    <p className="text-sm text-red-500">
+                        {(errors.details as { [key: number]: { unitPrice?: { message?: string } } } | undefined)?.[index]?.unitPrice?.message}
+                    </p>
 
                 </div>
 
@@ -392,11 +403,12 @@ export function SaleDetailRow({
                         type="number"
                         min={0}
                         step="1"
+                        placeholder="0"
                         disabled={hasClientDiscount||hasLineDiscountProfile}
                         {...register(
                             `details.${index}.discount`,
                             {
-                                valueAsNumber:true
+                                setValueAs: (v) => (v === "" ? undefined : Number(v))
                             }
                         )}
                     />
@@ -411,10 +423,11 @@ export function SaleDetailRow({
                         type="number"
                         min={0}
                         step="1"
+                        placeholder="0"
                         {...register(
                             `details.${index}.tax`,
                             {
-                                valueAsNumber:true
+                                setValueAs: (v) => (v === "" ? undefined : Number(v))
                             }
                         )}
                     />

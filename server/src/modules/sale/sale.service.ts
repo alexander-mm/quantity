@@ -7,6 +7,8 @@ import { InventoryMovementService } from "../inventory-movement/inventory-moveme
 import { MovementTypeRepository } from "../movement-type/movement-type.repository.js";
 import { ClientRepository } from "../client/client.repository.js";
 import { AccountReceivableRepository } from "../account-receivable/account-receivable.repository.js";
+import { ProductRepository } from "../product/product.repository.js";
+import { InventoryStockService } from "../inventory-stock/inventory-stock.service.js";
 
 export class SaleService {
 
@@ -22,6 +24,12 @@ export class SaleService {
 
     private readonly accountReceivableRepository =
         new AccountReceivableRepository();
+
+    private readonly productRepository =
+        new ProductRepository();
+
+    private readonly inventoryStockService =
+        new InventoryStockService();
 
     async findAll(): Promise<Sale[]> {
         return this.repository.findAll();
@@ -87,6 +95,33 @@ export class SaleService {
             if (existingReceivable) {
                 throw new ConflictError(
                     "Ya existe una cuenta de cobro con ese número."
+                );
+            }
+
+        }
+
+        for (const detail of data.details) {
+
+            const product = await this.productRepository.findById(
+                BigInt(detail.productId)
+            );
+
+            if (!product) {
+                throw new NotFoundError(
+                    "Uno de los productos seleccionados no existe."
+                );
+            }
+
+            const stock = await this.inventoryStockService.findByProductAndStore(
+                detail.productId,
+                data.storeId
+            );
+
+            const available = stock ? Number(stock.quantity) : 0;
+
+            if (available < detail.quantity) {
+                throw new ValidationError(
+                    `Stock insuficiente de "${product.name}": disponible ${available}, solicitado ${detail.quantity}.`
                 );
             }
 

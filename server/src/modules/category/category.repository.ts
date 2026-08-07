@@ -15,7 +15,7 @@ export class CategoryRepository extends BaseRepository {
                 isActive: true
             },
             orderBy: {
-                name: "asc"
+                createdAt: "desc"
             }
         });
     }

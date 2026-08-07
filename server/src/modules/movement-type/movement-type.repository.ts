@@ -15,7 +15,7 @@ export class MovementTypeRepository extends BaseRepository {
                 isActive: true
             },
             orderBy: {
-                name: "asc"
+                createdAt: "desc"
             }
         });
     }

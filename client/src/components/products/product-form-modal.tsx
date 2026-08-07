@@ -41,6 +41,7 @@ export function ProductFormModal({
                     mode={mode}
                     productId={productId}
                     onSuccess={() => onOpenChange(false)}
+                    onCancel={() => onOpenChange(false)}
                 />
             </DialogContent>
         </Dialog>

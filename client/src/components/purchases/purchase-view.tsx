@@ -94,10 +94,10 @@ export function PurchaseView({
                             Costo
                         </th>
                         <th className="p-2">
-                            PVP (USD)
+                            PVPs (USD)
                         </th>
                         <th className="p-2">
-                            PVP (COP)
+                            PVPs (COP)
                         </th>
                         <th className="p-2">
                             Desc.
@@ -113,37 +113,65 @@ export function PurchaseView({
 
                 <tbody>
                     {
-                        purchase.details.map(detail => (
-                            <tr
-                                key={detail.id}
-                                className="border-b"
-                            >
-                                <td className="p-2">
-                                    {detail.product.name}
-                                </td>
-                                <td className="p-2 text-center">
-                                    {detail.quantity}
-                                </td>
-                                <td className="p-2 text-center">
-                                    ${Number(detail.unitCost).toFixed(2)}
-                                </td>
-                                <td className="p-2 text-center">
-                                    {detail.pvp ? `$${Number(detail.pvp).toFixed(2)}` : "-"}
-                                </td>
-                                <td className="p-2 text-center">
-                                    {detail.pvpCop ? Number(detail.pvpCop).toLocaleString("es-CO") : "-"}
-                                </td>
-                                <td className="p-2 text-center">
-                                    ${Number(detail.discount).toFixed(2)}
-                                </td>
-                                <td className="p-2 text-center">
-                                    ${Number(detail.tax).toFixed(2)}
-                                </td>
-                                <td className="p-2 text-center">
-                                    ${Number(detail.lineTotal).toFixed(2)}
-                                </td>
-                            </tr>
-                        ))
+                        purchase.details.map(detail => {
+
+                            const usdEntries = detail.priceEntries
+                                .filter(entry => entry.currency === "USD")
+                                .sort((a, b) => a.sequence - b.sequence);
+
+                            const copEntries = detail.priceEntries
+                                .filter(entry => entry.currency === "COP")
+                                .sort((a, b) => a.sequence - b.sequence);
+
+                            return (
+                                <tr
+                                    key={detail.id}
+                                    className="border-b"
+                                >
+                                    <td className="p-2">
+                                        {detail.product.name}
+                                    </td>
+                                    <td className="p-2 text-center">
+                                        {detail.quantity}
+                                    </td>
+                                    <td className="p-2 text-center">
+                                        ${Number(detail.unitCost).toFixed(2)}
+                                    </td>
+                                    <td className="p-2 text-center">
+                                        {usdEntries.length > 0 ? (
+                                            <div className="flex flex-col gap-0.5">
+                                                {usdEntries.map(entry => (
+                                                    <span key={entry.id}>
+                                                        PVP USD {entry.sequence}: ${Number(entry.price).toFixed(2)}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        ) : "-"}
+                                    </td>
+                                    <td className="p-2 text-center">
+                                        {copEntries.length > 0 ? (
+                                            <div className="flex flex-col gap-0.5">
+                                                {copEntries.map(entry => (
+                                                    <span key={entry.id}>
+                                                        PVP COP {entry.sequence}: {Number(entry.price).toLocaleString("es-CO")}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        ) : "-"}
+                                    </td>
+                                    <td className="p-2 text-center">
+                                        ${Number(detail.discount).toFixed(2)}
+                                    </td>
+                                    <td className="p-2 text-center">
+                                        ${Number(detail.tax).toFixed(2)}
+                                    </td>
+                                    <td className="p-2 text-center">
+                                        ${Number(detail.lineTotal).toFixed(2)}
+                                    </td>
+                                </tr>
+                            );
+
+                        })
                     }
                 </tbody>
             </table>

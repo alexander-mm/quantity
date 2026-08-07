@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { FormProvider, useFieldArray, useForm } from "react-hook-form";
+import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
 import { toast } from "react-hot-toast";
@@ -47,7 +48,9 @@ export function EquipmentPartEditor({ productId }: Props) {
         setMutation.mutate({
             productId,
             data: {
-                parts: data.parts.filter(item => item.partId)
+                parts: data.parts
+                    .filter(item => item.partId)
+                    .map(item => ({ partId: item.partId, quantity: Number(item.quantity) }))
             }
         }, {
             onSuccess: () => {
@@ -66,7 +69,7 @@ export function EquipmentPartEditor({ productId }: Props) {
 
     return (
         <FormProvider {...methods}>
-            <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit, onFormError)} noValidate className="space-y-4">
 
                 <div className="space-y-3">
                     {fields.length === 0 && (
@@ -87,7 +90,7 @@ export function EquipmentPartEditor({ productId }: Props) {
                     <Button
                         type="button"
                         variant="outline"
-                        onClick={() => append({ partId: "", quantity: 1 })}
+                        onClick={() => append({ partId: "", quantity: undefined })}
                     >
                         <Plus size={18} />
                         Agregar pieza

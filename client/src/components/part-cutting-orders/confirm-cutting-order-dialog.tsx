@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -22,8 +23,8 @@ export function ConfirmCuttingOrderDialog({ open, order, loading = false, onOpen
     const { register, handleSubmit, reset, formState: { errors } } = useForm<ConfirmPartCuttingOrderFormData>({
         resolver: zodResolver(confirmPartCuttingOrderSchema),
         defaultValues: {
-            goodPieces: 0,
-            defectivePieces: 0
+            goodPieces: undefined,
+            defectivePieces: undefined
         }
     });
 
@@ -32,7 +33,7 @@ export function ConfirmCuttingOrderDialog({ open, order, loading = false, onOpen
         if (order) {
             reset({
                 goodPieces: Number(order.expectedPieces),
-                defectivePieces: 0
+                defectivePieces: undefined
             });
         }
 
@@ -56,7 +57,7 @@ export function ConfirmCuttingOrderDialog({ open, order, loading = false, onOpen
                     <DialogTitle>Confirmar orden de corte</DialogTitle>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
+                <form onSubmit={handleSubmit(onSubmit, onFormError)} noValidate className="space-y-5">
 
                     <p className="text-sm text-muted-foreground">
                         Esto descontará <strong>{Number(order.rawMaterialQtyUsed)}</strong> unidad(es) de{" "}
@@ -68,13 +69,17 @@ export function ConfirmCuttingOrderDialog({ open, order, loading = false, onOpen
 
                         <div>
                             <Label>Piezas buenas</Label>
-                            <Input type="number" min={0} step="1" {...register("goodPieces", { valueAsNumber: true })} />
+                            <Input type="number" min={0} step="1" placeholder="0" {...register("goodPieces", {
+                                setValueAs: (v) => (v === "" ? undefined : Number(v))
+                            })} />
                             <p className="text-sm text-red-500">{errors.goodPieces?.message}</p>
                         </div>
 
                         <div>
                             <Label>Piezas dañadas (novedad)</Label>
-                            <Input type="number" min={0} step="1" {...register("defectivePieces", { valueAsNumber: true })} />
+                            <Input type="number" min={0} step="1" placeholder="0" {...register("defectivePieces", {
+                                setValueAs: (v) => (v === "" ? undefined : Number(v))
+                            })} />
                             <p className="text-sm text-red-500">{errors.defectivePieces?.message}</p>
                         </div>
 

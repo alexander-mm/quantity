@@ -30,11 +30,11 @@ export function PurchaseDetailsTable(){
                 variant="outline"
                 onClick={()=>append({
                     productId:"",
-                    quantity:1,
-                    unitCost:0,
+                    quantity:undefined,
+                    unitCost:undefined,
                     pvp:0,
-                    discount:0,
-                    tax:0
+                    discount:undefined,
+                    tax:undefined
                 })}
             >
                 <Plus size={18}/>

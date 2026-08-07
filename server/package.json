@@ -19,7 +19,9 @@
     "prisma:seed": "tsx prisma/seed.ts",
     "products:import": "tsx scripts/import-products.ts",
     "products:wipe": "tsx scripts/wipe-product-catalog.ts",
-    "prisma:deploy:prod": "dotenv -e .env.production -- prisma migrate deploy"
+    "prisma:deploy:prod": "dotenv -e .env.production -- prisma migrate deploy",
+    "prisma:deploy:branch": "dotenv -e .env.branch -- prisma migrate deploy",
+    "products:import:branch": "dotenv -e .env.branch -- tsx scripts/import-products.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",
@@ -47,6 +49,7 @@
     "@types/multer": "^2.2.0",
     "@types/node": "^26.1.0",
     "dotenv-cli": "^11.0.0",
+    "neonctl": "^2.46.0",
     "nodemon": "^3.1.14",
     "prisma": "^6.16.2",
     "ts-node": "^10.9.2",

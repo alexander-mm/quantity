@@ -1,4 +1,5 @@
 import { FormProvider, useForm, useWatch } from "react-hook-form";
+import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-hot-toast";
@@ -137,7 +138,7 @@ const total =
             {...methods}
         >
             <form
-                onSubmit={methods.handleSubmit(onSubmit)}
+                onSubmit={methods.handleSubmit(onSubmit, onFormError)}
                 noValidate
                 className="space-y-6 min-w-0"
             >

@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-hot-toast";
 import axios from "axios";
@@ -75,7 +76,7 @@ export function RoleForm({ onSuccess, mode = "create", roleId }: Props) {
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit, onFormError)} className="space-y-5">
             <div>
                 <Label className="mb-1">Nombre</Label>
                 <Input placeholder="Ej: Supervisor" {...register("name")} />

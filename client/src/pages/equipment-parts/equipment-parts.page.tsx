@@ -17,10 +17,12 @@ import { useEquipmentPartPreview } from "@/hooks";
 export function EquipmentPartsPage() {
 
     const { data: productsData } = useProducts();
-    const products = productsData?.data ?? [];
+    const products = (productsData?.data ?? []).filter(
+        product => product.category.name === "Equipos de ordeño"
+    );
 
     const [productId, setProductId] = useState<string>("");
-    const [quantity, setQuantity] = useState<number>(1);
+    const [quantity, setQuantity] = useState<number | undefined>(undefined);
 
     const { data: previewData, isFetching: isPreviewLoading } = useEquipmentPartPreview(
         productId || undefined,
@@ -78,8 +80,9 @@ export function EquipmentPartsPage() {
                                     type="number"
                                     min={1}
                                     step="1"
-                                    value={quantity}
-                                    onChange={(e) => setQuantity(Number(e.target.value) || 0)}
+                                    placeholder="1"
+                                    value={quantity ?? ""}
+                                    onChange={(e) => setQuantity(e.target.value === "" ? undefined : Number(e.target.value))}
                                 />
                             </div>
 

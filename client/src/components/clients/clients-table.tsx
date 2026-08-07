@@ -21,10 +21,13 @@ export function ClientsTable({ clients, onEdit, onDelete }: Props) {
     const isAdmin = user?.roleName === ROLES.ADMIN;
 
     return (
-        <EntityTable headers={["Cliente", "Documento", "Teléfono", "Descuento", "Acciones"]}>
+        <EntityTable headers={["Cliente", "Nombre", "Documento", "Teléfono", "Descuento", "Acciones"]}>
             {clients.map(client => (
                 <tr key={client.id} className="border-b transition hover:bg-muted/40">
                     <td className="px-6 py-4 font-medium">{getClientLabel(client)}</td>
+                    <td className="px-6 py-4">
+                        {[client.firstName, client.lastName].filter(Boolean).join(" ") || "-"}
+                    </td>
                     <td className="px-6 py-4">{client.document}</td>
                     <td className="px-6 py-4">{client.phone ?? "-"}</td>
                     <td className="px-6 py-4">

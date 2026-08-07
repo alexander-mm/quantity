@@ -188,10 +188,11 @@ export function PurchaseDetailRow({
                         type="number"
                         min={0}
                         step="1"
+                        placeholder="0"
                         {...register(
                             `details.${index}.quantity`,
                             {
-                                valueAsNumber:true
+                                setValueAs: (v) => (v === "" ? undefined : Number(v))
                             }
                         )}
                     />
@@ -206,10 +207,11 @@ export function PurchaseDetailRow({
                         type="number"
                         min={0}
                         step="1"
+                        placeholder="0"
                         {...register(
                             `details.${index}.unitCost`,
                             {
-                                valueAsNumber:true
+                                setValueAs: (v) => (v === "" ? undefined : Number(v))
                             }
                         )}
                     />
@@ -224,10 +226,11 @@ export function PurchaseDetailRow({
                         type="number"
                         min={0}
                         step="1"
+                        placeholder="0"
                         {...register(
                             `details.${index}.discount`,
                             {
-                                valueAsNumber:true
+                                setValueAs: (v) => (v === "" ? undefined : Number(v))
                             }
                         )}
                     />
@@ -242,10 +245,11 @@ export function PurchaseDetailRow({
                         type="number"
                         min={0}
                         step="1"
+                        placeholder="0"
                         {...register(
                             `details.${index}.tax`,
                             {
-                                valueAsNumber:true
+                                setValueAs: (v) => (v === "" ? undefined : Number(v))
                             }
                         )}
                     />
@@ -275,7 +279,10 @@ export function PurchaseDetailRow({
                                         type="number"
                                         min={0}
                                         step="0.01"
-                                        {...register(`details.${index}.priceEntries.${priceIndex}.price`, { valueAsNumber: true })}
+                                        placeholder="0"
+                                        {...register(`details.${index}.priceEntries.${priceIndex}.price`, {
+                                            setValueAs: (v) => (v === "" ? undefined : Number(v))
+                                        })}
                                     />
                                 </div>
                                 <Button type="button" variant="ghost" size="icon" onClick={() => removePriceEntry(priceIndex)}>
@@ -294,7 +301,7 @@ export function PurchaseDetailRow({
                         size="sm"
                         onClick={() => {
                             const nextSequence = watchedPriceEntries.filter((e: { currency: string }) => e?.currency === "USD").length + 1;
-                            appendPriceEntry({ currency: "USD", sequence: nextSequence, price: 0 });
+                            appendPriceEntry({ currency: "USD", sequence: nextSequence, price: undefined });
                         }}
                     >
                         <Plus size={16} />
@@ -306,7 +313,7 @@ export function PurchaseDetailRow({
                         size="sm"
                         onClick={() => {
                             const nextSequence = watchedPriceEntries.filter((e: { currency: string }) => e?.currency === "COP").length + 1;
-                            appendPriceEntry({ currency: "COP", sequence: nextSequence, price: 0 });
+                            appendPriceEntry({ currency: "COP", sequence: nextSequence, price: undefined });
                         }}
                     >
                         <Plus size={16} />

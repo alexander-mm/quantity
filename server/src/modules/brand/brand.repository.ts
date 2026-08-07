@@ -16,7 +16,7 @@ export class BrandRepository extends BaseRepository {
                 isActive: true
             },
             orderBy: {
-                name: "asc"
+                createdAt: "desc"
             }
         });
     }

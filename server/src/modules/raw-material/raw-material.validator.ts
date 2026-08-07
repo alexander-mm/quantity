@@ -84,6 +84,10 @@ function applyShapeRules<T extends z.ZodType<{
                 ctx.addIssue({ code: z.ZodIssueCode.custom, message: "El diámetro/lado del tubo es obligatorio.", path: ["width"] });
             }
 
+            if (data.profile === undefined) {
+                ctx.addIssue({ code: z.ZodIssueCode.custom, message: "El perfil del tubo es obligatorio.", path: ["profile"] });
+            }
+
             if (data.profile === "RECTANGULAR" && data.height === undefined) {
                 ctx.addIssue({ code: z.ZodIssueCode.custom, message: "El segundo lado es obligatorio para perfil rectangular.", path: ["height"] });
             }

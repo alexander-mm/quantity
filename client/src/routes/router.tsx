@@ -267,7 +267,7 @@ const router = createBrowserRouter([
     {
         path: "/transfer-issues",
         element: (
-            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+            <ProtectedRoute blockedRoles={[ROLES.PRODUCTION]}>
                 <DashboardLayout>
                     <TransferIssuesPage />
                 </DashboardLayout>

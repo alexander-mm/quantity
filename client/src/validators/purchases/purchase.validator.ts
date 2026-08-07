@@ -36,15 +36,15 @@ export const purchaseSchema=z.object({
                     .min(1,"Seleccione un producto."),
 
                 quantity:z
-                    .number()
-                    .positive(),
+                    .number({error:"La cantidad es obligatoria."})
+                    .positive("La cantidad debe ser mayor que cero."),
 
                 unitCost:z
-                    .number()
+                    .number({error:"El costo es obligatorio."})
                     .min(0),
 
                 pvp:z
-                    .number()
+                    .number({error:"El PVP es obligatorio."})
                     .positive("El PVP debe ser mayor que cero."),
 
                 pvpCop:z
@@ -57,18 +57,20 @@ export const purchaseSchema=z.object({
                         z.object({
                             currency:z.enum(["USD","COP"]),
                             sequence:z.number().int().positive(),
-                            price:z.number().positive("Debe ser mayor que cero.")
+                            price:z.number({error:"El precio es obligatorio."}).positive("Debe ser mayor que cero.")
                         })
                     )
                     .optional(),
 
                 discount:z
                     .number()
-                    .min(0),
+                    .min(0)
+                    .optional(),
 
                 tax:z
                     .number()
                     .min(0)
+                    .optional()
 
             })
 

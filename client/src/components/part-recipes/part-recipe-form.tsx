@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
+import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-hot-toast";
 import axios from "axios";
@@ -34,7 +35,7 @@ export function PartRecipeForm({ part, onSuccess }: Props) {
             pieceWidth: undefined,
             pieceHeight: undefined,
             pieceLength: undefined,
-            piecesPerUnit: 1
+            piecesPerUnit: undefined
         }
     });
 
@@ -104,7 +105,7 @@ export function PartRecipeForm({ part, onSuccess }: Props) {
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit, onFormError)} noValidate className="space-y-5">
 
             <div>
                 <p className="text-sm text-muted-foreground">Pieza</p>
@@ -154,12 +155,16 @@ export function PartRecipeForm({ part, onSuccess }: Props) {
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
                         <Label>Ancho de la pieza</Label>
-                        <Input type="number" step="0.01" min={0} {...register("pieceWidth", { valueAsNumber: true })} />
+                        <Input type="number" step="0.01" min={0} placeholder="0" {...register("pieceWidth", {
+                            setValueAs: (v) => (v === "" ? undefined : Number(v))
+                        })} />
                         <p className="text-sm text-red-500">{errors.pieceWidth?.message}</p>
                     </div>
                     <div>
                         <Label>Alto de la pieza</Label>
-                        <Input type="number" step="0.01" min={0} {...register("pieceHeight", { valueAsNumber: true })} />
+                        <Input type="number" step="0.01" min={0} placeholder="0" {...register("pieceHeight", {
+                            setValueAs: (v) => (v === "" ? undefined : Number(v))
+                        })} />
                         <p className="text-sm text-red-500">{errors.pieceHeight?.message}</p>
                     </div>
                 </div>
@@ -168,14 +173,18 @@ export function PartRecipeForm({ part, onSuccess }: Props) {
             {rawMaterialShape === "TUBE" && (
                 <div>
                     <Label>Longitud de la pieza</Label>
-                    <Input type="number" step="0.01" min={0} {...register("pieceLength", { valueAsNumber: true })} />
+                    <Input type="number" step="0.01" min={0} placeholder="0" {...register("pieceLength", {
+                        setValueAs: (v) => (v === "" ? undefined : Number(v))
+                    })} />
                     <p className="text-sm text-red-500">{errors.pieceLength?.message}</p>
                 </div>
             )}
 
             <div>
                 <Label>Piezas por unidad de materia prima</Label>
-                <Input type="number" step="1" min={0} {...register("piecesPerUnit", { valueAsNumber: true })} />
+                <Input type="number" step="1" min={0} placeholder="0" {...register("piecesPerUnit", {
+                    setValueAs: (v) => (v === "" ? undefined : Number(v))
+                })} />
                 <p className="mt-1 text-xs text-muted-foreground">
                     Cuántas piezas de este tipo salen de una lámina o un tubo (ajústalo al valor real del corte).
                 </p>

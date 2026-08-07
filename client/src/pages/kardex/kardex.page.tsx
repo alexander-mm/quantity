@@ -11,7 +11,8 @@ import {
 import {
     useProducts,
     useStores,
-    useKardex
+    useKardex,
+    useInventoryStockByProduct
 } from "@/hooks";
 
 export function KardexPage() {
@@ -34,9 +35,15 @@ export function KardexPage() {
         storeId
     );
 
+    const { data: stockData } = useInventoryStockByProduct(productId);
+
     const products = productsData?.data ?? [];
     const stores = storesData?.data ?? [];
     const movements = data?.data ?? [];
+
+    const currentStock = Number(
+        (stockData?.data ?? []).find(item => item.store.id === storeId)?.quantity ?? 0
+    );
 
     return (
 
@@ -87,6 +94,7 @@ export function KardexPage() {
                                     <>
                                         <KardexTable
                                             movements={movements}
+                                            currentStock={currentStock}
                                         />
 
                                         <p className="mt-4 text-sm text-muted-foreground">

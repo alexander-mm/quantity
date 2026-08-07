@@ -8,6 +8,8 @@ export function useCreateInventoryAdjustment() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["inventory-adjustments"] });
             queryClient.invalidateQueries({ queryKey: ["inventory-stock"] });
+            queryClient.invalidateQueries({ queryKey: ["inventory-movements"] });
+            queryClient.invalidateQueries({ queryKey: ["dashboard"] });
         }
     });
 }

@@ -13,7 +13,7 @@ export class StoreRepository extends BaseRepository {
             },
 
             orderBy: {
-                name: "asc"
+                createdAt: "desc"
             }
 
         });

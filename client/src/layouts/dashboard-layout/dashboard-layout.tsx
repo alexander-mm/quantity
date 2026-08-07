@@ -1,19 +1,61 @@
 import { useState } from "react";
-import type { PropsWithChildren, MouseEvent } from "react";
-import { NavLink } from "react-router-dom";
-import { Menu, X, LogOut } from "lucide-react";
+import type { PropsWithChildren, MouseEvent, ComponentType } from "react";
+import { NavLink, useLocation } from "react-router-dom";
+import {
+    Menu,
+    X,
+    LogOut,
+    ChevronDown,
+    ShoppingCart,
+    Truck,
+    Tags,
+    Warehouse,
+    ArrowLeftRight,
+    Factory,
+    Settings
+} from "lucide-react";
 import { useAuth, useStockTransfers } from "@/hooks";
 import { ROLES } from "@/constants/roles";
 
-function navLinkStyle({ isActive }: { isActive: boolean }) {
-    return {
-        display: "block",
-        padding: "5px 0",
-        color: "#FFF",
-        textDecoration: "none",
-        fontWeight: isActive ? "bold" : "normal",
-        opacity: isActive ? 1 : 0.85
-    };
+const BRAND_BLUE = "#0170B8";
+
+function navItemClassName({ isActive }: { isActive: boolean }) {
+    return [
+        "block rounded-md py-1.5 px-2.5 text-sm md:text-base transition-colors",
+        isActive
+            ? "bg-white/15 font-semibold text-white"
+            : "font-normal text-white/75 hover:bg-white/10 hover:text-white"
+    ].join(" ");
+}
+
+type Visibility = "nonProduction" | "adminOnly" | "adminOrProduction";
+
+type NavItem = {
+    to: string;
+    label: string;
+    visibility: Visibility;
+    badge?: number;
+};
+
+type NavGroup = {
+    key: string;
+    label: string;
+    icon: ComponentType<{ size?: number; className?: string }>;
+    items: NavItem[];
+};
+
+function Badge({ count }: { count: number }) {
+    if (count <= 0) {
+        return null;
+    }
+    return (
+        <span
+            className="inline-flex min-w-[18px] items-center justify-center rounded-full bg-white px-1.5 py-0.5 text-[11px] font-semibold leading-none"
+            style={{ color: BRAND_BLUE }}
+        >
+            {count}
+        </span>
+    );
 }
 
 export function DashboardLayout({
@@ -21,15 +63,20 @@ export function DashboardLayout({
 }: PropsWithChildren) {
 
     const { user, logout } = useAuth();
+    const location = useLocation();
     const isAdmin = user?.roleName === ROLES.ADMIN;
     const isProduction = user?.roleName === ROLES.PRODUCTION;
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const { data: transfersData } = useStockTransfers({ enabled: !isProduction });
     const transfers = transfersData?.data ?? [];
+    const issues = transfers.filter(t => t.status === "WITH_ISSUES");
     const issuesCount = isAdmin
-        ? transfers.filter(t => t.status === "WITH_ISSUES").length
-        : 0;
+        ? issues.length
+        : issues.filter(t =>
+            (t.destType === "STORE" && t.destStore?.id === user?.storeId) ||
+            (t.destType === "TECHNICIAN" && t.destUser?.id === user?.id)
+        ).length;
     const pendingReceptionsCount = !isProduction
         ? transfers.filter(t =>
             t.status === "PENDING" &&
@@ -39,6 +86,121 @@ export function DashboardLayout({
             )
         ).length
         : 0;
+
+    const groups: NavGroup[] = [
+        {
+            key: "ventas",
+            label: "Ventas",
+            icon: ShoppingCart,
+            items: [
+                { to: "/clients", label: "Clientes", visibility: "nonProduction" },
+                { to: "/sales", label: "Ventas", visibility: "nonProduction" },
+                { to: "/wholesalers", label: "Mayoristas", visibility: "adminOnly" }
+            ]
+        },
+        {
+            key: "compras",
+            label: "Compras",
+            icon: Truck,
+            items: [
+                { to: "/suppliers", label: "Proveedores", visibility: "adminOnly" },
+                { to: "/purchases", label: "Compras", visibility: "adminOnly" }
+            ]
+        },
+        {
+            key: "catalogo",
+            label: "Catálogo",
+            icon: Tags,
+            items: [
+                { to: "/products", label: "Productos", visibility: "adminOnly" },
+                { to: "/brands", label: "Marcas", visibility: "adminOnly" },
+                { to: "/categories", label: "Categorías", visibility: "adminOnly" },
+                { to: "/units-of-measure", label: "Unidades de Medida", visibility: "adminOnly" },
+                { to: "/margin-profiles", label: "Perfiles de Descuento", visibility: "adminOnly" }
+            ]
+        },
+        {
+            key: "inventario",
+            label: "Inventario",
+            icon: Warehouse,
+            items: [
+                { to: "/inventory-stock", label: "Inventario", visibility: "nonProduction" },
+                { to: "/inventory-movements", label: "Movimientos", visibility: "adminOnly" },
+                { to: "/inventory-adjustments", label: "Ajustes", visibility: "adminOnly" },
+                { to: "/kardex", label: "Kardex", visibility: "nonProduction" }
+            ]
+        },
+        {
+            key: "transferencias",
+            label: "Transferencias",
+            icon: ArrowLeftRight,
+            items: [
+                {
+                    to: "/pending-receptions",
+                    label: "Recepciones pendientes",
+                    visibility: "nonProduction",
+                    badge: pendingReceptionsCount
+                },
+                { to: "/stock-transfers", label: "Envíos", visibility: "nonProduction" },
+                {
+                    to: "/transfer-issues",
+                    label: "Novedades de Transferencias",
+                    visibility: "nonProduction",
+                    badge: issuesCount
+                }
+            ]
+        },
+        {
+            key: "produccion",
+            label: "Producción",
+            icon: Factory,
+            items: [
+                { to: "/parts", label: "Piezas Láser", visibility: "adminOrProduction" },
+                { to: "/part-movements", label: "Movimientos de Piezas", visibility: "adminOrProduction" },
+                { to: "/raw-materials", label: "Materia Prima", visibility: "adminOrProduction" },
+                { to: "/raw-material-movements", label: "Movimientos de Materia Prima", visibility: "adminOrProduction" },
+                { to: "/part-recipes", label: "Recetas de Corte", visibility: "adminOrProduction" },
+                { to: "/part-cutting-orders", label: "Órdenes de Corte", visibility: "adminOrProduction" },
+                { to: "/equipment-parts", label: "Cálculo de Producción", visibility: "adminOrProduction" },
+                { to: "/assembly", label: "Ensamblaje", visibility: "adminOrProduction" }
+            ]
+        },
+        {
+            key: "administracion",
+            label: "Administración",
+            icon: Settings,
+            items: [
+                { to: "/roles", label: "Roles", visibility: "adminOnly" },
+                { to: "/users", label: "Usuarios", visibility: "adminOnly" },
+                { to: "/stores", label: "Tiendas", visibility: "adminOnly" }
+            ]
+        }
+    ];
+
+    const canSee = (visibility: Visibility) => {
+        if (visibility === "nonProduction") return !isProduction;
+        if (visibility === "adminOnly") return isAdmin;
+        return isAdmin || isProduction;
+    };
+
+    const visibleGroups = groups
+        .map(group => ({
+            ...group,
+            items: group.items.filter(item => canSee(item.visibility))
+        }))
+        .filter(group => group.items.length > 0);
+
+    const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
+        const activeGroup = visibleGroups.find(group =>
+            group.items.some(item => location.pathname.startsWith(item.to))
+        );
+        return activeGroup ? { [activeGroup.key]: true } : {};
+    });
+
+    const toggleGroup = (key: string) => {
+        setOpenGroups(prev => ({ ...prev, [key]: !prev[key] }));
+    };
+
     const closeMenuOnLinkClick = (e: MouseEvent<HTMLElement>) => {
         if ((e.target as HTMLElement).closest("a")) {
             setIsMobileMenuOpen(false);
@@ -63,112 +225,86 @@ export function DashboardLayout({
                 onClick={closeMenuOnLinkClick}
                 className={`fixed inset-y-0 left-0 z-50 w-65 overflow-y-auto overscroll-contain transition-transform duration-200 ease-in-out md:sticky md:top-0 md:h-screen md:translate-x-0 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
                     }`}
-                style={{
-                    background: "#0170B8",
-                    color: "#FFF"
-                }}
+                style={{ background: BRAND_BLUE }}
             >
 
                 <div
-                    className="sticky top-0 z-10 mb-2"
+                    className="sticky top-0 z-10"
                     style={{
-                        background: "#0170B8",
-                        padding: "24px 24px 0 24px"
+                        background: BRAND_BLUE,
+                        padding: "20px 24px"
                     }}
                 >
-                    <button
-                        type="button"
-                        onClick={handleLogout}
-                        className="flex items-center gap-2 text-white/85 hover:opacity-100"
-                        style={{ background: "transparent", border: "none", cursor: "pointer" }}
-                    >
-                        <LogOut size={18} />
-                        <span className="text-sm text-white/85 truncate">
-                           || {user?.firstName} {user?.lastName}
-                        </span>
-                    </button>
-                    <hr className="sticky mt-4" />
-                    <button
-                        type="button"
-                        className="md:hidden absolute right-0 top-1 z-20"
-                        aria-label="Cerrar menú"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                        <X color="#FFF" size={30} />
-                    </button>
-                    <NavLink to="/dashboard" style={navLinkStyle}>
-                        <img className="py-2" src="https://www.masqueunefecto.com/wp-content/uploads/2026/07/quantity-logo.png" />
+                    <NavLink to="/dashboard" className="block">
+                        <img className="py-1" src="https://www.masqueunefecto.com/wp-content/uploads/2026/07/quantity-logo.png" />
                     </NavLink>
-                    <hr className="sticky" />
+
+                    <div className="mt-4 flex items-center justify-between">
+                        <button
+                            type="button"
+                            onClick={handleLogout}
+                            className="flex items-center gap-2 text-white/85 hover:opacity-100"
+                            style={{ background: "transparent", border: "none", cursor: "pointer" }}
+                        >
+                            <LogOut size={16} />
+                            <span className="text-sm md:text-base text-white/85 truncate">
+                                {user?.firstName} {user?.lastName}
+                            </span>
+                        </button>
+
+                        <button
+                            type="button"
+                            className="md:hidden"
+                            aria-label="Cerrar menú"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                            <X color="#FFF" size={22} />
+                        </button>
+                    </div>
                 </div>
 
-                <div style={{ padding: "0px 24px 24px 24px" }}>
-                    {!isProduction && (
-                        <>
-                            {isAdmin && (
-                                <>
-                                    <NavLink to="/products" style={navLinkStyle}>Productos</NavLink>
-                                </>
-                            )}
-                            <NavLink to="/clients" style={navLinkStyle}>Clientes</NavLink>
-                            {isAdmin && (
-                                <>
-                                    <NavLink to="/suppliers" style={navLinkStyle}>Proveedores</NavLink>
-                                    <NavLink to="/purchases" style={navLinkStyle}>Compras</NavLink>
-                                </>
-                            )}
-                            <NavLink to="/sales" style={navLinkStyle}>Ventas</NavLink>
-                            <NavLink to="/inventory-stock" style={navLinkStyle}>Inventario</NavLink>
-                            {isAdmin && (
-                                <>
-                                    <NavLink to="/inventory-movements" style={navLinkStyle}>Movimientos</NavLink>
-                                    <NavLink to="/inventory-adjustments" style={navLinkStyle}>Ajustes</NavLink>
-                                </>
-                            )}
-                            <NavLink to="/kardex" style={navLinkStyle}>Kardex</NavLink>
-                            <NavLink to="/pending-receptions" style={navLinkStyle}>
-                                Recepciones pendientes{pendingReceptionsCount > 0 ? ` (${pendingReceptionsCount})` : ""}
-                            </NavLink>
-                            <NavLink to="/stock-transfers" style={navLinkStyle}>Envíos</NavLink>
-                        </>
-                    )}
+                <nav className="px-3 py-4">
+                    {visibleGroups.map(group => {
 
-                    {(isAdmin || isProduction) && (
-                        <>
-                            <hr style={{ margin: "16px 0", opacity: 0.3 }} />
-                            <NavLink to="/parts" style={navLinkStyle}>Piezas Láser</NavLink>
-                            <NavLink to="/part-movements" style={navLinkStyle}>Movimientos de Piezas</NavLink>
-                            <NavLink to="/raw-materials" style={navLinkStyle}>Materia Prima</NavLink>
-                            <NavLink to="/raw-material-movements" style={navLinkStyle}>Movimientos de Materia Prima</NavLink>
-                            <NavLink to="/part-recipes" style={navLinkStyle}>Recetas de Corte</NavLink>
-                            <NavLink to="/part-cutting-orders" style={navLinkStyle}>Órdenes de Corte</NavLink>
-                            <NavLink to="/equipment-parts" style={navLinkStyle}>Cálculo de Producción</NavLink>
-                            <NavLink to="/assembly" style={navLinkStyle}>Ensamblaje</NavLink>
-                        </>
-                    )}
+                        const isOpen = !!openGroups[group.key];
+                        const groupBadge = group.items.reduce((sum, item) => sum + (item.badge ?? 0), 0);
+                        const GroupIcon = group.icon;
 
-                    {isAdmin && (
-                        <>
-                            <hr style={{ margin: "16px 0", opacity: 0.3 }} />
-                            <NavLink to="/transfer-issues" style={navLinkStyle}>
-                                Novedades de Transferencias{issuesCount > 0 ? ` (${issuesCount})` : ""}
-                            </NavLink>
-                            <NavLink to="/wholesalers" style={navLinkStyle}>Mayoristas</NavLink>
-                            <NavLink to="/roles" style={navLinkStyle}>Roles</NavLink>
-                            <NavLink to="/users" style={navLinkStyle}>Usuarios</NavLink>
-                            <NavLink to="/stores" style={navLinkStyle}>Tiendas</NavLink>
-                            <NavLink to="/brands" className="mt-4" style={navLinkStyle} >
-                                Marcas
-                            </NavLink>
-                            <NavLink to="/categories" style={navLinkStyle}>Categorías</NavLink>
-                            <NavLink to="/units-of-measure" style={navLinkStyle}>Unidades de Medida</NavLink>
-                            <NavLink to="/margin-profiles" style={navLinkStyle}>Perfiles de Descuento</NavLink>
+                        return (
+                            <div key={group.key} className="mb-1">
+                                <button
+                                    type="button"
+                                    onClick={() => toggleGroup(group.key)}
+                                    className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm md:text-base font-medium text-white/90 transition-colors hover:bg-white/10"
+                                    style={{ background: "transparent", border: "none", cursor: "pointer" }}
+                                    aria-expanded={isOpen}
+                                >
+                                    <GroupIcon size={18} className="shrink-0 text-white/70" />
+                                    <span className="flex-1 truncate">{group.label}</span>
+                                    <Badge count={groupBadge} />
+                                    <ChevronDown
+                                        size={16}
+                                        className={`shrink-0 text-white/70 transition-transform duration-150 ${isOpen ? "rotate-180" : ""}`}
+                                    />
+                                </button>
 
-                        </>
-                    )}
-                </div>
+                                {isOpen && (
+                                    <div className="mt-0.5 mb-1.5 ml-[27px] flex flex-col gap-0.5 border-l border-white/20 pl-3">
+                                        {group.items.map(item => (
+                                            <NavLink key={item.to} to={item.to} className={navItemClassName}>
+                                                <span className="flex items-center justify-between gap-2">
+                                                    <span className="truncate">{item.label}</span>
+                                                    <Badge count={item.badge ?? 0} />
+                                                </span>
+                                            </NavLink>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        );
 
-
+                    })}
+                </nav>
 
             </aside>
 
@@ -186,7 +322,7 @@ export function DashboardLayout({
                         aria-label="Abrir menú"
                         onClick={() => setIsMobileMenuOpen(true)}
                     >
-                        <Menu size={24} color="#0170B8" />
+                        <Menu size={24} color={BRAND_BLUE} />
                     </button>
 
                     <div className="w-60">

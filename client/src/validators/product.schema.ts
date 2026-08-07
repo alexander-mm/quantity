@@ -16,9 +16,9 @@ export const productSchema = z.object({
 
     unitOfMeasure: z.string().min(1, "Ingrese una unidad de medida"),
 
-    costPrice: z.coerce.number().min(0),
+    costPrice: z.coerce.number({ error: "El costo es obligatorio." }).min(0),
 
-    pvp: z.coerce.number().positive("El PVP debe ser mayor que cero."),
+    pvp: z.coerce.number({ error: "El PVP es obligatorio." }).positive("El PVP debe ser mayor que cero."),
 
     pvpCop: z.coerce.number().min(0, "El PVP en COP no puede ser negativo.").optional(),
 
@@ -29,12 +29,12 @@ export const productSchema = z.object({
     components: z.array(z.object({
         type: z.enum(["PRODUCT", "PART"]),
         refId: z.string().min(1, "Seleccione un elemento."),
-        quantity: z.coerce.number().positive("La cantidad debe ser mayor que cero.")
+        quantity: z.coerce.number({ error: "La cantidad es obligatoria." }).positive("La cantidad debe ser mayor que cero.")
     })).optional(),
 
     priceEntries: z.array(z.object({
         currency: z.enum(["USD", "COP"]),
-        price: z.coerce.number().positive("Debe ser mayor que cero.")
+        price: z.coerce.number({ error: "El precio es obligatorio." }).positive("Debe ser mayor que cero.")
     })).optional()
 
 });

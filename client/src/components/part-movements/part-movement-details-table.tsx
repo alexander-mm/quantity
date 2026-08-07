@@ -24,7 +24,7 @@ export function PartMovementDetailsTable() {
             <Button
                 type="button"
                 variant="outline"
-                onClick={() => append({ partId: "", quantity: 1 })}
+                onClick={() => append({ partId: "", quantity: undefined })}
             >
                 <Plus size={18} />
                 Agregar pieza

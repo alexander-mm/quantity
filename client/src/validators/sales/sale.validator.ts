@@ -55,20 +55,22 @@ export const saleSchema=z.object({
                     .min(1,"Seleccione un producto."),
 
                 quantity:z
-                    .number()
-                    .positive(),
+                    .number({error:"La cantidad es obligatoria."})
+                    .positive("La cantidad debe ser mayor que cero."),
 
                 unitPrice:z
-                    .number()
+                    .number({error:"El precio unitario es obligatorio."})
                     .min(0),
 
                 discount:z
                     .number()
-                    .min(0),
+                    .min(0)
+                    .optional(),
 
                 tax:z
                     .number()
                     .min(0)
+                    .optional()
 
             })
 

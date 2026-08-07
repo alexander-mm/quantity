@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-hot-toast";
 import axios from "axios";
@@ -24,7 +25,7 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
             code: "",
             name: "",
             description: "",
-            initialQuantity: 0
+            initialQuantity: undefined
         }
     });
 
@@ -87,7 +88,7 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit, onFormError)} className="space-y-5">
 
             <div>
                 <Label className="mb-1">Código</Label>
@@ -113,11 +114,14 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
                         type="number"
                         min={0}
                         step="1"
-                        {...register("initialQuantity", { valueAsNumber: true })}
+                        placeholder="0"
+                        {...register("initialQuantity", {
+                            setValueAs: (v) => (v === "" ? undefined : Number(v))
+                        })}
                     />
                     <p className="text-xs text-muted-foreground">
                         Si la pieza ya tiene unidades producidas, regístralas aquí para dejar la pieza creada
-                        con su stock inicial en un solo paso. Déjalo en 0 si aún no hay producción.
+                        con su stock inicial en un solo paso. Déjalo vacío si aún no hay producción.
                     </p>
                     <p className="text-sm text-red-500">{errors.initialQuantity?.message}</p>
                 </div>

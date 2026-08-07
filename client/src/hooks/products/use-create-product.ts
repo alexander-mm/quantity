@@ -10,6 +10,9 @@ export function useCreateProduct() {
             queryClient.invalidateQueries({
                 queryKey: ["products"]
             });
+            queryClient.invalidateQueries({
+                queryKey: ["product-prices"]
+            });
         }
     });
 }

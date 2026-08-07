@@ -22,7 +22,8 @@ export function InventoryMovementsTable({
                 "Producto",
                 "Cantidad",
                 "Costo",
-                "Usuario"
+                "Usuario",
+                ""
             ]}
         >
 

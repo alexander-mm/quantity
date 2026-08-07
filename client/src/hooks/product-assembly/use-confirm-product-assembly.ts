@@ -8,6 +8,10 @@ export function useConfirmProductAssembly() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["product-assemblies"] });
             queryClient.invalidateQueries({ queryKey: ["inventory-stock"] });
+            queryClient.invalidateQueries({ queryKey: ["inventory-movements"] });
+            queryClient.invalidateQueries({ queryKey: ["parts"] });
+            queryClient.invalidateQueries({ queryKey: ["part-movements"] });
+            queryClient.invalidateQueries({ queryKey: ["dashboard"] });
         }
     });
 }

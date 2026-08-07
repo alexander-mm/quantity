@@ -1,5 +1,6 @@
 import { Controller, useForm, useFieldArray, useWatch } from "react-hook-form";
-import { useEffect } from "react";
+import { onFormError } from "@/lib/form-error-toast";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,9 +15,9 @@ import {
 } from "@/components/ui/combobox";
 import { productSchema } from "@/validators";
 import type { ProductFormData } from "@/validators";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
     useCategories,
+    useCreateCategory,
     useCreateProduct,
     useUpdateProduct,
     useProduct,
@@ -33,6 +34,7 @@ import { toast } from "react-hot-toast";
 
 type ProductFormProps = {
     onSuccess?: () => void;
+    onCancel?: () => void;
     mode?: "create" | "edit";
     productId?: string;
 };
@@ -40,6 +42,7 @@ type ProductFormProps = {
 export function ProductForm({
 
     onSuccess,
+    onCancel,
     mode = "create",
     productId
 }: ProductFormProps) {
@@ -63,10 +66,10 @@ export function ProductForm({
             brand: "",
             categoryId: "",
             unitOfMeasure: "",
-            costPrice: 0,
+            costPrice: undefined,
             pvp: 0,
             pvpCop: 0,
-            minimumStock: 0,
+            minimumStock: undefined,
             components: [],
             priceEntries: []
         }
@@ -78,6 +81,8 @@ export function ProductForm({
     const { data: categoriesData } = useCategories();
     const { data: productsData } = useProducts();
     const createProductMutation = useCreateProduct();
+    const createCategoryMutation = useCreateCategory();
+    const [categoryInput, setCategoryInput] = useState("");
     const { data: productData } = useProduct(
         mode === "edit"
             ? productId
@@ -315,7 +320,7 @@ export function ProductForm({
 
     return (
         <form
-            onSubmit={handleSubmit(onSubmit)}
+            onSubmit={handleSubmit(onSubmit, onFormError)}
             noValidate
             className="space-y-2 h-full"
         >
@@ -382,27 +387,81 @@ export function ProductForm({
                 <Controller
                     name="categoryId"
                     control={control}
-                    render={({ field }) => (
+                    render={({ field }) => {
 
-                        <Select
-                            value={field.value}
-                            onValueChange={field.onChange}
-                        >
-                            <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Seleccione una categoría" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {categories.map((category) => (
-                                    <SelectItem
-                                        key={category.id}
-                                        value={category.id}
-                                    >
-                                        {category.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    )}
+                        const items = categories.map(category => ({
+                            value: category.id,
+                            label: category.name
+                        }));
+
+                        const selected = items.find(item => item.value === field.value) ?? null;
+
+                        const trimmedInput = categoryInput.trim();
+
+                        const hasExactMatch = categories.some(
+                            category => category.name.toLowerCase() === trimmedInput.toLowerCase()
+                        );
+
+                        const comboboxItems = trimmedInput && !hasExactMatch
+                            ? [...items, { value: "__create__", label: `Crear categoría "${trimmedInput}"` }]
+                            : items;
+
+                        return (
+
+                            <Combobox
+                                items={comboboxItems}
+                                value={selected}
+                                onInputValueChange={setCategoryInput}
+                                onValueChange={(item) => {
+
+                                    if (!item) {
+                                        field.onChange("");
+                                        return;
+                                    }
+
+                                    if (item.value === "__create__") {
+
+                                        createCategoryMutation.mutate({ name: trimmedInput }, {
+                                            onSuccess: (response) => {
+                                                field.onChange(response.data.id);
+                                                setCategoryInput("");
+                                                toast.success(`Categoría "${response.data.name}" creada.`);
+                                            },
+                                            onError: () => {
+                                                toast.error("No se pudo crear la categoría.");
+                                            }
+                                        });
+
+                                        return;
+
+                                    }
+
+                                    field.onChange(item.value);
+
+                                }}
+                            >
+
+                                <ComboboxInput
+                                    placeholder="Buscar o escribir para crear una categoría..."
+                                />
+
+                                <ComboboxContent>
+                                    {(item) => (
+                                        <ComboboxItem key={item.value} value={item}>
+                                            {item.label}
+                                        </ComboboxItem>
+                                    )}
+                                </ComboboxContent>
+
+                                <ComboboxEmpty>
+                                    No se encontraron categorías.
+                                </ComboboxEmpty>
+
+                            </Combobox>
+
+                        );
+
+                    }}
                 />
                 <p className="text-sm text-red-500">
                     {errors.categoryId?.message}
@@ -463,7 +522,7 @@ export function ProductForm({
                                                 value={selected}
                                                 onValueChange={(item) => controllerField.onChange(item ? item.value : "")}
                                             >
-                                                <ComboboxInput placeholder={isPart ? "Buscar pieza..." : "Buscar producto..."} />
+                                                <ComboboxInput placeholder={isPart ? "Buscar pieza..." : "Buscar producto..."} readOnly={!!selected}/>
                                                 <ComboboxContent>
                                                     {(item) => (
                                                         <ComboboxItem key={item.value} value={item}>
@@ -487,7 +546,10 @@ export function ProductForm({
                                     type="number"
                                     min={0}
                                     step="1"
-                                    {...register(`components.${index}.quantity`, { valueAsNumber: true })}
+                                    placeholder="0"
+                                    {...register(`components.${index}.quantity`, {
+                                        setValueAs: (v) => (v === "" ? undefined : Number(v))
+                                    })}
                                 />
                             </div>
 
@@ -505,7 +567,7 @@ export function ProductForm({
                     <Button
                         type="button"
                         variant="outline"
-                        onClick={() => append({ type: "PRODUCT", refId: "", quantity: 1 })}
+                        onClick={() => append({ type: "PRODUCT", refId: "", quantity: undefined })}
                     >
                         <Plus size={18} />
                         Agregar producto
@@ -513,7 +575,7 @@ export function ProductForm({
                     <Button
                         type="button"
                         variant="outline"
-                        onClick={() => append({ type: "PART", refId: "", quantity: 1 })}
+                        onClick={() => append({ type: "PART", refId: "", quantity: undefined })}
                     >
                         <Plus size={18} />
                         Agregar pieza
@@ -529,7 +591,10 @@ export function ProductForm({
                     </Label>
                     <Input
                         type="number"
-                        {...register("costPrice")}
+                        placeholder="0"
+                        {...register("costPrice", {
+                            setValueAs: (v) => (v === "" ? undefined : Number(v))
+                        })}
                     />
                     {validComponents.length > 0 && (
                         <p className="text-sm text-muted-foreground">
@@ -575,7 +640,10 @@ export function ProductForm({
                                     type="number"
                                     min={0}
                                     step="0.01"
-                                    {...register(`priceEntries.${index}.price`, { valueAsNumber: true })}
+                                    placeholder="0"
+                                    {...register(`priceEntries.${index}.price`, {
+                                        setValueAs: (v) => (v === "" ? undefined : Number(v))
+                                    })}
                                 />
                             </div>
 
@@ -593,7 +661,7 @@ export function ProductForm({
                     <Button
                         type="button"
                         variant="outline"
-                        onClick={() => appendPriceEntry({ currency: "USD", price: 0 })}
+                        onClick={() => appendPriceEntry({ currency: "USD", price: undefined })}
                     >
                         <Plus size={18} />
                         Agregar precio USD
@@ -601,7 +669,7 @@ export function ProductForm({
                     <Button
                         type="button"
                         variant="outline"
-                        onClick={() => appendPriceEntry({ currency: "COP", price: 0 })}
+                        onClick={() => appendPriceEntry({ currency: "COP", price: undefined })}
                     >
                         <Plus size={18} />
                         Agregar precio COP
@@ -620,6 +688,7 @@ export function ProductForm({
                 </Label>
                 <Input
                     type="number"
+                    placeholder="0"
                     {...register("minimumStock", {
                         setValueAs: (v) => (v === "" ? undefined : Number(v))
                     })}
@@ -635,6 +704,7 @@ export function ProductForm({
                 <Button
                     type="button"
                     variant="outline"
+                    onClick={onCancel}
                 >
                     Cancelar
                 </Button>

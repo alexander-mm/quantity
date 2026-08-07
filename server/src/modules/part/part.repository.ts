@@ -19,7 +19,7 @@ export class PartRepository extends BaseRepository {
             },
 
             orderBy: {
-                name: "asc"
+                createdAt: "desc"
             }
 
         });

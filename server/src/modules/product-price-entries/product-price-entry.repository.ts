@@ -39,6 +39,18 @@ export class ProductPriceEntryRepository extends BaseRepository {
 
     }
 
+    async deleteByProductId(
+        productId: bigint
+    ): Promise<void> {
+
+        await this.prisma.productPriceEntry.deleteMany({
+            where: {
+                productId
+            }
+        });
+
+    }
+
     async replaceForProduct(
         productId: bigint,
         entries: {

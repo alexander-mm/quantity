@@ -4,10 +4,12 @@ import {
     InventoryMovementsTable,
     InventoryMovementsEmptyState,
     InventoryMovementModal,
+    InventoryMovementViewModal,
     InventoryMovementsToolbar
 } from "@/components";
 import { useInventoryMovements } from "@/hooks";
 import { useState, useMemo } from "react";
+import type { InventoryMovement } from "@/types";
 
 export function InventoryMovementsPage() {
 
@@ -19,6 +21,7 @@ export function InventoryMovementsPage() {
 
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");
+    const [movementToView, setMovementToView] = useState<InventoryMovement | null>(null);
 
     const movements = useMemo(() => {
         const list = data?.data ?? [];
@@ -90,7 +93,7 @@ export function InventoryMovementsPage() {
                             <>
                                 <InventoryMovementsTable
                                     movements={movements}
-                                    onView={() => { }}
+                                    onView={(movement) => setMovementToView(movement)}
                                 />
                                 <p className="mt-4 text-sm text-muted-foreground">
                                     Mostrando {movements.length} movimientos
@@ -103,6 +106,16 @@ export function InventoryMovementsPage() {
             <InventoryMovementModal
                 open={open}
                 onOpenChange={setOpen}
+            />
+
+            <InventoryMovementViewModal
+                open={!!movementToView}
+                movement={movementToView}
+                onOpenChange={(value) => {
+                    if (!value) {
+                        setMovementToView(null);
+                    }
+                }}
             />
 
         </PageContainer>

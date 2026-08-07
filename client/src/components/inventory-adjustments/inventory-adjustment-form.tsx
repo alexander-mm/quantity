@@ -1,4 +1,5 @@
 import { Controller, useForm } from "react-hook-form";
+import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-hot-toast";
 import axios from "axios";
@@ -27,7 +28,7 @@ export function InventoryAdjustmentForm({ onSuccess }: Props) {
             productId: "",
             storeId: user?.storeId ?? "",
             type: "IN" as const,
-            quantity: 0,
+            quantity: undefined,
             reason: ""
         }
     });
@@ -69,7 +70,7 @@ export function InventoryAdjustmentForm({ onSuccess }: Props) {
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit, onFormError)} className="space-y-5">
 
             <div>
                 <Label className="mb-1">Producto</Label>
@@ -142,7 +143,9 @@ export function InventoryAdjustmentForm({ onSuccess }: Props) {
 
             <div>
                 <Label className="mb-1">Cantidad</Label>
-                <Input type="number" step="1" {...register("quantity")} />
+                <Input type="number" step="1" placeholder="0" {...register("quantity", {
+                    setValueAs: (v) => (v === "" ? undefined : Number(v))
+                })} />
                 <p className="text-sm text-red-500">{errors.quantity?.message}</p>
             </div>
 

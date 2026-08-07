@@ -6,6 +6,7 @@ import { CategoryRepository } from "../category/category.repository.js";
 import { UnitOfMeasureRepository } from "../unit-of-measure/unit-of-measure.repository.js"
 import { MarginProfileRepository } from "../margin-profile/margin-profile.repository.js";
 import { ProductPriceRepository } from "../product-prices/product-price.repository.js";
+import { ProductPriceEntryRepository } from "../product-price-entries/product-price-entry.repository.js";
 import { PriceCalculator } from "../../shared/pricing/index.js";
 import { prisma } from "../../database/prisma/prisma.js";
 
@@ -17,6 +18,7 @@ export class ProductService {
     private readonly unitRepository = new UnitOfMeasureRepository();
     private readonly marginRepository = new MarginProfileRepository();
     private readonly productPriceRepository = new ProductPriceRepository();
+    private readonly productPriceEntryRepository = new ProductPriceEntryRepository();
 
     async findAll(): Promise<Product[]> {
         return this.repository.findAll();
@@ -42,6 +44,9 @@ export class ProductService {
             const productPriceRepository =
                 this.productPriceRepository.withTransaction(tx);
 
+            const productPriceEntryRepository =
+                this.productPriceEntryRepository.withTransaction(tx);
+
             const product =
                 await repository.findById(
                     BigInt(id)
@@ -53,6 +58,9 @@ export class ProductService {
                 );
             }
             await productPriceRepository.deleteByProductId(
+                product.id
+            );
+            await productPriceEntryRepository.deleteByProductId(
                 product.id
             );
             return repository.delete(

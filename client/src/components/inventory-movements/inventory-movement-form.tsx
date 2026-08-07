@@ -1,4 +1,5 @@
 import { Controller, useForm } from "react-hook-form";
+import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -21,8 +22,8 @@ export function InventoryMovementForm({ onSuccess }: Props) {
             movementTypeId: "",
             productId: "",
             storeId: "",
-            quantity: 0,
-            unitCost: 0,
+            quantity: undefined,
+            unitCost: undefined,
             observations: ""
         }
     });
@@ -62,7 +63,7 @@ export function InventoryMovementForm({ onSuccess }: Props) {
     }
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit, onFormError)} className="space-y-5">
 
             <div>
                 <Label className="mb-1">Tipo de movimiento</Label>
@@ -141,7 +142,9 @@ export function InventoryMovementForm({ onSuccess }: Props) {
 
             <div>
                 <Label className="mb-1">Cantidad</Label>
-                <Input type="number" {...register("quantity")} />
+                <Input type="number" placeholder="0" {...register("quantity", {
+                    setValueAs: (v) => (v === "" ? undefined : Number(v))
+                })} />
                 <p className="text-sm text-red-500">
                     {errors.quantity?.message}
                 </p>
@@ -149,7 +152,9 @@ export function InventoryMovementForm({ onSuccess }: Props) {
 
             <div>
                 <Label className="mb-1">Costo unitario</Label>
-                <Input type="number" {...register("unitCost")} />
+                <Input type="number" placeholder="0" {...register("unitCost", {
+                    setValueAs: (v) => (v === "" ? undefined : Number(v))
+                })} />
                 <p className="text-sm text-red-500">
                     {errors.unitCost?.message}
                 </p>

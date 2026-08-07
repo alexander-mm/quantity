@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { onFormError } from "@/lib/form-error-toast";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +22,7 @@ import { toast } from "react-hot-toast";
 
 type SupplierFormProps = {
     onSuccess?: () => void;
+    onCancel?: () => void;
     mode?: "create" | "edit";
     supplierId?: string;
 };
@@ -28,6 +30,7 @@ type SupplierFormProps = {
 export function SupplierForm({
 
     onSuccess,
+    onCancel,
     mode = "create",
     supplierId
 
@@ -155,7 +158,7 @@ export function SupplierForm({
 
     return (
 
-        <form onSubmit={handleSubmit( onSubmit )}className="space-y-6">
+        <form onSubmit={handleSubmit( onSubmit, onFormError )}className="space-y-6">
             <div>
                 <Label className="mb-1">
                     Código
@@ -251,6 +254,7 @@ export function SupplierForm({
                 <Button
                     type="button"
                     variant="outline"
+                    onClick={onCancel}
                 >
                     Cancelar
                 </Button>

@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-hot-toast";
 import axios from "axios";
@@ -22,8 +23,8 @@ export function MarginProfileForm({ onSuccess, mode = "create", profileId }: Pro
         resolver: zodResolver(marginProfileSchema),
         defaultValues: {
             name: "",
-            percentage: 0,
-            displayOrder: 1
+            percentage: undefined,
+            displayOrder: undefined
         }
     });
 
@@ -86,7 +87,7 @@ export function MarginProfileForm({ onSuccess, mode = "create", profileId }: Pro
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit, onFormError)} noValidate className="space-y-5">
 
             <div>
                 <Label className="mb-1">Nombre</Label>
@@ -96,13 +97,17 @@ export function MarginProfileForm({ onSuccess, mode = "create", profileId }: Pro
 
             <div>
                 <Label className="mb-1">Porcentaje de descuento</Label>
-                <Input type="number" step="0.01" {...register("percentage")} />
+                <Input type="number" step="0.01" placeholder="0" {...register("percentage", {
+                    setValueAs: (v) => (v === "" ? undefined : Number(v))
+                })} />
                 <p className="text-sm text-red-500">{errors.percentage?.message}</p>
             </div>
 
             <div>
                 <Label className="mb-1">Orden de visualización</Label>
-                <Input type="number" step="1" {...register("displayOrder")} />
+                <Input type="number" step="1" placeholder="1" {...register("displayOrder", {
+                    setValueAs: (v) => (v === "" ? undefined : Number(v))
+                })} />
                 <p className="text-sm text-red-500">{errors.displayOrder?.message}</p>
             </div>
 

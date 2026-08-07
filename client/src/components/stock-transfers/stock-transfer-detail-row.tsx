@@ -53,7 +53,10 @@ export function StockTransferDetailRow({ index, onRemove }: Props) {
                     type="number"
                     min={0}
                     step="1"
-                    {...register(`details.${index}.quantitySent`, { valueAsNumber: true })}
+                    placeholder="0"
+                    {...register(`details.${index}.quantitySent`, {
+                        setValueAs: (v) => (v === "" ? undefined : Number(v))
+                    })}
                 />
             </td>
 

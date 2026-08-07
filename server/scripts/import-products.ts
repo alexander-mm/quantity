@@ -9,8 +9,10 @@ import { StoreRepository } from "../src/modules/store/store.repository.js";
 import { UserRepository } from "../src/modules/user/user.repository.js";
 import { MovementTypeRepository } from "../src/modules/movement-type/movement-type.repository.js";
 import { InventoryMovementService } from "../src/modules/inventory-movement/inventory-movement.service.js";
+import { ProductPriceEntryService } from "../src/modules/product-price-entries/product-price-entry.service.js";
 
-interface ExcelRow {
+// Hoja "Productos": catálogo + stock inicial de la tienda destino (--store=).
+interface ProductRow {
     "Código Interno"?: string;
     "Nombre"?: string;
     "Código de Barras"?: string | number;
@@ -19,11 +21,20 @@ interface ExcelRow {
     "Categoría"?: string;
     "Unidad de Medida"?: string;
     "Costo"?: number;
-    "PVP (USD)"?: number;
-    "PVP (COP)"?: number;
     "Stock Mínimo"?: number;
     "Stock Inicial"?: number;
 }
+
+// Hoja "Precios": una fila por cada nivel de PVP del producto. El orden de las filas
+// define la secuencia (PVP USD 1, PVP USD 2... PVP COP 1...), igual que al agregarlos
+// uno por uno desde el formulario de producto.
+interface PriceRow {
+    "Código Interno"?: string;
+    "Moneda"?: string;
+    "Precio"?: number;
+}
+
+type PriceEntry = { currency: "USD" | "COP"; sequence: number; price: number };
 
 function parseArgs() {
 
@@ -46,6 +57,40 @@ function parseArgs() {
 
 }
 
+function buildPriceEntriesByCode(priceRows: PriceRow[]): Map<string, PriceEntry[]> {
+
+    const priceEntriesByCode = new Map<string, PriceEntry[]>();
+    const sequenceCounters = new Map<string, number>();
+
+    for (let i = 0; i < priceRows.length; i++) {
+
+        const row = priceRows[i];
+        const rowNumber = i + 2;
+
+        const code = row["Código Interno"]?.toString().trim();
+        const currencyRaw = row["Moneda"]?.toString().trim().toUpperCase();
+        const price = row["Precio"];
+
+        if (!code || (currencyRaw !== "USD" && currencyRaw !== "COP") || price === undefined) {
+            console.error(`❌ Hoja "Precios", fila ${rowNumber}: inválida (revisa Código Interno / Moneda / Precio). Se omite.`);
+            continue;
+        }
+
+        const currency = currencyRaw as "USD" | "COP";
+        const counterKey = `${code}|${currency}`;
+        const sequence = (sequenceCounters.get(counterKey) ?? 0) + 1;
+        sequenceCounters.set(counterKey, sequence);
+
+        const list = priceEntriesByCode.get(code) ?? [];
+        list.push({ currency, sequence, price: Number(price) });
+        priceEntriesByCode.set(code, list);
+
+    }
+
+    return priceEntriesByCode;
+
+}
+
 async function main() {
 
     const { filePath, storeCode, username, dryRun } = parseArgs();
@@ -61,6 +106,7 @@ async function main() {
     const userRepository = new UserRepository();
     const movementTypeRepository = new MovementTypeRepository();
     const inventoryMovementService = new InventoryMovementService();
+    const productPriceEntryService = new ProductPriceEntryService();
 
     const store = await storeRepository.findByCode(storeCode);
 
@@ -83,10 +129,25 @@ async function main() {
     }
 
     const workbook = XLSX.readFile(filePath);
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json<ExcelRow>(sheet);
 
-    console.log(`Filas encontradas: ${rows.length}\n`);
+    const productSheet = workbook.Sheets["Productos"];
+    const priceSheet = workbook.Sheets["Precios"];
+
+    if (!productSheet) {
+        throw new Error('El archivo debe tener una hoja llamada "Productos".');
+    }
+
+    if (!priceSheet) {
+        throw new Error('El archivo debe tener una hoja llamada "Precios" (un renglón por cada PVP USD/COP del producto).');
+    }
+
+    const rows = XLSX.utils.sheet_to_json<ProductRow>(productSheet);
+    const priceRows = XLSX.utils.sheet_to_json<PriceRow>(priceSheet);
+    const priceEntriesByCode = buildPriceEntriesByCode(priceRows);
+    const usedPriceCodes = new Set<string>();
+
+    console.log(`Filas encontradas en "Productos": ${rows.length}`);
+    console.log(`Filas encontradas en "Precios": ${priceRows.length}\n`);
 
     const categoryCache = new Map<string, bigint>();
 
@@ -107,8 +168,6 @@ async function main() {
         const categoryName = row["Categoría"]?.toString().trim();
         const unitOfMeasure = row["Unidad de Medida"]?.toString().trim();
         const costPrice = row["Costo"];
-        const pvp = row["PVP (USD)"];
-        const pvpCop = row["PVP (COP)"];
         const minimumStock = row["Stock Mínimo"];
         const initialStock = row["Stock Inicial"];
 
@@ -119,12 +178,15 @@ async function main() {
             !categoryName ||
             !unitOfMeasure ||
             costPrice === undefined ||
-            pvp === undefined ||
             minimumStock === undefined
         ) {
             console.error(`❌ Fila ${rowNumber}: faltan campos obligatorios. Se omite.`);
             failed++;
             continue;
+        }
+
+        if (internalCode) {
+            usedPriceCodes.add(internalCode);
         }
 
         try {
@@ -136,10 +198,20 @@ async function main() {
             if (existing) {
 
                 productId = existing.id;
-                console.log(`↷  Fila ${rowNumber}: "${internalCode}" ya existe, no se vuelve a crear.`);
+                console.log(`↷  Fila ${rowNumber}: "${internalCode}" ya existe, no se vuelve a crear ni se tocan sus precios.`);
                 stockOnly++;
 
             } else {
+
+                const entries = priceEntriesByCode.get(internalCode) ?? [];
+                const firstUsd = entries.find(entry => entry.currency === "USD" && entry.sequence === 1);
+                const firstCop = entries.find(entry => entry.currency === "COP" && entry.sequence === 1);
+
+                if (!firstUsd) {
+                    console.error(`❌ Fila ${rowNumber}: "${internalCode}" no tiene ningún precio USD en la hoja "Precios" (se necesita al menos uno). Se omite.`);
+                    failed++;
+                    continue;
+                }
 
                 let categoryId = categoryCache.get(categoryName);
 
@@ -164,7 +236,7 @@ async function main() {
                 }
 
                 if (dryRun) {
-                    console.log(`✅ Fila ${rowNumber}: (simulación) se crearía "${internalCode}" - ${name}`);
+                    console.log(`✅ Fila ${rowNumber}: (simulación) se crearía "${internalCode}" - ${name} con ${entries.length} precio(s) (USD 1 = ${firstUsd.price})`);
                     created++;
                     continue;
                 }
@@ -178,13 +250,19 @@ async function main() {
                     categoryId,
                     unitOfMeasure,
                     costPrice: Number(costPrice),
-                    pvp: Number(pvp),
-                    pvpCop: pvpCop !== undefined ? Number(pvpCop) : undefined,
+                    pvp: firstUsd.price,
+                    pvpCop: firstCop?.price,
                     minimumStock: Number(minimumStock)
                 });
 
                 productId = product.id;
-                console.log(`✅ Fila ${rowNumber}: creado "${internalCode}" - ${name}`);
+
+                await productPriceEntryService.replaceForProduct(
+                    productId.toString(),
+                    { entries }
+                );
+
+                console.log(`✅ Fila ${rowNumber}: creado "${internalCode}" - ${name} con ${entries.length} precio(s)`);
                 created++;
 
             }
@@ -222,10 +300,15 @@ async function main() {
 
     }
 
+    const orphanPriceCodes = [...priceEntriesByCode.keys()].filter(code => !usedPriceCodes.has(code));
+
     console.log("\n====================================");
     console.log(`Productos nuevos: ${created}`);
     console.log(`Solo se agregó stock (ya existían): ${stockOnly}`);
     console.log(`Con error: ${failed}`);
+    if (orphanPriceCodes.length > 0) {
+        console.log(`⚠️  Códigos en "Precios" sin fila correspondiente en "Productos": ${orphanPriceCodes.join(", ")}`);
+    }
     console.log("====================================");
 
 }

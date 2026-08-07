@@ -13,7 +13,7 @@ export class ProductRepository extends BaseRepository {
                 isActive: true
             },
             orderBy: {
-                name: "asc"
+                createdAt: "desc"
             }
         });
     }

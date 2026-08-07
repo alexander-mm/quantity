@@ -24,7 +24,7 @@ export class UserRepository extends BaseRepository {
             },
 
             orderBy: {
-                username: "asc"
+                createdAt: "desc"
             }
 
         });

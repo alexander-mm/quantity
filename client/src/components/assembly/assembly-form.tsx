@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
+import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-hot-toast";
 import axios from "axios";
@@ -43,7 +44,7 @@ export function AssemblyForm({ onSuccess, mode = "create", assemblyId }: Props) 
         defaultValues: {
             number: "",
             productId: "",
-            quantity: 1,
+            quantity: undefined,
             observations: ""
         }
     });
@@ -124,7 +125,7 @@ export function AssemblyForm({ onSuccess, mode = "create", assemblyId }: Props) 
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 min-w-0">
+        <form onSubmit={handleSubmit(onSubmit, onFormError)} className="space-y-6 min-w-0">
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 
@@ -140,7 +141,10 @@ export function AssemblyForm({ onSuccess, mode = "create", assemblyId }: Props) 
                         type="number"
                         min={0}
                         step="1"
-                        {...register("quantity", { valueAsNumber: true })}
+                        placeholder="0"
+                        {...register("quantity", {
+                            setValueAs: (v) => (v === "" ? undefined : Number(v))
+                        })}
                     />
                     <p className="text-sm text-red-500">{errors.quantity?.message}</p>
                 </div>

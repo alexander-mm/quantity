@@ -1,4 +1,5 @@
 import { FormProvider, useForm } from "react-hook-form";
+import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-hot-toast";
@@ -54,7 +55,7 @@ export function RawMaterialMovementForm({ onSuccess }: Props) {
 
     return (
         <FormProvider {...methods}>
-            <form onSubmit={methods.handleSubmit(onSubmit)} noValidate className="space-y-6 min-w-0">
+            <form onSubmit={methods.handleSubmit(onSubmit, onFormError)} noValidate className="space-y-6 min-w-0">
 
                 <RawMaterialMovementHeader />
 

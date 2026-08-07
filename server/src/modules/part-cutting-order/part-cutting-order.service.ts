@@ -54,6 +54,24 @@ export class PartCuttingOrderService {
 
     }
 
+    private async assertRawMaterialAvailable(rawMaterialId: bigint, rawMaterialQtyUsed: number) {
+
+        const rawMaterial = await this.rawMaterialRepository.findById(rawMaterialId);
+
+        if (!rawMaterial) {
+            throw new NotFoundError("Materia prima no encontrada.");
+        }
+
+        const available = Number(rawMaterial.quantity);
+
+        if (available < rawMaterialQtyUsed) {
+            throw new ValidationError(
+                `Stock insuficiente de "${rawMaterial.name}": disponible ${available}, solicitado ${rawMaterialQtyUsed}.`
+            );
+        }
+
+    }
+
     async create(data: CreatePartCuttingOrderDto) {
 
         const existing = await this.repository.findByNumber(data.number);
@@ -63,6 +81,8 @@ export class PartCuttingOrderService {
         }
 
         const recipe = await this.resolveRecipe(data.partId);
+
+        await this.assertRawMaterialAvailable(recipe.rawMaterialId, data.rawMaterialQtyUsed);
 
         const expectedPieces = Number(recipe.piecesPerUnit) * data.rawMaterialQtyUsed;
 
@@ -89,6 +109,8 @@ export class PartCuttingOrderService {
         }
 
         const recipe = await this.resolveRecipe(data.partId);
+
+        await this.assertRawMaterialAvailable(recipe.rawMaterialId, data.rawMaterialQtyUsed);
 
         const expectedPieces = Number(recipe.piecesPerUnit) * data.rawMaterialQtyUsed;
 
@@ -124,14 +146,9 @@ export class PartCuttingOrderService {
             throw new ValidationError("Esta orden de corte ya fue procesada.");
         }
 
-        const rawMaterialAvailable = Number(order.rawMaterial.quantity);
         const rawMaterialRequired = Number(order.rawMaterialQtyUsed);
 
-        if (rawMaterialAvailable < rawMaterialRequired) {
-            throw new ValidationError(
-                `Stock insuficiente de "${order.rawMaterial.name}": disponible ${rawMaterialAvailable}, requerido ${rawMaterialRequired}.`
-            );
-        }
+        await this.assertRawMaterialAvailable(order.rawMaterialId, rawMaterialRequired);
 
         const goodPieces = data.goodPieces;
         const defectivePieces = data.defectivePieces ?? 0;

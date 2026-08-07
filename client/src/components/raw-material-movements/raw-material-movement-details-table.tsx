@@ -24,7 +24,7 @@ export function RawMaterialMovementDetailsTable() {
             <Button
                 type="button"
                 variant="outline"
-                onClick={() => append({ rawMaterialId: "", quantity: 1 })}
+                onClick={() => append({ rawMaterialId: "", quantity: undefined })}
             >
                 <Plus size={18} />
                 Agregar materia prima
