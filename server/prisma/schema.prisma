@@ -22,58 +22,60 @@ model Role {
 }
 
 model Store {
-  id                 BigInt              @id @default(autoincrement())
-  uuid               String              @unique @default(uuid())
-  code               String              @unique
-  name               String
-  type               StoreType
-  address            String?
-  city               String?
-  phone              String?
-  email              String?
-  manager            String?
-  isActive           Boolean             @default(true)
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  createdBy          BigInt?
-  updatedBy          BigInt?
-  inventoryMovements InventoryMovement[]
-  inventoryStocks    InventoryStock[]
-  users              User[]
-  purchases          Purchase[]
-  sales              Sale[]
-  stockTransfersOrigin      StockTransfer[] @relation("TransferOrigin")
-  stockTransfersDestination StockTransfer[] @relation("TransferDestination")
+  id                        BigInt              @id @default(autoincrement())
+  uuid                      String              @unique @default(uuid())
+  code                      String              @unique
+  name                      String
+  type                      StoreType
+  address                   String?
+  city                      String?
+  phone                     String?
+  email                     String?
+  manager                   String?
+  isActive                  Boolean             @default(true)
+  createdAt                 DateTime            @default(now())
+  updatedAt                 DateTime            @updatedAt
+  createdBy                 BigInt?
+  updatedBy                 BigInt?
+  inventoryMovements        InventoryMovement[]
+  inventoryStocks           InventoryStock[]
+  users                     User[]
+  purchases                 Purchase[]
+  sales                     Sale[]
+  stockTransfersOrigin      StockTransfer[]     @relation("TransferOrigin")
+  stockTransfersDestination StockTransfer[]     @relation("TransferDestination")
 
   @@index([type])
   @@index([isActive])
 }
 
 model User {
-  id                 BigInt              @id @default(autoincrement())
-  uuid               String              @unique @default(uuid())
-  username           String              @unique
-  password           String
-  firstName          String
-  lastName           String
-  email              String?
-  phone              String?
-  roleId             BigInt
-  storeId            BigInt
-  isActive           Boolean             @default(true)
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  createdBy          BigInt?
-  updatedBy          BigInt?
-  inventoryMovements InventoryMovement[]
-  role               Role                @relation(fields: [roleId], references: [id])
-  store              Store               @relation(fields: [storeId], references: [id])
-  purchases          Purchase[]
-  sales              Sale[]
-  stockTransfers StockTransfer[]
-   stockTransfersAsTechnician StockTransfer[] @relation("TransferDestinationUser")
-  partMovements PartMovement[]
-  productAssemblies ProductAssembly[]
+  id                         BigInt                @id @default(autoincrement())
+  uuid                       String                @unique @default(uuid())
+  username                   String                @unique
+  password                   String
+  firstName                  String
+  lastName                   String
+  email                      String?
+  phone                      String?
+  roleId                     BigInt
+  storeId                    BigInt
+  isActive                   Boolean               @default(true)
+  createdAt                  DateTime              @default(now())
+  updatedAt                  DateTime              @updatedAt
+  createdBy                  BigInt?
+  updatedBy                  BigInt?
+  inventoryMovements         InventoryMovement[]
+  role                       Role                  @relation(fields: [roleId], references: [id])
+  store                      Store                 @relation(fields: [storeId], references: [id])
+  purchases                  Purchase[]
+  sales                      Sale[]
+  stockTransfers             StockTransfer[]
+  stockTransfersAsTechnician StockTransfer[]       @relation("TransferDestinationUser")
+  partMovements              PartMovement[]
+  productAssemblies          ProductAssembly[]
+  rawMaterialMovements       RawMaterialMovement[]
+  partCuttingOrders          PartCuttingOrder[]
 
   @@index([isActive])
 }
@@ -129,37 +131,39 @@ model UnitOfMeasure {
 }
 
 model Product {
-  id                 BigInt              @id @default(autoincrement())
-  uuid               String              @unique @default(uuid())
-  internalCode       String              @unique
-  barcode            String?             @unique
-  name               String
-  description        String?
-  brandId            BigInt
-  categoryId         BigInt
-  unitOfMeasureId    BigInt
-  costPrice          Decimal             @db.Decimal(12, 2)
-  pvp                Decimal?            @db.Decimal(12, 2)
-  pvpCop             Decimal?            @db.Decimal(14, 2)
-  minimumStock       Decimal             @db.Decimal(12, 2)
-  isActive           Boolean             @default(true)
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  createdBy          BigInt?
-  updatedBy          BigInt?
-  inventoryMovements InventoryMovement[]
-  inventoryStocks    InventoryStock[]
-  brand              Brand               @relation(fields: [brandId], references: [id])
-  category           Category            @relation(fields: [categoryId], references: [id])
-  unitOfMeasure      UnitOfMeasure       @relation(fields: [unitOfMeasureId], references: [id])
-  productPrices      ProductPrice[]
-  purchaseDetails    PurchaseDetail[]
-  saleDetails        SaleDetail[]
+  id                   BigInt                  @id @default(autoincrement())
+  uuid                 String                  @unique @default(uuid())
+  internalCode         String                  @unique
+  barcode              String?                 @unique
+  name                 String
+  description          String?
+  brandId              BigInt
+  categoryId           BigInt
+  unitOfMeasureId      BigInt
+  costPrice            Decimal                 @db.Decimal(12, 2)
+  pvp                  Decimal?                @db.Decimal(12, 2)
+  pvpCop               Decimal?                @db.Decimal(14, 2)
+  minimumStock         Decimal                 @db.Decimal(12, 2)
+  isActive             Boolean                 @default(true)
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+  createdBy            BigInt?
+  updatedBy            BigInt?
+  inventoryMovements   InventoryMovement[]
+  inventoryStocks      InventoryStock[]
+  brand                Brand                   @relation(fields: [brandId], references: [id])
+  category             Category                @relation(fields: [categoryId], references: [id])
+  unitOfMeasure        UnitOfMeasure           @relation(fields: [unitOfMeasureId], references: [id])
+  productPrices        ProductPrice[]
+  priceEntries         ProductPriceEntry[]
+  purchaseDetails      PurchaseDetail[]
+  saleDetails          SaleDetail[]
   stockTransferDetails StockTransferDetail[]
-  components         ProductComponent[] @relation("ProductComponents")
-  usedInComponents   ProductComponent[] @relation("ComponentOfProducts")
-  assemblies         ProductAssembly[]  @relation("ProductAssemblies")
-  usedInAssemblies   ProductAssemblyDetail[] @relation("AssemblyComponentUsage")
+  components           ProductComponent[]      @relation("ProductComponents")
+  usedInComponents     ProductComponent[]      @relation("ComponentOfProducts")
+  assemblies           ProductAssembly[]       @relation("ProductAssemblies")
+  usedInAssemblies     ProductAssemblyDetail[] @relation("AssemblyComponentUsage")
+  equipmentParts       EquipmentPart[]
 
   @@index([name])
   @@index([categoryId])
@@ -226,7 +230,7 @@ model Client {
   createdBy          BigInt?
   updatedBy          BigInt?
   inventoryMovements InventoryMovement[]
-  sales               Sale[]
+  sales              Sale[]
   accountsReceivable AccountReceivable[]
 
   @@index([firstName])
@@ -260,7 +264,7 @@ model Purchase {
   id           BigInt         @id @default(autoincrement())
   uuid         String         @unique @default(uuid())
   number       String         @unique
-  reference String?
+  reference    String?
   supplierId   BigInt
   storeId      BigInt
   userId       BigInt
@@ -278,10 +282,10 @@ model Purchase {
 
   details PurchaseDetail[]
 
-  subtotal Decimal @default(0) @db.Decimal(12,2)
-  discount Decimal @default(0) @db.Decimal(12,2)
-  tax      Decimal @default(0) @db.Decimal(12,2)
-  total    Decimal @default(0) @db.Decimal(12,2)
+  subtotal Decimal @default(0) @db.Decimal(12, 2)
+  discount Decimal @default(0) @db.Decimal(12, 2)
+  tax      Decimal @default(0) @db.Decimal(12, 2)
+  total    Decimal @default(0) @db.Decimal(12, 2)
 }
 
 model PurchaseDetail {
@@ -291,9 +295,10 @@ model PurchaseDetail {
   purchaseId BigInt
   productId  BigInt
 
-  quantity Decimal @db.Decimal(12, 2)
-  unitCost Decimal @db.Decimal(12, 2)
+  quantity Decimal  @db.Decimal(12, 2)
+  unitCost Decimal  @db.Decimal(12, 2)
   pvp      Decimal? @db.Decimal(12, 2)
+  pvpCop   Decimal? @db.Decimal(14, 2)
 
   discount  Decimal @default(0) @db.Decimal(12, 2)
   tax       Decimal @default(0) @db.Decimal(12, 2)
@@ -304,11 +309,45 @@ model PurchaseDetail {
   createdBy BigInt?
   updatedBy BigInt?
 
-  purchase Purchase @relation(fields: [purchaseId], references: [id])
-  product  Product  @relation(fields: [productId], references: [id])
+  purchase     Purchase                   @relation(fields: [purchaseId], references: [id])
+  product      Product                    @relation(fields: [productId], references: [id])
+  priceEntries PurchaseDetailPriceEntry[]
 
   @@index([purchaseId])
   @@index([productId])
+}
+
+// Precio adicional con nombre fijo autogenerado (PVP USD 1, PVP USD 2, PVP COP 1...) por producto.
+// Cantidad libre por producto y por moneda; no tiene relación con Perfiles de Descuento.
+model ProductPriceEntry {
+  id        BigInt   @id @default(autoincrement())
+  uuid      String   @unique @default(uuid())
+  productId BigInt
+  currency  Currency
+  sequence  Int
+  price     Decimal  @db.Decimal(14, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([productId, currency, sequence])
+  @@index([productId])
+}
+
+// Snapshot editable de ProductPriceEntry registrado en una línea de compra específica, para trazabilidad.
+model PurchaseDetailPriceEntry {
+  id               BigInt   @id @default(autoincrement())
+  uuid             String   @unique @default(uuid())
+  purchaseDetailId BigInt
+  currency         Currency
+  sequence         Int
+  price            Decimal  @db.Decimal(14, 2)
+
+  purchaseDetail PurchaseDetail @relation(fields: [purchaseDetailId], references: [id])
+
+  @@unique([purchaseDetailId, currency, sequence])
+  @@index([purchaseDetailId])
 }
 
 model Sale {
@@ -332,7 +371,7 @@ model Sale {
   store  Store  @relation(fields: [storeId], references: [id])
   user   User   @relation(fields: [userId], references: [id])
 
-  details SaleDetail[]
+  details           SaleDetail[]
   accountReceivable AccountReceivable?
 
   subtotal Decimal @default(0) @db.Decimal(12, 2)
@@ -554,22 +593,28 @@ model Part {
   updatedBy   BigInt?
 
   movementDetails PartMovementDetail[]
+  recipe          PartRecipe?
+  equipmentUsage  EquipmentPart[]
+  cuttingOrders   PartCuttingOrder[]
+  assemblyUsage   ProductAssemblyPartDetail[]
 
   @@index([isActive])
 }
 
 model PartMovement {
-  id           BigInt           @id @default(autoincrement())
-  uuid         String           @unique @default(uuid())
-  number       String           @unique
-  type         PartMovementType
-  userId       BigInt
-  movementDate DateTime         @default(now())
-  observations String?
-  createdAt    DateTime         @default(now())
+  id             BigInt           @id @default(autoincrement())
+  uuid           String           @unique @default(uuid())
+  number         String           @unique
+  type           PartMovementType
+  userId         BigInt
+  cuttingOrderId BigInt?          @unique
+  movementDate   DateTime         @default(now())
+  observations   String?
+  createdAt      DateTime         @default(now())
 
-  user    User                 @relation(fields: [userId], references: [id])
-  details PartMovementDetail[]
+  user         User                 @relation(fields: [userId], references: [id])
+  cuttingOrder PartCuttingOrder?    @relation(fields: [cuttingOrderId], references: [id])
+  details      PartMovementDetail[]
 
   @@index([type])
   @@index([userId])
@@ -623,12 +668,28 @@ model ProductAssembly {
   observations String?
   createdAt    DateTime       @default(now())
 
-  product Product                 @relation("ProductAssemblies", fields: [productId], references: [id])
-  user    User                    @relation(fields: [userId], references: [id])
-  details ProductAssemblyDetail[]
+  product     Product                     @relation("ProductAssemblies", fields: [productId], references: [id])
+  user        User                        @relation(fields: [userId], references: [id])
+  details     ProductAssemblyDetail[]
+  partDetails ProductAssemblyPartDetail[]
 
   @@index([productId])
   @@index([userId])
+}
+
+// Piezas de producción (Part) consumidas por un ensamblaje, en paralelo a ProductAssemblyDetail (que consume otros Productos).
+model ProductAssemblyPartDetail {
+  id         BigInt  @id @default(autoincrement())
+  uuid       String  @unique @default(uuid())
+  assemblyId BigInt
+  partId     BigInt
+  quantity   Decimal @db.Decimal(12, 2)
+
+  assembly ProductAssembly @relation(fields: [assemblyId], references: [id])
+  part     Part            @relation(fields: [partId], references: [id])
+
+  @@index([assemblyId])
+  @@index([partId])
 }
 
 model AccountReceivable {
@@ -664,4 +725,155 @@ model ProductAssemblyDetail {
 
   @@index([assemblyId])
   @@index([componentProductId])
+}
+
+enum RawMaterialShape {
+  SHEET
+  TUBE
+}
+
+enum TubeProfile {
+  ROUND
+  SQUARE
+  RECTANGULAR
+}
+
+enum RawMaterialMovementType {
+  IN
+  OUT
+}
+
+// Materia prima virgen: laminas y tubos de donde se cortan las piezas (Part).
+model RawMaterial {
+  id        BigInt           @id @default(autoincrement())
+  uuid      String           @unique @default(uuid())
+  code      String           @unique
+  name      String
+  shape     RawMaterialShape
+  material  String
+  thickness Decimal          @db.Decimal(8, 3)
+  // SHEET: width/height = dimensiones de la lamina. TUBE: width = diametro (ROUND) o lado (SQUARE/RECTANGULAR), height = segundo lado (solo RECTANGULAR), length = longitud del tubo.
+  width     Decimal?         @db.Decimal(10, 2)
+  height    Decimal?         @db.Decimal(10, 2)
+  length    Decimal?         @db.Decimal(10, 2)
+  profile   TubeProfile?
+  quantity  Decimal          @default(0) @db.Decimal(12, 2)
+  isActive  Boolean          @default(true)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  createdBy BigInt?
+  updatedBy BigInt?
+
+  recipes         PartRecipe[]
+  movementDetails RawMaterialMovementDetail[]
+  cuttingOrders   PartCuttingOrder[]
+
+  @@index([isActive])
+  @@index([shape])
+}
+
+model RawMaterialMovement {
+  id             BigInt                  @id @default(autoincrement())
+  uuid           String                  @unique @default(uuid())
+  number         String                  @unique
+  type           RawMaterialMovementType
+  userId         BigInt
+  cuttingOrderId BigInt?                 @unique
+  movementDate   DateTime                @default(now())
+  observations   String?
+  createdAt      DateTime                @default(now())
+
+  user         User                        @relation(fields: [userId], references: [id])
+  cuttingOrder PartCuttingOrder?           @relation(fields: [cuttingOrderId], references: [id])
+  details      RawMaterialMovementDetail[]
+
+  @@index([type])
+  @@index([userId])
+}
+
+model RawMaterialMovementDetail {
+  id            BigInt  @id @default(autoincrement())
+  uuid          String  @unique @default(uuid())
+  movementId    BigInt
+  rawMaterialId BigInt
+  quantity      Decimal @db.Decimal(12, 2)
+
+  movement    RawMaterialMovement @relation(fields: [movementId], references: [id])
+  rawMaterial RawMaterial         @relation(fields: [rawMaterialId], references: [id])
+
+  @@index([movementId])
+  @@index([rawMaterialId])
+}
+
+// Receta de corte: cuantas unidades de Part salen de UNA unidad de RawMaterial (una lamina o un tubo).
+model PartRecipe {
+  id            BigInt   @id @default(autoincrement())
+  uuid          String   @unique @default(uuid())
+  partId        BigInt   @unique
+  rawMaterialId BigInt
+  // lamina: ancho/alto de la pieza. tubo: solo pieceLength (longitud de la pieza cortada).
+  pieceWidth    Decimal? @db.Decimal(10, 2)
+  pieceHeight   Decimal? @db.Decimal(10, 2)
+  pieceLength   Decimal? @db.Decimal(10, 2)
+  piecesPerUnit Decimal  @db.Decimal(12, 2)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     BigInt?
+  updatedBy     BigInt?
+
+  part        Part        @relation(fields: [partId], references: [id])
+  rawMaterial RawMaterial @relation(fields: [rawMaterialId], references: [id])
+
+  @@index([rawMaterialId])
+}
+
+// BOM piezas -> equipo: cuantas unidades de una Part necesita un Product (equipo) ensamblado.
+model EquipmentPart {
+  id        BigInt   @id @default(autoincrement())
+  uuid      String   @unique @default(uuid())
+  productId BigInt
+  partId    BigInt
+  quantity  Decimal  @db.Decimal(12, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id])
+  part    Part    @relation(fields: [partId], references: [id])
+
+  @@unique([productId, partId])
+  @@index([productId])
+  @@index([partId])
+}
+
+// Orden de corte: consume materia prima y produce piezas. Al confirmar genera un RawMaterialMovement (OUT) y un PartMovement (IN, solo con las piezas buenas).
+model PartCuttingOrder {
+  id                 BigInt         @id @default(autoincrement())
+  uuid               String         @unique @default(uuid())
+  number             String         @unique
+  partId             BigInt
+  rawMaterialId      BigInt
+  rawMaterialQtyUsed Decimal        @db.Decimal(12, 2)
+  expectedPieces     Decimal        @db.Decimal(12, 2)
+  goodPieces         Decimal        @default(0) @db.Decimal(12, 2)
+  defectivePieces    Decimal        @default(0) @db.Decimal(12, 2)
+  status             DocumentStatus @default(DRAFT)
+  userId             BigInt
+  cuttingDate        DateTime       @default(now())
+  observations       String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  createdBy          BigInt?
+  updatedBy          BigInt?
+
+  part                Part                 @relation(fields: [partId], references: [id])
+  rawMaterial         RawMaterial          @relation(fields: [rawMaterialId], references: [id])
+  user                User                 @relation(fields: [userId], references: [id])
+  partMovement        PartMovement?
+  rawMaterialMovement RawMaterialMovement?
+
+  @@index([partId])
+  @@index([rawMaterialId])
+  @@index([userId])
+  @@index([status])
 }

@@ -5,7 +5,6 @@ import { toast } from "react-hot-toast";
 import axios from "axios";
 import { saleSchema } from "@/validators";
 import type { SaleFormData } from "@/validators";
-
 import { useCreateSale, useUsers } from "@/hooks";
 import { SaleHeader } from "./sale-header";
 import { SaleDetailsTable } from "./sale-details-table";
@@ -38,6 +37,10 @@ export function SaleForm({
                 reference: "",
                 observations: "",
                 accountReceivableNumber: "",
+                // Solo controla qué precio (PVP USD N / PVP COP N) se aplica a todas las líneas de esta venta.
+                priceEntryKey: "",
+                // Solo controla el % de descuento que se reparte entre las líneas de esta venta.
+                totalDiscountPercentage: 0,
                 details: []
             }
         });
@@ -106,54 +109,31 @@ const total =
     ) => {
 
         if (users.length === 0) {
-
-            toast.error(
-                "No existen usuarios registrados."
-            );
-
+            toast.error( "No existen usuarios registrados." );
             return;
-
         }
-
         createMutation.mutate({
-
             ...data,
-
             userId:
                 users[0]!.id,
-
             saleDate:
                 new Date(
                     data.saleDate
                 )
-
         }, {
-
             onSuccess: () => {
-
-                toast.success(
-                    "Venta registrada."
-                );
-
+                toast.success( "Venta registrada." );
                 methods.reset();
-
                 onSuccess?.();
-
             },
-
             onError: (error) => {
-
                 const message =
                     axios.isAxiosError<{ message?: string }>(error) && error.response?.data?.message
                         ? error.response.data.message
                         : "No se pudo registrar la venta.";
-
                 toast.error(message);
-
             }
-
         });
-
     };
 
     return (
@@ -161,51 +141,34 @@ const total =
         <FormProvider
             {...methods}
         >
-
             <form
                 onSubmit={methods.handleSubmit(onSubmit)}
+                noValidate
                 className="space-y-6 min-w-0"
             >
-
                 <SaleHeader />
-
                 <SaleDetailsTable />
-
                 <SaleTotals
-
                     subtotal={subtotal}
-
                     discount={discount}
-
                     tax={tax}
-
                     total={total}
-
                     currency={currency}
-
                 />
 
                 <div className="flex justify-end">
-
                     <Button
                         type="submit"
                         disabled={loading}
                     >
-
                         {
                             loading
                                 ? "Guardando..."
                                 : "Guardar venta"
                         }
-
                     </Button>
-
                 </div>
-
             </form>
-
         </FormProvider>
-
     );
-
 }

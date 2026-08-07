@@ -21,9 +21,7 @@ export function SaleDetailsTable(){
     return(
 
         <div className="space-y-4">
-
             <div className="space-y-3">
-
                 {
                     fields.map((field,index)=>(
 
@@ -34,7 +32,6 @@ export function SaleDetailsTable(){
                                 remove(index)
                             }
                         />
-
                     ))
                 }
 
@@ -53,15 +50,9 @@ export function SaleDetailsTable(){
 
                 })}
             >
-
                 <Plus size={18}/>
-
                 Agregar producto
-
             </Button>
-
         </div>
-
     );
-
 }

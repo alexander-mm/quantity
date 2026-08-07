@@ -10,7 +10,7 @@ type Props = {
 
 export function StoresTable({ stores, onEdit, onDelete }: Props) {
     return (
-        <EntityTable headers={["Código", "Nombre", "Tipo", "Ciudad", "Estado", "Acciones"]}>
+        <EntityTable headers={["Código", "Nombre", "Tipo", "Ciudad", "Acciones"]}>
             {stores.map(store => (
                 <tr key={store.id} className="border-b transition hover:bg-muted/40">
                     <td className="px-6 py-4">{store.code}</td>
@@ -19,17 +19,6 @@ export function StoresTable({ stores, onEdit, onDelete }: Props) {
                         {store.type === "MAIN_WAREHOUSE" ? "Bodega Principal" : "Tienda"}
                     </td>
                     <td className="px-6 py-4">{store.city ?? "-"}</td>
-                    <td className="px-6 py-4">
-                        <span
-                            className={`rounded-full px-3 py-1 text-xs font-medium ${
-                                store.isActive
-                                    ? "bg-green-100 text-green-700"
-                                    : "bg-red-100 text-red-700"
-                            }`}
-                        >
-                            {store.isActive ? "Activo" : "Inactivo"}
-                        </span>
-                    </td>
                     <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                             <Pencil

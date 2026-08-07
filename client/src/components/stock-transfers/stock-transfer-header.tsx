@@ -24,13 +24,13 @@ export function StockTransferHeader() {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 
             <div>
-                <Label>Número</Label>
+                <Label className="mb-1">Número</Label>
                 <Input {...register("number")} />
                 <p className="text-sm text-red-500">{errors.number?.message as string}</p>
             </div>
 
             <div>
-                <Label>Fecha de despacho</Label>
+                <Label className="mb-1">Fecha de despacho</Label>
                 <Input type="date" {...register("dispatchDate")} />
                 <p className="text-sm text-red-500">{errors.dispatchDate?.message as string}</p>
             </div>
@@ -52,7 +52,7 @@ export function StockTransferHeader() {
             </div>
 
             <div>
-                <Label>Tipo de destino</Label>
+                <Label className="mb-1">Tipo de destino</Label>
                 <Controller
                     control={control}
                     name="destType"
@@ -112,7 +112,7 @@ export function StockTransferHeader() {
             )}
 
             <div className="md:col-span-2">
-                <Label>Observaciones</Label>
+                <Label className="mb-1">Observaciones</Label>
                 <Input {...register("observations")} />
             </div>
 

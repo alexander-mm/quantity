@@ -10,7 +10,7 @@ type Props = {
 
 export function PartMovementsTable({ movements, onView }: Props) {
     return (
-        <EntityTable headers={["Número", "Tipo", "Fecha", "Registrado por", "Stock", "Acciones"]}>
+        <EntityTable headers={["Número", "Tipo", "Fecha", "Registrado por", "Cantidad", "Acciones"]}>
             {movements.map(movement => (
                 <tr key={movement.id} className="border-b transition hover:bg-muted/40">
                     <td className="px-6 py-4">{movement.number}</td>
@@ -24,7 +24,7 @@ export function PartMovementsTable({ movements, onView }: Props) {
                         {movement.user.firstName} {movement.user.lastName}
                     </td>
                     <td className="px-6 py-4">
-                        {movement.details.reduce((sum, detail) => sum + Number(detail.part.quantity), 0)}
+                        {movement.details.reduce((sum, detail) => sum + Number(detail.quantity), 0)}
                     </td>
                     <td className="px-6 py-4">
                         <Eye

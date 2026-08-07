@@ -128,6 +128,23 @@ export class ProductRepository extends BaseRepository {
         });
     }
 
+    async updatePricing(
+        id: bigint,
+        data: {
+            costPrice?: number;
+            pvp?: number;
+            pvpCop?: number;
+        }
+    ): Promise<Product> {
+
+        return this.prisma.product.update({
+            where: {
+                id
+            },
+            data
+        });
+    }
+
     withTransaction(
         tx: Prisma.TransactionClient
     ): ProductRepository {

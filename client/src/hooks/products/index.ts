@@ -4,3 +4,6 @@ export * from "./use-create-product";
 export * from "./use-update-product";
 export * from "./use-delete-products";
 export * from "./use-product-prices";
+export * from "./use-product-price-entries";
+export * from "./use-product-price-entry-labels";
+export * from "./use-replace-product-price-entries";

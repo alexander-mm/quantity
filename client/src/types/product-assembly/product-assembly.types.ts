@@ -1,4 +1,4 @@
-import type { Product } from "@/types";
+import type { Part, Product } from "@/types";
 
 export interface ProductAssemblyDetail {
     id: string;
@@ -9,10 +9,29 @@ export interface ProductAssemblyDetail {
     componentProduct: Product;
 }
 
+export interface ProductAssemblyPartDetail {
+    id: string;
+    uuid: string;
+    assemblyId: string;
+    partId: string;
+    quantity: string;
+    part: Part;
+}
+
 export interface ProductAssemblyPreviewComponent {
     componentProductId: string;
     componentName: string;
     componentCode: string;
+    recipeQuantity: number;
+    requiredQuantity: number;
+    available: number;
+    sufficient: boolean;
+}
+
+export interface ProductAssemblyPreviewPart {
+    partId: string;
+    partCode: string;
+    partName: string;
     recipeQuantity: number;
     requiredQuantity: number;
     available: number;
@@ -26,6 +45,7 @@ export interface ProductAssemblyPreview {
         name: string;
     };
     components: ProductAssemblyPreviewComponent[];
+    parts: ProductAssemblyPreviewPart[];
     canAssemble: boolean;
 }
 
@@ -48,4 +68,5 @@ export interface ProductAssembly {
         lastName: string;
     };
     details: ProductAssemblyDetail[];
+    partDetails: ProductAssemblyPartDetail[];
 }

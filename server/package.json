@@ -18,6 +18,7 @@
     "prisma:deploy": "prisma migrate deploy",
     "prisma:seed": "tsx prisma/seed.ts",
     "products:import": "tsx scripts/import-products.ts",
+    "products:wipe": "tsx scripts/wipe-product-catalog.ts",
     "prisma:deploy:prod": "dotenv -e .env.production -- prisma migrate deploy"
   },
   "dependencies": {

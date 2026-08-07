@@ -22,7 +22,12 @@ import {
     useProduct,
     useProducts,
     useProductComponents,
-    useSetProductComponents
+    useSetProductComponents,
+    useParts,
+    useEquipmentParts,
+    useSetEquipmentParts,
+    useProductPriceEntries,
+    useReplaceProductPriceEntries
 } from "@/hooks";
 import { toast } from "react-hot-toast";
 
@@ -62,11 +67,13 @@ export function ProductForm({
             pvp: 0,
             pvpCop: 0,
             minimumStock: 0,
-            components: []
+            components: [],
+            priceEntries: []
         }
     });
 
     const { fields, append, remove } = useFieldArray({ control, name: "components" });
+    const { fields: priceEntryFields, append: appendPriceEntry, remove: removePriceEntry } = useFieldArray({ control, name: "priceEntries" });
 
     const { data: categoriesData } = useCategories();
     const { data: productsData } = useProducts();
@@ -81,23 +88,37 @@ export function ProductForm({
             ? productId
             : undefined
     );
+    const { data: equipmentPartsData } = useEquipmentParts(
+        mode === "edit"
+            ? productId
+            : undefined
+    );
+    const { data: partsData } = useParts();
+    const { data: productPriceEntriesData } = useProductPriceEntries(
+        mode === "edit" ? productId : undefined
+    );
     const updateProductMutation = useUpdateProduct();
     const setComponentsMutation = useSetProductComponents();
+    const setEquipmentPartsMutation = useSetEquipmentParts();
+    const replacePriceEntriesMutation = useReplaceProductPriceEntries();
     const categories = categoriesData?.data ?? [];
     const products = (productsData?.data ?? []).filter(product => product.id !== productId);
+    const parts = partsData?.data ?? [];
 
     const watchedComponents = useWatch({ control, name: "components" }) ?? [];
-    const validComponents = watchedComponents.filter(item => item?.componentProductId);
+    const watchedPriceEntries = useWatch({ control, name: "priceEntries" }) ?? [];
+    const validComponents = watchedComponents.filter(item => item?.refId);
+    const validProductComponents = validComponents.filter(item => item.type === "PRODUCT");
 
     useEffect(() => {
 
-        if (validComponents.length === 0) {
+        if (validProductComponents.length === 0) {
             return;
         }
 
-        const total = validComponents.reduce((sum, item) => {
+        const total = validProductComponents.reduce((sum, item) => {
 
-            const componentProduct = products.find(product => product.id === item.componentProductId);
+            const componentProduct = products.find(product => product.id === item.refId);
             const unitCost = componentProduct ? Number(componentProduct.costPrice ?? 0) : 0;
 
             return sum + unitCost * (Number(item.quantity) || 0);
@@ -107,7 +128,18 @@ export function ProductForm({
         setValue("costPrice", total);
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [JSON.stringify(validComponents), products]);
+    }, [JSON.stringify(validProductComponents), products]);
+
+    useEffect(() => {
+
+        const firstUsdEntry = watchedPriceEntries.find(item => item?.currency === "USD");
+        const firstCopEntry = watchedPriceEntries.find(item => item?.currency === "COP");
+
+        setValue("pvp", firstUsdEntry ? Number(firstUsdEntry.price) || 0 : 0);
+        setValue("pvpCop", firstCopEntry ? Number(firstCopEntry.price) || 0 : 0);
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [JSON.stringify(watchedPriceEntries), setValue]);
 
     useEffect(() => {
 
@@ -131,37 +163,85 @@ export function ProductForm({
             pvp: Number(productData.data.pvp),
             pvpCop: productData.data.pvpCop ? Number(productData.data.pvpCop) : 0,
             minimumStock: Number(productData.data.minimumStock),
-            components: (componentsData?.data ?? []).map(item => ({
-                componentProductId: item.componentProductId,
-                quantity: Number(item.quantity)
+            components: [
+                ...(componentsData?.data ?? []).map(item => ({
+                    type: "PRODUCT" as const,
+                    refId: item.componentProductId,
+                    quantity: Number(item.quantity)
+                })),
+                ...(equipmentPartsData?.data ?? []).map(item => ({
+                    type: "PART" as const,
+                    refId: item.partId,
+                    quantity: Number(item.quantity)
+                }))
+            ],
+            priceEntries: (productPriceEntriesData?.data ?? []).map(item => ({
+                currency: item.currency,
+                price: Number(item.price)
             }))
         });
     }, [
         mode,
         productData,
         componentsData,
+        equipmentPartsData,
+        productPriceEntriesData,
         reset
     ]);
 
     async function saveComponents(targetProductId: string, components: ProductFormData["components"]) {
 
-        await setComponentsMutation.mutateAsync({
-            productId: targetProductId,
-            data: {
-                components: (components ?? [])
-                    .filter(item => item.componentProductId)
-                    .map(item => ({
-                        componentProductId: item.componentProductId,
+        const items = components ?? [];
+        const productComponents = items.filter(item => item.type === "PRODUCT" && item.refId);
+        const partComponents = items.filter(item => item.type === "PART" && item.refId);
+
+        await Promise.all([
+            setComponentsMutation.mutateAsync({
+                productId: targetProductId,
+                data: {
+                    components: productComponents.map(item => ({
+                        componentProductId: item.refId,
                         quantity: Number(item.quantity)
                     }))
-            }
+                }
+            }),
+            setEquipmentPartsMutation.mutateAsync({
+                productId: targetProductId,
+                data: {
+                    parts: partComponents.map(item => ({
+                        partId: item.refId,
+                        quantity: Number(item.quantity)
+                    }))
+                }
+            })
+        ]);
+
+    }
+
+    async function savePriceEntries(targetProductId: string, priceEntries: ProductFormData["priceEntries"]) {
+
+        const items = priceEntries ?? [];
+        const sequenceByCurrency: Record<string, number> = {};
+
+        const entries = items.map(item => {
+            sequenceByCurrency[item.currency] = (sequenceByCurrency[item.currency] ?? 0) + 1;
+            return {
+                currency: item.currency,
+                sequence: sequenceByCurrency[item.currency],
+                price: Number(item.price)
+            };
+        });
+
+        await replacePriceEntriesMutation.mutateAsync({
+            productId: targetProductId,
+            data: { entries }
         });
 
     }
 
     async function onSubmit(data: ProductFormData) {
 
-        const { components, ...productData } = data;
+        const { components, priceEntries, ...productData } = data;
 
         const payload = {
             ...productData,
@@ -179,6 +259,12 @@ export function ProductForm({
                         await saveComponents(response.data.id, components);
                     } catch {
                         toast.error("El producto se creó, pero no se pudo guardar la receta de componentes.");
+                    }
+
+                    try {
+                        await savePriceEntries(response.data.id, priceEntries);
+                    } catch {
+                        toast.error("El producto se creó, pero no se pudieron guardar los precios de venta.");
                     }
 
                     toast.success("Producto creado correctamente.");
@@ -210,6 +296,12 @@ export function ProductForm({
                     toast.error("El producto se actualizó, pero no se pudo guardar la receta de componentes.");
                 }
 
+                try {
+                    await savePriceEntries(productId, priceEntries);
+                } catch {
+                    toast.error("El producto se actualizó, pero no se pudieron guardar los precios de venta.");
+                }
+
                 toast.success("Producto actualizado correctamente.");
                 reset();
                 onSuccess?.();
@@ -224,6 +316,7 @@ export function ProductForm({
     return (
         <form
             onSubmit={handleSubmit(onSubmit)}
+            noValidate
             className="space-y-2 h-full"
         >
             <div className="mb-3">
@@ -336,146 +429,200 @@ export function ProductForm({
                 <div>
                     <Label className="mb-1">Componentes (opcional)</Label>
                     <p className="text-xs text-muted-foreground">
-                        Si este producto se arma a partir de otros productos del inventario (ej. un kit o producto
-                        terminado), defínelos aquí. Esto habilita el ensamblaje: al producirlo, se descontará
-                        automáticamente cada componente de la bodega principal.
+                        Si este producto se arma a partir de otros productos del inventario y/o de piezas cortadas
+                        en producción (láser/tubo), defínelos aquí. Esto habilita el ensamblaje: al producirlo, se
+                        descontará automáticamente cada componente-producto de la bodega principal y cada pieza del
+                        inventario de piezas.
                     </p>
                 </div>
 
-                {fields.map((field, index) => (
+                {fields.map((field, index) => {
 
-                    <div key={field.id} className="flex items-end gap-2 rounded-md border p-2">
+                    const type = field.type;
+                    const isPart = type === "PART";
+                    const options = isPart
+                        ? parts.map(part => ({ value: part.id, label: `${part.code} - ${part.name}` }))
+                        : products.map(product => ({ value: product.id, label: `${product.internalCode} - ${product.name}` }));
 
-                        <div className="flex-1">
-                            <Label className="mb-1">Producto componente</Label>
-                            <Controller
-                                control={control}
-                                name={`components.${index}.componentProductId`}
-                                render={({ field: controllerField }) => {
+                    return (
 
-                                    const items = products.map(product => ({
-                                        value: product.id,
-                                        label: `${product.internalCode} - ${product.name}`
-                                    }));
+                        <div key={field.id} className="flex items-end gap-2 rounded-md border p-2">
 
-                                    const selected = items.find(item => item.value === controllerField.value) ?? null;
+                            <div className="flex-1">
+                                <Label className="mb-1">{isPart ? "Pieza" : "Producto componente"}</Label>
+                                <Controller
+                                    control={control}
+                                    name={`components.${index}.refId`}
+                                    render={({ field: controllerField }) => {
 
-                                    return (
-                                        <Combobox
-                                            items={items}
-                                            value={selected}
-                                            onValueChange={(item) => controllerField.onChange(item ? item.value : "")}
-                                        >
-                                            <ComboboxInput placeholder="Buscar producto..." />
-                                            <ComboboxContent>
-                                                {(item) => (
-                                                    <ComboboxItem key={item.value} value={item}>
-                                                        {item.label}
-                                                    </ComboboxItem>
-                                                )}
-                                            </ComboboxContent>
-                                            <ComboboxEmpty>
-                                                No se encontraron productos.
-                                            </ComboboxEmpty>
-                                        </Combobox>
-                                    );
+                                        const selected = options.find(item => item.value === controllerField.value) ?? null;
 
-                                }}
-                            />
+                                        return (
+                                            <Combobox
+                                                items={options}
+                                                value={selected}
+                                                onValueChange={(item) => controllerField.onChange(item ? item.value : "")}
+                                            >
+                                                <ComboboxInput placeholder={isPart ? "Buscar pieza..." : "Buscar producto..."} />
+                                                <ComboboxContent>
+                                                    {(item) => (
+                                                        <ComboboxItem key={item.value} value={item}>
+                                                            {item.label}
+                                                        </ComboboxItem>
+                                                    )}
+                                                </ComboboxContent>
+                                                <ComboboxEmpty>
+                                                    {isPart ? "No se encontraron piezas." : "No se encontraron productos."}
+                                                </ComboboxEmpty>
+                                            </Combobox>
+                                        );
+
+                                    }}
+                                />
+                            </div>
+
+                            <div className="w-28">
+                                <Label className="mb-1">Cantidad</Label>
+                                <Input
+                                    type="number"
+                                    min={0}
+                                    step="1"
+                                    {...register(`components.${index}.quantity`, { valueAsNumber: true })}
+                                />
+                            </div>
+
+                            <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                                <Trash2 size={18} className="text-red-500" />
+                            </Button>
+
                         </div>
 
-                        <div className="w-28">
-                            <Label className="mb-1">Cantidad</Label>
-                            <Input
-                                type="number"
-                                min={0}
-                                step="1"
-                                {...register(`components.${index}.quantity`, { valueAsNumber: true })}
-                            />
-                        </div>
+                    );
 
-                        <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
-                            <Trash2 size={18} className="text-red-500" />
-                        </Button>
+                })}
 
-                    </div>
-
-                ))}
-
-                <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => append({ componentProductId: "", quantity: 1 })}
-                >
-                    <Plus size={18} />
-                    Agregar componente
-                </Button>
+                <div className="flex gap-2">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => append({ type: "PRODUCT", refId: "", quantity: 1 })}
+                    >
+                        <Plus size={18} />
+                        Agregar producto
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => append({ type: "PART", refId: "", quantity: 1 })}
+                    >
+                        <Plus size={18} />
+                        Agregar pieza
+                    </Button>
+                </div>
 
             </div>
 
-
-            <div className="mb-3">
-                <Label className="mb-1">
-                    Costo
-                </Label>
-                <Input
-                    type="number"
-                    {...register("costPrice")}
-                />
-                {validComponents.length > 0 && (
-                    <p className="text-sm text-muted-foreground">
-                        Calculado automáticamente sumando el costo de los componentes definidos abajo.
+    
+                <div className="mb-6">
+                    <Label className="mb-1">
+                        Precio de Costo
+                    </Label>
+                    <Input
+                        type="number"
+                        {...register("costPrice")}
+                    />
+                    {validComponents.length > 0 && (
+                        <p className="text-sm text-muted-foreground">
+                            Calculado automáticamente sumando el costo de los componentes definidos arriba.
+                        </p>
+                    )}
+                    <p className="text-sm text-red-500">
+                        {errors.costPrice?.message}
                     </p>
-                )}
-                <p className="text-sm text-red-500">
-                    {errors.costPrice?.message}
-                </p>
-            </div>
+                </div>
+            <div className="space-y-3 rounded-lg border p-3 mb-6">
 
-            <div className="mb-3">
-                <Label className="mb-1">
-                    PVP (USD)
-                </Label>
-                <Input
-                    type="number"
-                    step="0.01"
-                    {...register("pvp")}
-                />
-                <p className="text-sm text-muted-foreground">
-                    Se calcula automáticamente el precio para todos los perfiles de precio activos, como
-                    descuento sobre este valor.
-                </p>
-                <p className="text-sm text-red-500">
-                    {errors.pvp?.message}
-                </p>
-            </div>
+                <div>
+                    <Label className="mb-1">Precios de Venta</Label>
+                    <p className="text-xs text-muted-foreground">
+                        Agrega tantos precios como necesites, en USD y/o en COP. Se numeran automáticamente
+                        (PVP USD 1, PVP USD 2, PVP COP 1...) según el orden en que los agregues. PVP USD 1 y
+                        PVP COP 1 se usan como precio base del producto para el resto de los procesos
+                        (perfiles de descuento, compras, etc.).
+                    </p>
+                </div>
 
-            <div className="mb-3">
-                <Label className="mb-1">
-                    PVP (COP)
-                </Label>
-                <Input
-                    type="number"
-                    step="1"
-                    min="0"
-                    {...register("pvpCop")}
-                />
-                <p className="text-sm text-muted-foreground">
-                    Escribe el valor completo, sin puntos ni comas — ej: <strong>450000</strong> para $450.000.
-                    Déjalo en 0 si este producto no se vende en COP. Los perfiles de precio también se calculan sobre este valor.
-                </p>
+                {priceEntryFields.map((field, index) => {
+
+                    const currency = watchedPriceEntries[index]?.currency ?? field.currency;
+                    const sequence = watchedPriceEntries
+                        .slice(0, index + 1)
+                        .filter(item => item?.currency === currency)
+                        .length;
+
+                    return (
+
+                        <div key={field.id} className="flex items-end gap-2 rounded-md border p-2">
+
+                            <div className="w-24">
+                                <Label className="mb-1">Etiqueta</Label>
+                                <Input readOnly disabled value={`PVP ${currency} ${sequence}`} />
+                            </div>
+
+                            <div className="w-32">
+                                <Label className="mb-1">Precio</Label>
+                                <Input
+                                    type="number"
+                                    min={0}
+                                    step="0.01"
+                                    {...register(`priceEntries.${index}.price`, { valueAsNumber: true })}
+                                />
+                            </div>
+
+                            <Button type="button" variant="ghost" size="icon" onClick={() => removePriceEntry(index)}>
+                                <Trash2 size={18} className="text-red-500" />
+                            </Button>
+
+                        </div>
+
+                    );
+
+                })}
+
+                <div className="flex gap-2">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => appendPriceEntry({ currency: "USD", price: 0 })}
+                    >
+                        <Plus size={18} />
+                        Agregar precio USD
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => appendPriceEntry({ currency: "COP", price: 0 })}
+                    >
+                        <Plus size={18} />
+                        Agregar precio COP
+                    </Button>
+                </div>
+
                 <p className="text-sm text-red-500">
-                    {errors.pvpCop?.message}
+                    {errors.pvp?.message ? "Debes agregar al menos un precio en USD (será el PVP USD 1)." : ""}
                 </p>
+
             </div>
 
             <div>
                 <Label>
-                    Stock mínimo
+                    Stock Mínimo en Inventario
                 </Label>
                 <Input
                     type="number"
-                    {...register("minimumStock")}
+                    {...register("minimumStock", {
+                        setValueAs: (v) => (v === "" ? undefined : Number(v))
+                    })}
                 />
                 <p className="text-sm text-red-500">
                     {errors.minimumStock?.message}

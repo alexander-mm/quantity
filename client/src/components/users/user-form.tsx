@@ -136,37 +136,37 @@ export function UserForm({ onSuccess, mode = "create", userId }: Props) {
 
             <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                    <Label>Nombre</Label>
+                    <Label className="mb-1">Nombre</Label>
                     <Input {...register("firstName")} />
                     <p className="text-sm text-red-500">{errors.firstName?.message}</p>
                 </div>
                 <div>
-                    <Label>Apellido</Label>
+                    <Label className="mb-1">Apellido</Label>
                     <Input {...register("lastName")} />
                     <p className="text-sm text-red-500">{errors.lastName?.message}</p>
                 </div>
             </div>
 
             <div>
-                <Label>Usuario</Label>
+                <Label className="mb-1">Usuario</Label>
                 <Input autoComplete="username" {...register("username")} />
                 <p className="text-sm text-red-500">{errors.username?.message}</p>
             </div>
 
             <div>
-                <Label>{mode === "edit" ? "Contraseña (opcional)" : "Contraseña"}</Label>
+                <Label className="mb-1">{mode === "edit" ? "Contraseña (opcional)" : "Contraseña"}</Label>
                 <Input type="password" autoComplete="new-password" {...register("password")} />
                 <p className="text-sm text-red-500">{errors.password?.message}</p>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                    <Label>Correo (opcional)</Label>
+                    <Label className="mb-1">Correo (opcional)</Label>
                     <Input {...register("email")} />
                     <p className="text-sm text-red-500">{errors.email?.message}</p>
                 </div>
                 <div>
-                    <Label>Teléfono (opcional)</Label>
+                    <Label className="mb-1">Teléfono (opcional)</Label>
                     <Input {...register("phone")} />
                 </div>
             </div>

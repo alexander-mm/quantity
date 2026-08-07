@@ -31,6 +31,13 @@ export interface Purchase{
 
 }
 
+export interface PurchaseDetailPriceEntry{
+    id:string;
+    currency:"USD"|"COP";
+    sequence:number;
+    price:string;
+}
+
 export interface PurchaseDetail{
 
     id:string;
@@ -38,6 +45,8 @@ export interface PurchaseDetail{
     quantity:string;
     unitCost:string;
     pvp:string|null;
+    pvpCop:string|null;
+    priceEntries:PurchaseDetailPriceEntry[];
 
     discount:string;
     tax:string;

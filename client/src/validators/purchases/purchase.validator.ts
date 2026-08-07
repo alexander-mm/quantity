@@ -47,6 +47,21 @@ export const purchaseSchema=z.object({
                     .number()
                     .positive("El PVP debe ser mayor que cero."),
 
+                pvpCop:z
+                    .number()
+                    .positive("El PVP en COP debe ser mayor que cero.")
+                    .optional(),
+
+                priceEntries:z
+                    .array(
+                        z.object({
+                            currency:z.enum(["USD","COP"]),
+                            sequence:z.number().int().positive(),
+                            price:z.number().positive("Debe ser mayor que cero.")
+                        })
+                    )
+                    .optional(),
+
                 discount:z
                     .number()
                     .min(0),

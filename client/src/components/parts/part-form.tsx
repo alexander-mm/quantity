@@ -90,25 +90,25 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 
             <div>
-                <Label>Código</Label>
+                <Label className="mb-1">Código</Label>
                 <Input {...register("code")} />
                 <p className="text-sm text-red-500">{errors.code?.message}</p>
             </div>
 
             <div>
-                <Label>Nombre</Label>
+                <Label className="mb-1">Nombre</Label>
                 <Input {...register("name")} />
                 <p className="text-sm text-red-500">{errors.name?.message}</p>
             </div>
 
             <div>
-                <Label>Descripción (opcional)</Label>
+                <Label className="mb-1">Descripción (opcional)</Label>
                 <Input {...register("description")} />
             </div>
 
             {mode === "create" && (
                 <div>
-                    <Label>Cantidad a cargar (opcional)</Label>
+                    <Label className="mb-1">Cantidad a cargar (opcional)</Label>
                     <Input
                         type="number"
                         min={0}

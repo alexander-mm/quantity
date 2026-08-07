@@ -19,7 +19,7 @@ export function RoleSelector({
 }: Props) {
     return (
         <div className="flex-1">
-            <Label>{label}</Label>
+            <Label className="mb-1">{label}</Label>
             <Select
                 value={value}
                 onValueChange={onChange}

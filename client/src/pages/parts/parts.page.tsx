@@ -43,8 +43,8 @@ export function PartsPage() {
         <PageContainer>
 
             <PageHeader
-                title="Piezas"
-                description="Catálogo de piezas de metal fabricadas por producción."
+                title="Piezas Láser"
+                description="Inventario de piezas de metal fabricadas en corte láser."
             />
 
             <div className="mt-8">

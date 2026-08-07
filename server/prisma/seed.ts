@@ -284,6 +284,13 @@ async function seedMovementTypes() {
       description: "Salida de componente consumido en ensamblaje",
       affectsStock: true,
       stockOperation: StockOperation.OUT
+    },
+    {
+      code: "INITIAL_LOAD",
+      name: "Carga Inicial",
+      description: "Carga inicial de inventario (importación)",
+      affectsStock: true,
+      stockOperation: StockOperation.IN
     }
   ];
 

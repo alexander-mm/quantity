@@ -61,6 +61,71 @@ export class ProductService {
         });
     }
 
+    private async recalculatePrices(
+        productId: bigint,
+        pvp: number | undefined,
+        pvpCop: number | undefined,
+        marginRepository: MarginProfileRepository,
+        productPriceRepository: ProductPriceRepository
+    ): Promise<void> {
+
+        await productPriceRepository.deleteByProductId(productId);
+
+        if (pvp === undefined) {
+            return;
+        }
+
+        const marginProfiles = await marginRepository.findAll();
+
+        const prices = marginProfiles.map(profile => {
+
+            const percentage = Number(profile.percentage);
+
+            return {
+                productId,
+                marginProfileId: profile.id,
+                price: new Prisma.Decimal(
+                    PriceCalculator.calculateSalePriceFromDiscount(pvp, percentage)
+                ),
+                priceCop: pvpCop
+                    ? new Prisma.Decimal(
+                        PriceCalculator.calculateSalePriceFromDiscount(pvpCop, percentage)
+                    )
+                    : undefined
+            };
+
+        });
+
+        await productPriceRepository.createMany(prices);
+
+    }
+
+    async syncPricingFromPurchase(
+        id: bigint,
+        data: {
+            costPrice: number;
+            pvp?: number;
+            pvpCop?: number;
+        },
+        tx: Prisma.TransactionClient
+    ): Promise<void> {
+
+        const repository = this.repository.withTransaction(tx);
+        const marginRepository = this.marginRepository.withTransaction(tx);
+        const productPriceRepository = this.productPriceRepository.withTransaction(tx);
+
+        await repository.updatePricing(id, data);
+
+        await this.recalculatePrices(
+            id,
+            data.pvp,
+            data.pvpCop,
+            marginRepository,
+            productPriceRepository
+        );
+
+    }
+
     async update(
         id: string,
         data: {
@@ -184,36 +249,13 @@ export class ProductService {
                         minimumStock: data.minimumStock
                     }
                 );
-            await productPriceRepository.deleteByProductId(
-                updatedProduct.id
-            );
 
-
-            const marginProfiles = await marginRepository.findAll();
-
-            const prices = marginProfiles
-                .map(profile => ({
-                    productId: updatedProduct.id,
-                    marginProfileId: profile!.id,
-                    price: new Prisma.Decimal(
-                        PriceCalculator.calculateSalePriceFromDiscount(
-                            data.pvp,
-                            Number(profile!.percentage)
-                        )
-                    ),
-                    priceCop: data.pvpCop
-                        ? new Prisma.Decimal(
-                            PriceCalculator.calculateSalePriceFromDiscount(
-                                data.pvpCop,
-                                Number(profile!.percentage)
-                            )
-                        )
-                        : undefined,
-                    isActive: true
-                }));
-
-            await productPriceRepository.createMany(
-                prices
+            await this.recalculatePrices(
+                updatedProduct.id,
+                data.pvp,
+                data.pvpCop,
+                marginRepository,
+                productPriceRepository
             );
 
             return updatedProduct;
@@ -240,8 +282,6 @@ export class ProductService {
         const brandRepository = this.brandRepository;
         const categoryRepository = this.categoryRepository;
         const unitRepository = this.unitRepository;
-        const marginRepository = this.marginRepository;
-        const productPriceRepository = this.productPriceRepository;
 
         const existingCode =
             await productRepository.findByInternalCode(
@@ -320,30 +360,13 @@ export class ProductService {
             minimumStock: data.minimumStock
         });
 
-        const marginProfiles = await marginRepository.findAll();
-
-        const prices = marginProfiles
-            .map(profile => ({
-                productId: product.id,
-                marginProfileId: profile!.id,
-                price: new Prisma.Decimal(
-                    PriceCalculator.calculateSalePriceFromDiscount(
-                        data.pvp,
-                        Number(profile!.percentage)
-                    )
-                ),
-                priceCop: data.pvpCop
-                    ? new Prisma.Decimal(
-                        PriceCalculator.calculateSalePriceFromDiscount(
-                            data.pvpCop,
-                            Number(profile!.percentage)
-                        )
-                    )
-                    : undefined,
-                isActive: true
-            }));
-
-        await productPriceRepository.createMany(prices);
+        await this.recalculatePrices(
+            product.id,
+            data.pvp,
+            data.pvpCop,
+            this.marginRepository,
+            this.productPriceRepository
+        );
 
         return product;
     }

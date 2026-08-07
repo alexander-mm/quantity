@@ -1,13 +1,6 @@
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
-import { Controller, useFormContext } from "react-hook-form";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
-} from "@/components/ui/select";
+import { Controller, useFormContext, useWatch } from "react-hook-form";
 import {
     Combobox,
     ComboboxInput,
@@ -18,9 +11,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useProducts, useProductPrices, useClients } from "@/hooks";
-import { getProductById } from "@/services";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useProducts, useProductPriceEntries, useClients, useMarginProfiles } from "@/hooks";
+import { getProductById, getProductPriceEntries } from "@/services";
 import { formatCurrency } from "@/lib/format-currency";
+
+const NO_PROFILE = "none";
 
 type Props={
     index:number;
@@ -58,18 +54,22 @@ export function SaleDetailRow({
         watch(`details.${index}.productId`);
 
     const {
-        data:pricesData
-    }=useProductPrices(productId||undefined);
+        data:priceEntriesData
+    }=useProductPriceEntries(productId||undefined);
 
-    const prices=
-        (pricesData?.data??[]).filter(
-            price=>!isCop||!!price.priceCop
-        );
+    const priceEntries=
+        priceEntriesData?.data??[];
 
-    const [
-        marginProfileId,
-        setMarginProfileId
-    ]=useState("");
+    const priceEntryKey = useWatch({ control, name: "priceEntryKey" });
+    const [entryCurrency, entrySequenceRaw] = (priceEntryKey ?? "").split("-");
+    const entrySequence = Number(entrySequenceRaw);
+    const selectedEntryLabel = priceEntryKey ? `PVP ${entryCurrency} ${entrySequenceRaw}` : undefined;
+
+    const priceForSelectedEntry = productId
+        ? priceEntries.find(entry => entry.currency === entryCurrency && entry.sequence === entrySequence)
+        : undefined;
+
+    const missingPriceForEntry = !!priceEntryKey && !!productId && !priceForSelectedEntry;
 
     const{
         data:clientsData
@@ -89,19 +89,45 @@ export function SaleDetailRow({
     const hasClientDiscount=
         clientDiscountPercentage>0;
 
+    const {
+        data:marginProfilesData
+    }=useMarginProfiles();
+
+    const marginProfiles=
+        marginProfilesData?.data??[];
+
+    const [selectedProfileId,setSelectedProfileId]=
+        useState<string>(NO_PROFILE);
+
+    const hasLineDiscountProfile=
+        !hasClientDiscount&&selectedProfileId!==NO_PROFILE;
+
     const applyClientDiscount=(
         newQuantity:number,
         newUnitPrice:number
     )=>{
 
-        if(!hasClientDiscount){
+        if(hasClientDiscount){
+            setValue(
+                `details.${index}.discount`,
+                newQuantity*newUnitPrice*(clientDiscountPercentage/100)
+            );
             return;
         }
 
-        setValue(
-            `details.${index}.discount`,
-            newQuantity*newUnitPrice*(clientDiscountPercentage/100)
-        );
+        if(hasLineDiscountProfile){
+
+            const profilePercentage=
+                Number(
+                    marginProfiles.find(profile=>profile.id===selectedProfileId)?.percentage??0
+                );
+
+            setValue(
+                `details.${index}.discount`,
+                newQuantity*newUnitPrice*(profilePercentage/100)
+            );
+
+        }
 
     };
 
@@ -162,10 +188,35 @@ export function SaleDetailRow({
                                 onValueChange={(item)=>{
 
                                     field.onChange(item?item.value:"");
-                                    setMarginProfileId("");
 
                                     if(!item){
                                         return;
+                                    }
+
+                                    if(priceEntryKey){
+
+                                        getProductPriceEntries(item.value).then(response=>{
+
+                                            const match = response.data.find(
+                                                entry=>entry.currency===entryCurrency&&entry.sequence===entrySequence
+                                            );
+
+                                            const newUnitPrice = match
+                                                ? Number(match.price)
+                                                : undefined;
+
+                                            setValue(`details.${index}.unitPrice`, newUnitPrice);
+
+                                            if(newUnitPrice!==undefined){
+                                                applyClientDiscount(quantity,newUnitPrice);
+                                            }
+
+                                        }).catch(error=>{
+                                            console.error(error);
+                                        });
+
+                                        return;
+
                                     }
 
                                     getProductById(item.value).then(response=>{
@@ -225,94 +276,63 @@ export function SaleDetailRow({
 
             </div>
 
-            <div>
+            {hasClientDiscount && (
+                <p className="text-sm text-muted-foreground">
+                    Descuento de cliente ({clientDiscountPercentage}%)
+                </p>
+            )}
 
-                {hasClientDiscount ? (
+            {!hasClientDiscount && priceEntryKey && productId && (
 
-                    <p className="text-sm text-muted-foreground">
-                        Descuento de cliente ({clientDiscountPercentage}%)
+                missingPriceForEntry ? (
+                    <p className="text-sm text-red-500">
+                        Este producto no tiene precio registrado en "{selectedEntryLabel}". Ingresa el precio manualmente.
                     </p>
-
                 ) : (
+                    <p className="text-sm text-muted-foreground">
+                        Precio de "{selectedEntryLabel}"{priceForSelectedEntry ? `: ${formatCurrency(Number(priceForSelectedEntry.price), currency)}` : ""}
+                    </p>
+                )
 
-                    <>
+            )}
 
-                        <Label className="mb-1">Perfil</Label>
+            {!hasClientDiscount && (
+                <div>
+                    <Label className="mb-1">Perfil de descuento (opcional)</Label>
+                    <Select
+                        value={selectedProfileId}
+                        onValueChange={(rawValue)=>{
 
-                        <Select
-                            value={marginProfileId}
-                            onValueChange={(value)=>{
+                            const value=rawValue??NO_PROFILE;
 
-                                if(!value){
-                                    return;
-                                }
+                            setSelectedProfileId(value);
 
-                                setMarginProfileId(value);
+                            const profilePercentage=
+                                value!==NO_PROFILE
+                                    ?Number(marginProfiles.find(profile=>profile.id===value)?.percentage??0)
+                                    :0;
 
-                                const selected=
-                                    prices.find(
-                                        price=>price.marginProfileId===value
-                                    );
+                            setValue(
+                                `details.${index}.discount`,
+                                quantity*unitPrice*(profilePercentage/100)
+                            );
 
-                                if(selected){
-
-                                    const priceForCurrency=
-                                        isCop
-                                            ?selected.priceCop
-                                            :selected.price;
-
-                                    setValue(
-                                        `details.${index}.unitPrice`,
-                                        Number(priceForCurrency)
-                                    );
-
-                                }
-
-                            }}
-                            disabled={!productId||prices.length===0}
-                        >
-
-                            <SelectTrigger className="w-full">
-
-                                <SelectValue
-                                    placeholder="Perfil"
-                                />
-
-                            </SelectTrigger>
-
-                            <SelectContent>
-
-                                {
-                                    prices.map(price=>{
-
-                                        const displayPrice=
-                                            isCop
-                                                ?price.priceCop
-                                                :price.price;
-
-                                        return(
-
-                                            <SelectItem
-                                                key={price.marginProfileId}
-                                                value={price.marginProfileId}
-                                            >
-                                                {price.marginProfileName} ({Number(price.marginProfilePercentage)}%) - {formatCurrency(displayPrice??0,currency)}
-                                            </SelectItem>
-
-                                        );
-
-                                    })
-                                }
-
-                            </SelectContent>
-
-                        </Select>
-
-                    </>
-
-                )}
-
-            </div>
+                        }}
+                    >
+                        <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Sin perfil" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value={NO_PROFILE}>Sin perfil</SelectItem>
+                            {marginProfiles.map(profile=>(
+                                <SelectItem key={profile.id} value={profile.id}>
+                                    {profile.name} (-{Number(profile.percentage)}%)
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+            )}
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
 
@@ -372,7 +392,7 @@ export function SaleDetailRow({
                         type="number"
                         min={0}
                         step="1"
-                        disabled={hasClientDiscount}
+                        disabled={hasClientDiscount||hasLineDiscountProfile}
                         {...register(
                             `details.${index}.discount`,
                             {

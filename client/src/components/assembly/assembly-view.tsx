@@ -41,22 +41,43 @@ export function AssemblyView({ assembly, onClose }: Props) {
                 </div>
             </div>
 
-            <table className="w-full border rounded-lg">
-                <thead>
-                    <tr className="border-b bg-muted">
-                        <th className="p-2 text-left">Componente consumido</th>
-                        <th className="p-2">Cantidad</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {assembly.details.map(detail => (
-                        <tr key={detail.id} className="border-b">
-                            <td className="p-2">{detail.componentProduct.internalCode} - {detail.componentProduct.name}</td>
-                            <td className="p-2 text-center">{Number(detail.quantity)}</td>
+            {assembly.details.length > 0 && (
+                <table className="w-full border rounded-lg">
+                    <thead>
+                        <tr className="border-b bg-muted">
+                            <th className="p-2 text-left">Componente consumido</th>
+                            <th className="p-2">Cantidad</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {assembly.details.map(detail => (
+                            <tr key={detail.id} className="border-b">
+                                <td className="p-2">{detail.componentProduct.internalCode} - {detail.componentProduct.name}</td>
+                                <td className="p-2 text-center">{Number(detail.quantity)}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
+
+            {assembly.partDetails.length > 0 && (
+                <table className="w-full border rounded-lg">
+                    <thead>
+                        <tr className="border-b bg-muted">
+                            <th className="p-2 text-left">Pieza consumida</th>
+                            <th className="p-2">Cantidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {assembly.partDetails.map(detail => (
+                            <tr key={detail.id} className="border-b">
+                                <td className="p-2">{detail.part.code} - {detail.part.name}</td>
+                                <td className="p-2 text-center">{Number(detail.quantity)}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
 
             <div className="flex justify-end">
                 <Button type="button" variant="outline" onClick={onClose}>

@@ -4,6 +4,9 @@ import { prisma } from "../../database/index.js";
 import { ConflictError, NotFoundError, ValidationError } from "../../shared/errors/index.js";
 import { ProductRepository } from "../product/product.repository.js";
 import { ProductComponentRepository } from "../product-component/product-component.repository.js";
+import { EquipmentPartRepository } from "../equipment-part/equipment-part.repository.js";
+import { PartRepository } from "../part/part.repository.js";
+import { PartMovementRepository } from "../part-movement/part-movement.repository.js";
 import { StoreRepository } from "../store/store.repository.js";
 import { MovementTypeRepository } from "../movement-type/movement-type.repository.js";
 import { InventoryStockService } from "../inventory-stock/inventory-stock.service.js";
@@ -17,6 +20,9 @@ export class ProductAssemblyService {
     private readonly repository = new ProductAssemblyRepository();
     private readonly productRepository = new ProductRepository();
     private readonly componentRepository = new ProductComponentRepository();
+    private readonly equipmentPartRepository = new EquipmentPartRepository();
+    private readonly partRepository = new PartRepository();
+    private readonly partMovementRepository = new PartMovementRepository();
     private readonly storeRepository = new StoreRepository();
     private readonly movementTypeRepository = new MovementTypeRepository();
     private readonly inventoryStockService = new InventoryStockService();
@@ -46,10 +52,13 @@ export class ProductAssemblyService {
             throw new NotFoundError("El producto a ensamblar no existe.");
         }
 
-        const recipe = await this.componentRepository.findByProduct(BigInt(productId));
+        const [recipe, partsRecipe] = await Promise.all([
+            this.componentRepository.findByProduct(BigInt(productId)),
+            this.equipmentPartRepository.findByProduct(BigInt(productId))
+        ]);
 
-        if (recipe.length === 0) {
-            throw new ValidationError("Este producto no tiene una receta de componentes definida.");
+        if (recipe.length === 0 && partsRecipe.length === 0) {
+            throw new ValidationError("Este producto no tiene una receta de componentes ni de piezas definida.");
         }
 
         const mainWarehouse = await this.storeRepository.findMainWarehouse();
@@ -82,16 +91,35 @@ export class ProductAssemblyService {
 
         }));
 
+        const requiredByPart = partsRecipe.map(item => {
+
+            const requiredQuantity = Number(item.quantity) * quantity;
+            const available = Number(item.part.quantity);
+
+            return {
+                partId: item.partId,
+                partCode: item.part.code,
+                partName: item.part.name,
+                recipeQuantity: Number(item.quantity),
+                requiredQuantity,
+                available,
+                sufficient: available >= requiredQuantity
+            };
+
+        });
+
         return {
             product,
             mainWarehouse,
             components: requiredByComponent,
+            parts: requiredByPart,
             canAssemble: requiredByComponent.every(item => item.sufficient)
+                && requiredByPart.every(item => item.sufficient)
         };
 
     }
 
-    private async buildComponentSnapshot(productId: string, quantity: number) {
+    private async buildAssemblySnapshot(productId: string, quantity: number) {
 
         const product = await this.productRepository.findById(BigInt(productId));
 
@@ -99,16 +127,25 @@ export class ProductAssemblyService {
             throw new NotFoundError("El producto a ensamblar no existe.");
         }
 
-        const recipe = await this.componentRepository.findByProduct(BigInt(productId));
+        const [recipe, partsRecipe] = await Promise.all([
+            this.componentRepository.findByProduct(BigInt(productId)),
+            this.equipmentPartRepository.findByProduct(BigInt(productId))
+        ]);
 
-        if (recipe.length === 0) {
-            throw new ValidationError("Este producto no tiene una receta de componentes definida.");
+        if (recipe.length === 0 && partsRecipe.length === 0) {
+            throw new ValidationError("Este producto no tiene una receta de componentes ni de piezas definida.");
         }
 
-        return recipe.map(item => ({
-            componentProductId: item.componentProductId,
-            quantity: Number(item.quantity) * quantity
-        }));
+        return {
+            components: recipe.map(item => ({
+                componentProductId: item.componentProductId,
+                quantity: Number(item.quantity) * quantity
+            })),
+            parts: partsRecipe.map(item => ({
+                partId: item.partId,
+                quantity: Number(item.quantity) * quantity
+            }))
+        };
 
     }
 
@@ -120,9 +157,9 @@ export class ProductAssemblyService {
             throw new ConflictError("Ya existe un ensamblaje con ese número.");
         }
 
-        const components = await this.buildComponentSnapshot(data.productId, data.quantity);
+        const { components, parts } = await this.buildAssemblySnapshot(data.productId, data.quantity);
 
-        return this.repository.create(data, components);
+        return this.repository.create(data, components, parts);
 
     }
 
@@ -144,9 +181,9 @@ export class ProductAssemblyService {
             throw new ConflictError("Ya existe un ensamblaje con ese número.");
         }
 
-        const components = await this.buildComponentSnapshot(data.productId, data.quantity);
+        const { components, parts } = await this.buildAssemblySnapshot(data.productId, data.quantity);
 
-        return this.repository.update(assembly.id, data, components);
+        return this.repository.update(assembly.id, data, components, parts);
 
     }
 
@@ -202,6 +239,19 @@ export class ProductAssemblyService {
 
         }
 
+        for (const partDetail of assembly.partDetails) {
+
+            const available = Number(partDetail.part.quantity);
+            const required = Number(partDetail.quantity);
+
+            if (available < required) {
+                throw new ValidationError(
+                    `Stock insuficiente de la pieza "${partDetail.part.name}": disponible ${available}, requerido ${required}.`
+                );
+            }
+
+        }
+
         const assemblyInType = await this.movementTypeRepository.findByCode("ASSEMBLY_IN");
         const assemblyOutType = await this.movementTypeRepository.findByCode("ASSEMBLY_OUT");
 
@@ -213,6 +263,8 @@ export class ProductAssemblyService {
 
             const repository = this.repository.withTransaction(tx);
             const movementService = this.inventoryMovementService.withTransaction(tx);
+            const partRepository = this.partRepository.withTransaction(tx);
+            const partMovementRepository = this.partMovementRepository.withTransaction(tx);
 
             for (const detail of assembly.details) {
 
@@ -226,6 +278,31 @@ export class ProductAssemblyService {
                     observations: `Ensamblaje ${assembly.number}: consumo de "${detail.componentProduct.name}"`,
                     movementDate: new Date()
                 });
+
+            }
+
+            if (assembly.partDetails.length > 0) {
+
+                await partMovementRepository.create({
+                    number: `ENSAMBLAJE-${assembly.number}`,
+                    type: "OUT",
+                    userId,
+                    movementDate: new Date(),
+                    observations: `Ensamblaje ${assembly.number}: consumo de piezas para "${assembly.product.name}"`,
+                    details: assembly.partDetails.map(partDetail => ({
+                        partId: partDetail.partId.toString(),
+                        quantity: Number(partDetail.quantity)
+                    }))
+                });
+
+                for (const partDetail of assembly.partDetails) {
+
+                    await partRepository.decrementQuantity(
+                        partDetail.partId,
+                        new Prisma.Decimal(partDetail.quantity)
+                    );
+
+                }
 
             }
 

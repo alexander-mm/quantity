@@ -7,6 +7,7 @@ export interface CreatePartMovementDto {
     number: string;
     type: "IN" | "OUT";
     userId: string;
+    cuttingOrderId?: string;
     movementDate: Date;
     observations?: string;
     details: CreatePartMovementDetailDto[];

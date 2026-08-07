@@ -111,7 +111,8 @@ const total =
             purchaseDate:
                 new Date(
                     data.purchaseDate
-                )
+                ),
+            details: data.details
         }, {
 
             onSuccess: () => {
@@ -137,6 +138,7 @@ const total =
         >
             <form
                 onSubmit={methods.handleSubmit(onSubmit)}
+                noValidate
                 className="space-y-6 min-w-0"
             >
                 <PurchaseHeader />

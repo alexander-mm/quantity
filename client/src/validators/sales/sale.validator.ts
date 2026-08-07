@@ -33,6 +33,18 @@ export const saleSchema=z.object({
         .string()
         .optional(),
 
+    // No se persiste: solo controla qué precio (PVP USD N / PVP COP N) se aplica a las líneas de la venta.
+    priceEntryKey:z
+        .string()
+        .optional(),
+
+    // No se persiste: solo controla el % de descuento que se reparte entre las líneas cuando el
+    // cliente no tiene un porcentaje de descuento asignado.
+    totalDiscountPercentage:z
+        .number()
+        .min(0)
+        .optional(),
+
     details:z
         .array(
 

@@ -129,13 +129,13 @@ export function AssemblyForm({ onSuccess, mode = "create", assemblyId }: Props) 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 
                 <div>
-                    <Label>Número</Label>
+                    <Label className="mb-1">Número</Label>
                     <Input {...register("number")} />
                     <p className="text-sm text-red-500">{errors.number?.message}</p>
                 </div>
 
                 <div>
-                    <Label>Cantidad a producir</Label>
+                    <Label className="mb-1">Cantidad a producir</Label>
                     <Input
                         type="number"
                         min={0}
@@ -174,7 +174,7 @@ export function AssemblyForm({ onSuccess, mode = "create", assemblyId }: Props) 
                                         )}
                                     </ComboboxContent>
                                     <ComboboxEmpty>
-                                        Ningún producto tiene una receta de componentes definida.
+                                        Ningún producto tiene una receta de componentes o piezas definida.
                                     </ComboboxEmpty>
                                 </Combobox>
                             );
@@ -188,7 +188,7 @@ export function AssemblyForm({ onSuccess, mode = "create", assemblyId }: Props) 
                 </div>
 
                 <div className="md:col-span-2">
-                    <Label>Observaciones (opcional)</Label>
+                    <Label className="mb-1">Observaciones (opcional)</Label>
                     <Input {...register("observations")} />
                 </div>
 
@@ -196,32 +196,57 @@ export function AssemblyForm({ onSuccess, mode = "create", assemblyId }: Props) 
 
             {productId && Number(quantity) > 0 && (
 
-                <div className="rounded-lg border p-3">
-
-                    <p className="mb-2 font-medium">Componentes requeridos (bodega principal)</p>
+                <div className="space-y-4 rounded-lg border p-3">
 
                     {isPreviewLoading && <p className="text-sm text-muted-foreground">Calculando...</p>}
 
                     {preview && (
-                        <div className="space-y-2">
-                            {preview.components.map(item => (
-                                <div
-                                    key={item.componentProductId}
-                                    className="flex items-center justify-between border-b pb-2 text-sm last:border-b-0"
-                                >
-                                    <span>{item.componentCode} - {item.componentName}</span>
-                                    <span className={item.sufficient ? "text-muted-foreground" : "font-medium text-red-500"}>
-                                        {item.requiredQuantity} requerido / {item.available} disponible
-                                    </span>
+                        <>
+                            {preview.components.length > 0 && (
+                                <div>
+                                    <p className="mb-2 font-medium">Componentes requeridos (bodega principal)</p>
+                                    <div className="space-y-2">
+                                        {preview.components.map(item => (
+                                            <div
+                                                key={item.componentProductId}
+                                                className="flex items-center justify-between border-b pb-2 text-sm last:border-b-0"
+                                            >
+                                                <span>{item.componentCode} - {item.componentName}</span>
+                                                <span className={item.sufficient ? "text-muted-foreground" : "font-medium text-red-500"}>
+                                                    {item.requiredQuantity} requerido / {item.available} disponible
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
-                            ))}
+                            )}
+
+                            {preview.parts.length > 0 && (
+                                <div>
+                                    <p className="mb-2 font-medium">Piezas requeridas (inventario de producción)</p>
+                                    <div className="space-y-2">
+                                        {preview.parts.map(item => (
+                                            <div
+                                                key={item.partId}
+                                                className="flex items-center justify-between border-b pb-2 text-sm last:border-b-0"
+                                            >
+                                                <span>{item.partCode} - {item.partName}</span>
+                                                <span className={item.sufficient ? "text-muted-foreground" : "font-medium text-red-500"}>
+                                                    {item.requiredQuantity} requerido / {item.available} disponible
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             {!preview.canAssemble && (
                                 <p className="pt-2 text-sm text-amber-600">
                                     Aún no hay stock suficiente — puedes guardar el borrador de todas formas y
                                     confirmarlo más adelante cuando llegue el stock.
                                 </p>
                             )}
-                        </div>
+                        </>
                     )}
 
                 </div>

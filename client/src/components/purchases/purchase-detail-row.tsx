@@ -1,5 +1,6 @@
-import { Trash2 } from "lucide-react";
-import { Controller, useFormContext } from "react-hook-form";
+import { useEffect } from "react";
+import { Plus, Trash2 } from "lucide-react";
+import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import {
     Combobox,
     ComboboxInput,
@@ -11,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useProducts } from "@/hooks";
-import { getProductById } from "@/services";
+import { getProductById, getProductPriceEntries } from "@/services";
 
 type Props={
     index:number;
@@ -27,7 +28,8 @@ export function PurchaseDetailRow({
         control,
         register,
         watch,
-        setValue
+        setValue,
+        formState:{errors}
     }=useFormContext();
 
     const{
@@ -63,6 +65,25 @@ export function PurchaseDetailRow({
         discount+
         tax;
 
+    const {
+        fields: priceEntryFields,
+        append: appendPriceEntry,
+        remove: removePriceEntry,
+        replace: replacePriceEntries
+    } = useFieldArray({ control, name: `details.${index}.priceEntries` });
+
+    const watchedPriceEntries = useWatch({ control, name: `details.${index}.priceEntries` }) ?? [];
+
+    useEffect(() => {
+
+        const firstUsdEntry = watchedPriceEntries.find((e: { currency: string }) => e?.currency === "USD");
+        const firstCopEntry = watchedPriceEntries.find((e: { currency: string }) => e?.currency === "COP");
+
+        setValue(`details.${index}.pvp`, firstUsdEntry ? Number(firstUsdEntry.price) || 0 : 0);
+        setValue(`details.${index}.pvpCop`, firstCopEntry ? Number(firstCopEntry.price) || 0 : 0);
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [JSON.stringify(watchedPriceEntries), setValue, index]);
 
     return(
 
@@ -108,12 +129,21 @@ export function PurchaseDetailRow({
                                             Number(product.costPrice)
                                         );
 
-                                        setValue(
-                                            `details.${index}.pvp`,
-                                            Number(product.pvp)
+                                    }).catch(error=>{
+                                        console.error(error);
+                                    });
+
+                                    getProductPriceEntries(item.value).then(response => {
+
+                                        replacePriceEntries(
+                                            response.data.map(entry => ({
+                                                currency: entry.currency,
+                                                sequence: entry.sequence,
+                                                price: Number(entry.price)
+                                            }))
                                         );
 
-                                    }).catch(error=>{
+                                    }).catch(error => {
                                         console.error(error);
                                     });
 
@@ -188,24 +218,6 @@ export function PurchaseDetailRow({
 
                 <div>
 
-                    <Label className="mb-1">PVP</Label>
-
-                    <Input
-                        type="number"
-                        min={0}
-                        step="0.01"
-                        {...register(
-                            `details.${index}.pvp`,
-                            {
-                                valueAsNumber:true
-                            }
-                        )}
-                    />
-
-                </div>
-
-                <div>
-
                     <Label className="mb-1">Descuento</Label>
 
                     <Input
@@ -239,6 +251,74 @@ export function PurchaseDetailRow({
                     />
 
                 </div>
+
+            </div>
+
+            <div className="space-y-2 rounded-md border p-2">
+
+                <Label className="mb-1">Precios de venta</Label>
+                <p className="text-xs text-muted-foreground">
+                    PVP USD 1 y PVP COP 1 se usan como precio base de este producto para el resto de los procesos.
+                </p>
+
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {priceEntryFields.map((field, priceIndex) => {
+
+                        const currency = watchedPriceEntries[priceIndex]?.currency ?? "";
+                        const sequence = watchedPriceEntries[priceIndex]?.sequence ?? "";
+
+                        return (
+                            <div key={field.id} className="col-span-1 flex items-end gap-1">
+                                <div className="flex-1">
+                                    <Label className="mb-1 text-xs">{`PVP ${currency} ${sequence}`}</Label>
+                                    <Input
+                                        type="number"
+                                        min={0}
+                                        step="0.01"
+                                        {...register(`details.${index}.priceEntries.${priceIndex}.price`, { valueAsNumber: true })}
+                                    />
+                                </div>
+                                <Button type="button" variant="ghost" size="icon" onClick={() => removePriceEntry(priceIndex)}>
+                                    <Trash2 size={16} className="text-red-500" />
+                                </Button>
+                            </div>
+                        );
+
+                    })}
+                </div>
+
+                <div className="flex gap-2">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                            const nextSequence = watchedPriceEntries.filter((e: { currency: string }) => e?.currency === "USD").length + 1;
+                            appendPriceEntry({ currency: "USD", sequence: nextSequence, price: 0 });
+                        }}
+                    >
+                        <Plus size={16} />
+                        PVP USD
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                            const nextSequence = watchedPriceEntries.filter((e: { currency: string }) => e?.currency === "COP").length + 1;
+                            appendPriceEntry({ currency: "COP", sequence: nextSequence, price: 0 });
+                        }}
+                    >
+                        <Plus size={16} />
+                        PVP COP
+                    </Button>
+                </div>
+
+                <p className="text-sm text-red-500">
+                    {(errors.details as { [key: number]: { pvp?: { message?: string } } } | undefined)?.[index]?.pvp?.message
+                        ? "Debes agregar al menos un precio en USD (será el PVP USD 1)."
+                        : ""}
+                </p>
 
             </div>
 

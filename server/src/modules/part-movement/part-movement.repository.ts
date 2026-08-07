@@ -92,6 +92,7 @@ export class PartMovementRepository extends BaseRepository {
                 number: data.number,
                 type: data.type,
                 userId: BigInt(data.userId),
+                cuttingOrderId: data.cuttingOrderId ? BigInt(data.cuttingOrderId) : undefined,
                 movementDate: data.movementDate,
                 observations: data.observations,
                 details: {

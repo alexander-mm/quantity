@@ -94,7 +94,10 @@ export function PurchaseView({
                             Costo
                         </th>
                         <th className="p-2">
-                            PVP
+                            PVP (USD)
+                        </th>
+                        <th className="p-2">
+                            PVP (COP)
                         </th>
                         <th className="p-2">
                             Desc.
@@ -126,6 +129,9 @@ export function PurchaseView({
                                 </td>
                                 <td className="p-2 text-center">
                                     {detail.pvp ? `$${Number(detail.pvp).toFixed(2)}` : "-"}
+                                </td>
+                                <td className="p-2 text-center">
+                                    {detail.pvpCop ? Number(detail.pvpCop).toLocaleString("es-CO") : "-"}
                                 </td>
                                 <td className="p-2 text-center">
                                     ${Number(detail.discount).toFixed(2)}

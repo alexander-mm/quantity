@@ -27,6 +27,11 @@ import { PartsPage } from "@/pages/parts";
 import { PartMovementsPage } from "@/pages/part-movements";
 import { AssemblyPage } from "@/pages/assembly";
 import { WholesalersPage, WholesalerDetailPage } from "@/pages/wholesalers";
+import { RawMaterialsPage } from "@/pages/raw-materials";
+import { RawMaterialMovementsPage } from "@/pages/raw-material-movements";
+import { PartRecipesPage } from "@/pages/part-recipes";
+import { EquipmentPartsPage } from "@/pages/equipment-parts";
+import { PartCuttingOrdersPage } from "@/pages/part-cutting-orders";
 
 function DashboardRoute() {
 
@@ -298,6 +303,61 @@ const router = createBrowserRouter([
             <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.PRODUCTION]}>
                 <DashboardLayout>
                     <AssemblyPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
+
+    {
+        path: "/raw-materials",
+        element: (
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.PRODUCTION]}>
+                <DashboardLayout>
+                    <RawMaterialsPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
+
+    {
+        path: "/raw-material-movements",
+        element: (
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.PRODUCTION]}>
+                <DashboardLayout>
+                    <RawMaterialMovementsPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
+
+    {
+        path: "/part-recipes",
+        element: (
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.PRODUCTION]}>
+                <DashboardLayout>
+                    <PartRecipesPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
+
+    {
+        path: "/equipment-parts",
+        element: (
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.PRODUCTION]}>
+                <DashboardLayout>
+                    <EquipmentPartsPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
+
+    {
+        path: "/part-cutting-orders",
+        element: (
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.PRODUCTION]}>
+                <DashboardLayout>
+                    <PartCuttingOrdersPage />
                 </DashboardLayout>
             </ProtectedRoute>
         )

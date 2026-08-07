@@ -1,0 +1,73 @@
+import { FormProvider, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { toast } from "react-hot-toast";
+import axios from "axios";
+import { rawMaterialMovementSchema } from "@/validators";
+import type { RawMaterialMovementFormData } from "@/validators";
+
+import { useCreateRawMaterialMovement } from "@/hooks";
+import { RawMaterialMovementHeader } from "./raw-material-movement-header";
+import { RawMaterialMovementDetailsTable } from "./raw-material-movement-details-table";
+
+type Props = {
+    onSuccess?: () => void;
+};
+
+export function RawMaterialMovementForm({ onSuccess }: Props) {
+
+    const methods = useForm<RawMaterialMovementFormData>({
+        resolver: zodResolver(rawMaterialMovementSchema),
+        defaultValues: {
+            number: "",
+            type: "IN",
+            movementDate: new Date().toISOString().split("T")[0],
+            observations: "",
+            details: []
+        }
+    });
+
+    const createMutation = useCreateRawMaterialMovement();
+    const loading = createMutation.isPending;
+
+    const onSubmit = (data: RawMaterialMovementFormData) => {
+
+        createMutation.mutate({
+            ...data,
+            movementDate: new Date(data.movementDate)
+        }, {
+            onSuccess: () => {
+                toast.success("Movimiento registrado correctamente.");
+                methods.reset();
+                onSuccess?.();
+            },
+            onError: (error) => {
+                const message =
+                    axios.isAxiosError<{ message?: string }>(error) && error.response?.data?.message
+                        ? error.response.data.message
+                        : "No se pudo registrar el movimiento.";
+                toast.error(message);
+            }
+        });
+
+    };
+
+    return (
+        <FormProvider {...methods}>
+            <form onSubmit={methods.handleSubmit(onSubmit)} noValidate className="space-y-6 min-w-0">
+
+                <RawMaterialMovementHeader />
+
+                <RawMaterialMovementDetailsTable />
+
+                <div className="flex justify-end">
+                    <Button type="submit" disabled={loading}>
+                        {loading ? "Guardando..." : "Guardar movimiento"}
+                    </Button>
+                </div>
+
+            </form>
+        </FormProvider>
+    );
+
+}

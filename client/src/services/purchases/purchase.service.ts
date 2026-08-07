@@ -43,6 +43,13 @@ export type CreatePurchaseRequest={
         productId:string;
         quantity:number;
         unitCost:number;
+        pvp:number;
+        pvpCop?:number;
+        priceEntries?:{
+            currency:"USD"|"COP";
+            sequence:number;
+            price:number;
+        }[];
         discount?:number;
         tax?:number;
     }[];

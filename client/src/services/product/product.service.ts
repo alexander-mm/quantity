@@ -1,5 +1,5 @@
 import { api } from "@/services/api";
-import type { ApiResponse, Product, ProductPrice } from "@/types";
+import type { ApiResponse, Product, ProductPrice, ProductPriceEntry } from "@/types";
 import type { ProductFormData } from "@/validators";
 
 export async function getProducts(): Promise<ApiResponse<Product[]>> {
@@ -99,6 +99,56 @@ export async function getProductPrices(
 
     const { data } = await api.get<ApiResponse<ProductPrice[]>>(
         `/product-prices/${productId}`
+    );
+
+    return data;
+
+}
+
+export async function getProductPriceEntries(
+    productId: string
+): Promise<ApiResponse<ProductPriceEntry[]>> {
+
+    const { data } = await api.get<ApiResponse<ProductPriceEntry[]>>(
+        `/product-price-entries/${productId}`
+    );
+
+    return data;
+
+}
+
+export type PriceEntryLabel = {
+    currency: "USD" | "COP";
+    sequence: number;
+    label: string;
+};
+
+export async function getProductPriceEntryLabels(): Promise<ApiResponse<PriceEntryLabel[]>> {
+
+    const { data } = await api.get<ApiResponse<PriceEntryLabel[]>>(
+        "/product-price-entries/labels"
+    );
+
+    return data;
+
+}
+
+export type ReplaceProductPriceEntriesRequest = {
+    entries: {
+        currency: "USD" | "COP";
+        sequence: number;
+        price: number;
+    }[];
+};
+
+export async function replaceProductPriceEntries(
+    productId: string,
+    payload: ReplaceProductPriceEntriesRequest
+): Promise<ApiResponse<ProductPriceEntry[]>> {
+
+    const { data } = await api.put<ApiResponse<ProductPriceEntry[]>>(
+        `/product-price-entries/${productId}`,
+        payload
     );
 
     return data;

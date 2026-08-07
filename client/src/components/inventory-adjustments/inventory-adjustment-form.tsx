@@ -72,7 +72,7 @@ export function InventoryAdjustmentForm({ onSuccess }: Props) {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 
             <div>
-                <Label>Producto</Label>
+                <Label className="mb-1">Producto</Label>
                 <Controller
                     control={control}
                     name="productId"
@@ -122,7 +122,7 @@ export function InventoryAdjustmentForm({ onSuccess }: Props) {
             <p className="text-sm text-red-500">{errors.storeId?.message}</p>
 
             <div>
-                <Label>Tipo de ajuste</Label>
+                <Label className="mb-1">Tipo de ajuste</Label>
                 <Controller
                     control={control}
                     name="type"
@@ -141,13 +141,13 @@ export function InventoryAdjustmentForm({ onSuccess }: Props) {
             </div>
 
             <div>
-                <Label>Cantidad</Label>
+                <Label className="mb-1">Cantidad</Label>
                 <Input type="number" step="1" {...register("quantity")} />
                 <p className="text-sm text-red-500">{errors.quantity?.message}</p>
             </div>
 
             <div>
-                <Label>Motivo</Label>
+                <Label className="mb-1">Motivo</Label>
                 <Input placeholder="Ej: conteo físico, producto dañado..." {...register("reason")} />
                 <p className="text-sm text-red-500">{errors.reason?.message}</p>
             </div>

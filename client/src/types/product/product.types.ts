@@ -24,6 +24,14 @@ export interface ProductPrice {
     priceCop: string | null;
 }
 
+export interface ProductPriceEntry {
+    id: string;
+    currency: "USD" | "COP";
+    sequence: number;
+    label: string;
+    price: string;
+}
+
 export interface ProductComponent {
     id: string;
     uuid: string;

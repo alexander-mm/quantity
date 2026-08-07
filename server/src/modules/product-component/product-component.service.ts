@@ -1,6 +1,7 @@
 import { prisma } from "../../database/index.js";
 import { NotFoundError, ValidationError } from "../../shared/errors/index.js";
 import { ProductRepository } from "../product/product.repository.js";
+import { EquipmentPartRepository } from "../equipment-part/equipment-part.repository.js";
 
 import { ProductComponentRepository } from "./product-component.repository.js";
 import { SetProductComponentsDto } from "./product-component.dto.js";
@@ -9,14 +10,26 @@ export class ProductComponentService {
 
     private readonly repository = new ProductComponentRepository();
     private readonly productRepository = new ProductRepository();
+    private readonly equipmentPartRepository = new EquipmentPartRepository();
 
     async findByProduct(productId: string) {
         return this.repository.findByProduct(BigInt(productId));
     }
 
     async findProductIdsWithRecipe(): Promise<string[]> {
-        const rows = await this.repository.findProductsWithRecipe();
-        return rows.map(row => row.productId.toString());
+
+        const [componentRows, partRows] = await Promise.all([
+            this.repository.findProductsWithRecipe(),
+            this.equipmentPartRepository.findProductsWithParts()
+        ]);
+
+        const ids = new Set<string>();
+
+        componentRows.forEach(row => ids.add(row.productId.toString()));
+        partRows.forEach(row => ids.add(row.productId.toString()));
+
+        return Array.from(ids);
+
     }
 
     async set(productId: string, data: SetProductComponentsDto) {

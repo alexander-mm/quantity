@@ -24,19 +24,60 @@ export class MarginProfileService {
         );
     }
 
+    private async recalculateProductsForProfile(
+        profile: MarginProfile,
+        productRepository: ProductRepository,
+        productPriceRepository: ProductPriceRepository
+    ): Promise<void> {
+
+        const percentage = Number(profile.percentage);
+        const products = await productRepository.findAll();
+
+        for (const product of products) {
+
+            if (product.pvp === null) {
+                continue;
+            }
+
+            await productPriceRepository.upsertForProductAndProfile(
+                product.id,
+                profile.id,
+                {
+                    price: new Prisma.Decimal(
+                        PriceCalculator.calculateSalePriceFromDiscount(
+                            Number(product.pvp),
+                            percentage
+                        )
+                    ),
+                    priceCop: product.pvpCop
+                        ? new Prisma.Decimal(
+                            PriceCalculator.calculateSalePriceFromDiscount(
+                                Number(product.pvpCop),
+                                percentage
+                            )
+                        )
+                        : undefined
+                }
+            );
+
+        }
+
+    }
+
     async create(data: {
         name: string;
         percentage: number;
         displayOrder: number;
     }): Promise<MarginProfile> {
+
         const existingMarginProfile =
             await this.repository.findByName(
                 data.name
             );
-        if (existingMarginProfile) {
 
+        if (existingMarginProfile) {
             throw new ConflictError(
-                "Ya existe un perfil de margen con ese nombre."
+                "Ya existe una lista de precio con ese nombre."
             );
         }
 
@@ -48,37 +89,16 @@ export class MarginProfileService {
 
             const profile = await repository.create(data);
 
-            const products = await productRepository.findAll();
-
-            const prices = products
-                .filter(product => product.pvp !== null)
-                .map(product => ({
-                    productId: product.id,
-                    marginProfileId: profile.id,
-                    price: new Prisma.Decimal(
-                        PriceCalculator.calculateSalePriceFromDiscount(
-                            Number(product.pvp),
-                            Number(profile.percentage)
-                        )
-                    ),
-                    priceCop: product.pvpCop
-                        ? new Prisma.Decimal(
-                            PriceCalculator.calculateSalePriceFromDiscount(
-                                Number(product.pvpCop),
-                                Number(profile.percentage)
-                            )
-                        )
-                        : undefined,
-                    isActive: true
-                }));
-
-            if (prices.length > 0) {
-                await productPriceRepository.createMany(prices);
-            }
+            await this.recalculateProductsForProfile(
+                profile,
+                productRepository,
+                productPriceRepository
+            );
 
             return profile;
 
         });
+
     }
 
     async update(
@@ -89,26 +109,29 @@ export class MarginProfileService {
             displayOrder: number;
         }
     ): Promise<MarginProfile> {
+
         const marginProfile =
             await this.repository.findById(
                 BigInt(id)
             );
+
         if (!marginProfile) {
             throw new NotFoundError(
-                "Perfil de margen no encontrado."
+                "Lista de precio no encontrada."
             );
-
         }
+
         const existingMarginProfile =
             await this.repository.findByName(
                 data.name
             );
+
         if (
             existingMarginProfile &&
             existingMarginProfile.id !== marginProfile.id
         ) {
             throw new ConflictError(
-                "Ya existe un perfil de margen con ese nombre."
+                "Ya existe una lista de precio con ese nombre."
             );
         }
 
@@ -123,36 +146,11 @@ export class MarginProfileService {
                 data
             );
 
-            const products = await productRepository.findAll();
-
-            for (const product of products) {
-
-                if (product.pvp === null) {
-                    continue;
-                }
-
-                await productPriceRepository.upsertForProductAndProfile(
-                    product.id,
-                    updated.id,
-                    {
-                        price: new Prisma.Decimal(
-                            PriceCalculator.calculateSalePriceFromDiscount(
-                                Number(product.pvp),
-                                Number(updated.percentage)
-                            )
-                        ),
-                        priceCop: product.pvpCop
-                            ? new Prisma.Decimal(
-                                PriceCalculator.calculateSalePriceFromDiscount(
-                                    Number(product.pvpCop),
-                                    Number(updated.percentage)
-                                )
-                            )
-                            : undefined
-                    }
-                );
-
-            }
+            await this.recalculateProductsForProfile(
+                updated,
+                productRepository,
+                productPriceRepository
+            );
 
             return updated;
 
@@ -169,7 +167,7 @@ export class MarginProfileService {
             );
         if (!marginProfile) {
             throw new NotFoundError(
-                "Perfil de margen no encontrado."
+                "Lista de precio no encontrada."
             );
         }
         return this.repository.delete(

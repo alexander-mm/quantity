@@ -31,9 +31,7 @@ export function InventoryMovementForm({ onSuccess }: Props) {
     const { data: productsData } = useProducts();
     const { data: storesData } = useStores();
     const { data: usersData } = useUsers();
-
     const createMutation = useCreateInventoryMovement();
-
     const movementTypes = movementTypesData?.data ?? [];
     const products = productsData?.data ?? [];
     const stores = storesData?.data ?? [];
@@ -67,7 +65,7 @@ export function InventoryMovementForm({ onSuccess }: Props) {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 
             <div>
-                <Label>Tipo de movimiento</Label>
+                <Label className="mb-1">Tipo de movimiento</Label>
                 <Controller
                     control={control}
                     name="movementTypeId"
@@ -90,7 +88,7 @@ export function InventoryMovementForm({ onSuccess }: Props) {
             </div>
 
             <div>
-                <Label>Producto</Label>
+                <Label className="mb-1">Producto</Label>
                 <Controller
                     control={control}
                     name="productId"
@@ -115,7 +113,7 @@ export function InventoryMovementForm({ onSuccess }: Props) {
             </div>
 
             <div>
-                <Label>Bodega</Label>
+                <Label className="mb-1">Bodega</Label>
                 <Controller
 
                     control={control}
@@ -142,7 +140,7 @@ export function InventoryMovementForm({ onSuccess }: Props) {
             </div>
 
             <div>
-                <Label>Cantidad</Label>
+                <Label className="mb-1">Cantidad</Label>
                 <Input type="number" {...register("quantity")} />
                 <p className="text-sm text-red-500">
                     {errors.quantity?.message}
@@ -150,7 +148,7 @@ export function InventoryMovementForm({ onSuccess }: Props) {
             </div>
 
             <div>
-                <Label>Costo unitario</Label>
+                <Label className="mb-1">Costo unitario</Label>
                 <Input type="number" {...register("unitCost")} />
                 <p className="text-sm text-red-500">
                     {errors.unitCost?.message}
@@ -158,7 +156,7 @@ export function InventoryMovementForm({ onSuccess }: Props) {
             </div>
 
             <div>
-                <Label>Observaciones</Label>
+                <Label className="mb-1">Observaciones</Label>
                 <Input {...register("observations")} />
             </div>
 

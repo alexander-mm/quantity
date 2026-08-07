@@ -14,6 +14,11 @@ type ProductAssemblyWithRelations =
                     componentProduct: true;
                 };
             };
+            partDetails: {
+                include: {
+                    part: true;
+                };
+            };
         };
     }>;
 
@@ -25,6 +30,21 @@ export class ProductAssemblyRepository extends BaseRepository {
         super(prismaClient);
     }
 
+    private readonly include = {
+        product: true,
+        user: { select: safeUserSelect },
+        details: {
+            include: {
+                componentProduct: true
+            }
+        },
+        partDetails: {
+            include: {
+                part: true
+            }
+        }
+    } as const;
+
     async findAll(): Promise<ProductAssemblyWithRelations[]> {
 
         return this.prisma.productAssembly.findMany({
@@ -33,15 +53,7 @@ export class ProductAssemblyRepository extends BaseRepository {
                 assemblyDate: "desc"
             },
 
-            include: {
-                product: true,
-                user: { select: safeUserSelect },
-                details: {
-                    include: {
-                        componentProduct: true
-                    }
-                }
-            }
+            include: this.include
 
         });
 
@@ -57,15 +69,7 @@ export class ProductAssemblyRepository extends BaseRepository {
                 id
             },
 
-            include: {
-                product: true,
-                user: { select: safeUserSelect },
-                details: {
-                    include: {
-                        componentProduct: true
-                    }
-                }
-            }
+            include: this.include
 
         });
 
@@ -87,7 +91,8 @@ export class ProductAssemblyRepository extends BaseRepository {
 
     async create(
         data: CreateProductAssemblyDto,
-        components: { componentProductId: bigint; quantity: number }[]
+        components: { componentProductId: bigint; quantity: number }[],
+        parts: { partId: bigint; quantity: number }[]
     ): Promise<ProductAssemblyWithRelations> {
 
         return this.prisma.productAssembly.create({
@@ -103,18 +108,16 @@ export class ProductAssemblyRepository extends BaseRepository {
                         componentProductId: item.componentProductId,
                         quantity: item.quantity
                     }))
+                },
+                partDetails: {
+                    create: parts.map(item => ({
+                        partId: item.partId,
+                        quantity: item.quantity
+                    }))
                 }
             },
 
-            include: {
-                product: true,
-                user: { select: safeUserSelect },
-                details: {
-                    include: {
-                        componentProduct: true
-                    }
-                }
-            }
+            include: this.include
 
         });
 
@@ -123,10 +126,17 @@ export class ProductAssemblyRepository extends BaseRepository {
     async update(
         id: bigint,
         data: UpdateProductAssemblyDto,
-        components: { componentProductId: bigint; quantity: number }[]
+        components: { componentProductId: bigint; quantity: number }[],
+        parts: { partId: bigint; quantity: number }[]
     ): Promise<ProductAssemblyWithRelations> {
 
         await this.prisma.productAssemblyDetail.deleteMany({
+            where: {
+                assemblyId: id
+            }
+        });
+
+        await this.prisma.productAssemblyPartDetail.deleteMany({
             where: {
                 assemblyId: id
             }
@@ -148,18 +158,16 @@ export class ProductAssemblyRepository extends BaseRepository {
                         componentProductId: item.componentProductId,
                         quantity: item.quantity
                     }))
+                },
+                partDetails: {
+                    create: parts.map(item => ({
+                        partId: item.partId,
+                        quantity: item.quantity
+                    }))
                 }
             },
 
-            include: {
-                product: true,
-                user: { select: safeUserSelect },
-                details: {
-                    include: {
-                        componentProduct: true
-                    }
-                }
-            }
+            include: this.include
 
         });
 

@@ -12,6 +12,7 @@ type PurchaseWithRelations =
             details: {
                 include: {
                     product: true;
+                    priceEntries: true;
                 };
             };
         };
@@ -25,21 +26,24 @@ export class PurchaseRepository extends BaseRepository {
         super(prismaClient);
     }
 
+    private readonly include = {
+        supplier: true,
+        store: true,
+        user: { select: safeUserSelect },
+        details: {
+            include: {
+                product: true,
+                priceEntries: true
+            }
+        }
+    } as const;
+
     async findAll(): Promise<PurchaseWithRelations[]> {
         return this.prisma.purchase.findMany({
             orderBy: {
                 purchaseDate: "desc"
             },
-            include: {
-                supplier: true,
-                store: true,
-                user: { select: safeUserSelect },
-                details: {
-                    include: {
-                        product: true
-                    }
-                }
-            }
+            include: this.include
         });
     }
 
@@ -48,16 +52,7 @@ export class PurchaseRepository extends BaseRepository {
     ): Promise<PurchaseWithRelations | null> {
         return this.prisma.purchase.findUnique({
             where: { id },
-            include: {
-                supplier: true,
-                store: true,
-                user: { select: safeUserSelect },
-                details: {
-                    include: {
-                        product: true
-                    }
-                }
-            }
+            include: this.include
         });
     }
 
@@ -111,25 +106,26 @@ export class PurchaseRepository extends BaseRepository {
                         quantity: item.quantity,
                         unitCost: item.unitCost,
                         pvp: item.pvp,
+                        pvpCop: item.pvpCop,
                         discount: item.discount ?? 0,
                         tax: item.tax ?? 0,
                         lineTotal:
                             (item.quantity * item.unitCost)
                             - (item.discount ?? 0)
-                            + (item.tax ?? 0)
+                            + (item.tax ?? 0),
+                        priceEntries: item.priceEntries && item.priceEntries.length > 0
+                            ? {
+                                create: item.priceEntries.map(entry => ({
+                                    currency: entry.currency,
+                                    sequence: entry.sequence,
+                                    price: entry.price
+                                }))
+                            }
+                            : undefined
                     }))
                 }
             },
-            include: {
-                supplier: true,
-                store: true,
-                user: { select: safeUserSelect },
-                details: {
-                    include: {
-                        product: true
-                    }
-                }
-            }
+            include: this.include
         });
 
     }

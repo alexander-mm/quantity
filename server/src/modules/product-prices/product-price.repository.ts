@@ -37,12 +37,22 @@ export class ProductPriceRepository extends BaseRepository {
     }
 
     async createMany(
-        data: Prisma.ProductPriceCreateManyInput[]
+        data: {
+            productId: bigint;
+            marginProfileId: bigint;
+            price: Prisma.Decimal;
+            priceCop?: Prisma.Decimal;
+        }[]
     ): Promise<void> {
+
+        if (data.length === 0) {
+            return;
+        }
 
         await this.prisma.productPrice.createMany({
             data
         });
+
     }
 
     async upsertForProductAndProfile(

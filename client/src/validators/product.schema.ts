@@ -22,11 +22,19 @@ export const productSchema = z.object({
 
     pvpCop: z.coerce.number().min(0, "El PVP en COP no puede ser negativo.").optional(),
 
-    minimumStock: z.coerce.number().min(0),
+    minimumStock: z
+        .number({ error: "El stock mínimo es obligatorio." })
+        .min(0, "El stock mínimo no puede ser negativo."),
 
     components: z.array(z.object({
-        componentProductId: z.string().min(1, "Seleccione un producto."),
+        type: z.enum(["PRODUCT", "PART"]),
+        refId: z.string().min(1, "Seleccione un elemento."),
         quantity: z.coerce.number().positive("La cantidad debe ser mayor que cero.")
+    })).optional(),
+
+    priceEntries: z.array(z.object({
+        currency: z.enum(["USD", "COP"]),
+        price: z.coerce.number().positive("Debe ser mayor que cero.")
     })).optional()
 
 });

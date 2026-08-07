@@ -25,9 +25,19 @@ export function DashboardLayout({
     const isProduction = user?.roleName === ROLES.PRODUCTION;
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    const { data: transfersData } = useStockTransfers({ enabled: isAdmin });
+    const { data: transfersData } = useStockTransfers({ enabled: !isProduction });
+    const transfers = transfersData?.data ?? [];
     const issuesCount = isAdmin
-        ? (transfersData?.data ?? []).filter(t => t.status === "WITH_ISSUES").length
+        ? transfers.filter(t => t.status === "WITH_ISSUES").length
+        : 0;
+    const pendingReceptionsCount = !isProduction
+        ? transfers.filter(t =>
+            t.status === "PENDING" &&
+            (
+                (t.destType === "STORE" && t.destStore?.id === user?.storeId) ||
+                (t.destType === "TECHNICIAN" && t.destUser?.id === user?.id)
+            )
+        ).length
         : 0;
     const closeMenuOnLinkClick = (e: MouseEvent<HTMLElement>) => {
         if ((e.target as HTMLElement).closest("a")) {
@@ -116,7 +126,9 @@ export function DashboardLayout({
                                 </>
                             )}
                             <NavLink to="/kardex" style={navLinkStyle}>Kardex</NavLink>
-                            <NavLink to="/pending-receptions" style={navLinkStyle}>Recepciones pendientes</NavLink>
+                            <NavLink to="/pending-receptions" style={navLinkStyle}>
+                                Recepciones pendientes{pendingReceptionsCount > 0 ? ` (${pendingReceptionsCount})` : ""}
+                            </NavLink>
                             <NavLink to="/stock-transfers" style={navLinkStyle}>Envíos</NavLink>
                         </>
                     )}
@@ -124,8 +136,13 @@ export function DashboardLayout({
                     {(isAdmin || isProduction) && (
                         <>
                             <hr style={{ margin: "16px 0", opacity: 0.3 }} />
-                            <NavLink to="/parts" style={navLinkStyle}>Piezas</NavLink>
+                            <NavLink to="/parts" style={navLinkStyle}>Piezas Láser</NavLink>
                             <NavLink to="/part-movements" style={navLinkStyle}>Movimientos de Piezas</NavLink>
+                            <NavLink to="/raw-materials" style={navLinkStyle}>Materia Prima</NavLink>
+                            <NavLink to="/raw-material-movements" style={navLinkStyle}>Movimientos de Materia Prima</NavLink>
+                            <NavLink to="/part-recipes" style={navLinkStyle}>Recetas de Corte</NavLink>
+                            <NavLink to="/part-cutting-orders" style={navLinkStyle}>Órdenes de Corte</NavLink>
+                            <NavLink to="/equipment-parts" style={navLinkStyle}>Cálculo de Producción</NavLink>
                             <NavLink to="/assembly" style={navLinkStyle}>Ensamblaje</NavLink>
                         </>
                     )}

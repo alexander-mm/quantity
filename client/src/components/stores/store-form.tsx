@@ -106,19 +106,19 @@ export function StoreForm({ onSuccess, mode = "create", storeId }: Props) {
 
             <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                    <Label>Código</Label>
+                    <Label className="mb-1">Código</Label>
                     <Input {...register("code")} />
                     <p className="text-sm text-red-500">{errors.code?.message}</p>
                 </div>
                 <div>
-                    <Label>Nombre</Label>
+                    <Label className="mb-1">Nombre</Label>
                     <Input {...register("name")} />
                     <p className="text-sm text-red-500">{errors.name?.message}</p>
                 </div>
             </div>
 
             <div>
-                <Label>Tipo</Label>
+                <Label className="mb-1">Tipo</Label>
                 <Controller
                     control={control}
                     name="type"
@@ -139,29 +139,29 @@ export function StoreForm({ onSuccess, mode = "create", storeId }: Props) {
 
             <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                    <Label>Dirección (opcional)</Label>
+                    <Label className="mb-1">Dirección (opcional)</Label>
                     <Input {...register("address")} />
                 </div>
                 <div>
-                    <Label>Ciudad (opcional)</Label>
+                    <Label className="mb-1">Ciudad (opcional)</Label>
                     <Input {...register("city")} />
                 </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                    <Label>Teléfono (opcional)</Label>
+                    <Label className="mb-1">Teléfono (opcional)</Label>
                     <Input {...register("phone")} />
                 </div>
                 <div>
-                    <Label>Correo (opcional)</Label>
+                    <Label className="mb-1">Correo (opcional)</Label>
                     <Input {...register("email")} />
                     <p className="text-sm text-red-500">{errors.email?.message}</p>
                 </div>
             </div>
 
             <div>
-                <Label>Responsable (opcional)</Label>
+                <Label className="mb-1">Responsable (opcional)</Label>
                 <Input {...register("manager")} />
             </div>
 

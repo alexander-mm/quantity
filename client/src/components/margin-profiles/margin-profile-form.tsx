@@ -86,22 +86,22 @@ export function MarginProfileForm({ onSuccess, mode = "create", profileId }: Pro
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
 
             <div>
-                <Label>Nombre</Label>
+                <Label className="mb-1">Nombre</Label>
                 <Input placeholder="Ej: Precio 1" {...register("name")} />
                 <p className="text-sm text-red-500">{errors.name?.message}</p>
             </div>
 
             <div>
-                <Label>Porcentaje de descuento (%)</Label>
+                <Label className="mb-1">Porcentaje de descuento</Label>
                 <Input type="number" step="0.01" {...register("percentage")} />
                 <p className="text-sm text-red-500">{errors.percentage?.message}</p>
             </div>
 
             <div>
-                <Label>Orden de visualización</Label>
+                <Label className="mb-1">Orden de visualización</Label>
                 <Input type="number" step="1" {...register("displayOrder")} />
                 <p className="text-sm text-red-500">{errors.displayOrder?.message}</p>
             </div>

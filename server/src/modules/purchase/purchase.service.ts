@@ -5,6 +5,8 @@ import { ConflictError, NotFoundError, ValidationError } from "../../shared/erro
 import { prisma } from "../../database/index.js";
 import { InventoryMovementService } from "../inventory-movement/inventory-movement.service.js";
 import { MovementTypeRepository } from "../movement-type/movement-type.repository.js";
+import { ProductService } from "../product/product.service.js";
+import { ProductPriceEntryRepository } from "../product-price-entries/product-price-entry.repository.js";
 
 export class PurchaseService {
 
@@ -14,6 +16,12 @@ export class PurchaseService {
 
     private readonly movementTypeRepository =
         new MovementTypeRepository();
+
+    private readonly productService =
+        new ProductService();
+
+    private readonly productPriceEntryRepository =
+        new ProductPriceEntryRepository();
 
     async findAll(): Promise<Purchase[]> {
         return this.repository.findAll();
@@ -186,6 +194,31 @@ export class PurchaseService {
                     movementDate: purchase.purchaseDate
 
                 });
+
+                await this.productService.syncPricingFromPurchase(
+                    detail.productId,
+                    {
+                        costPrice: Number(detail.unitCost),
+                        pvp: detail.pvp !== null ? Number(detail.pvp) : undefined,
+                        pvpCop: detail.pvpCop !== null ? Number(detail.pvpCop) : undefined
+                    },
+                    tx
+                );
+
+                if (detail.priceEntries.length > 0) {
+
+                    const productPriceEntryRepository = this.productPriceEntryRepository.withTransaction(tx);
+
+                    await productPriceEntryRepository.replaceForProduct(
+                        detail.productId,
+                        detail.priceEntries.map(entry => ({
+                            currency: entry.currency,
+                            sequence: entry.sequence,
+                            price: entry.price
+                        }))
+                    );
+
+                }
 
             }
 
