@@ -134,7 +134,7 @@ export function SaleHeader() {
 
                     setValue(
                         `details.${index}.discount`,
-                        quantity * newUnitPrice * (clientDiscountPercentage / 100)
+                        quantity * Number(match.price) * (clientDiscountPercentage / 100)
                     );
 
                 } else if (totalDiscountPercentage > 0) {
@@ -143,7 +143,7 @@ export function SaleHeader() {
 
                     setValue(
                         `details.${index}.discount`,
-                        quantity * newUnitPrice * (totalDiscountPercentage / 100)
+                        quantity * Number(match.price) * (totalDiscountPercentage / 100)
                     );
 
                 }
