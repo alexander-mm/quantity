@@ -4,16 +4,22 @@ import { CategoryForm } from "./category-form";
 type Props = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    mode?: "create" | "edit";
+    categoryId?: string;
 };
 
-export function CategoryModal({ open, onOpenChange }: Props) {
+export function CategoryModal({ open, onOpenChange, mode = "create", categoryId }: Props) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
-                    <DialogTitle>Nueva categoría</DialogTitle>
+                    <DialogTitle>{mode === "edit" ? "Editar categoría" : "Nueva categoría"}</DialogTitle>
                 </DialogHeader>
-                <CategoryForm onSuccess={() => onOpenChange(false)} />
+                <CategoryForm
+                    mode={mode}
+                    categoryId={categoryId}
+                    onSuccess={() => onOpenChange(false)}
+                />
             </DialogContent>
         </Dialog>
     );

@@ -86,6 +86,7 @@ model Category {
   name             String     @unique
   description      String?
   parentCategoryId BigInt?
+  stockMultiplier  Decimal    @default(1.5) @db.Decimal(4, 2)
   isActive         Boolean    @default(true)
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
@@ -580,17 +581,18 @@ enum Currency {
 }
 
 model Part {
-  id          BigInt   @id @default(autoincrement())
-  uuid        String   @unique @default(uuid())
-  code        String   @unique
-  name        String
-  description String?
-  quantity    Decimal  @default(0) @db.Decimal(12, 2)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  createdBy   BigInt?
-  updatedBy   BigInt?
+  id           BigInt   @id @default(autoincrement())
+  uuid         String   @unique @default(uuid())
+  code         String   @unique
+  name         String
+  description  String?
+  quantity     Decimal  @default(0) @db.Decimal(12, 2)
+  minimumStock Decimal  @default(0) @db.Decimal(12, 2)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  createdBy    BigInt?
+  updatedBy    BigInt?
 
   movementDetails PartMovementDetail[]
   recipe          PartRecipe?
@@ -746,24 +748,25 @@ enum RawMaterialMovementType {
 
 // Materia prima virgen: laminas y tubos de donde se cortan las piezas (Part).
 model RawMaterial {
-  id        BigInt           @id @default(autoincrement())
-  uuid      String           @unique @default(uuid())
-  code      String           @unique
-  name      String
-  shape     RawMaterialShape
-  material  String
-  thickness Decimal          @db.Decimal(8, 3)
+  id           BigInt           @id @default(autoincrement())
+  uuid         String           @unique @default(uuid())
+  code         String           @unique
+  name         String
+  shape        RawMaterialShape
+  material     String
+  thickness    Decimal          @db.Decimal(8, 3)
   // SHEET: width/height = dimensiones de la lamina. TUBE: width = diametro (ROUND) o lado (SQUARE/RECTANGULAR), height = segundo lado (solo RECTANGULAR), length = longitud del tubo. ROD: length = longitud de la varilla, thickness = calibre.
-  width     Decimal?         @db.Decimal(10, 2)
-  height    Decimal?         @db.Decimal(10, 2)
-  length    Decimal?         @db.Decimal(10, 2)
-  profile   TubeProfile?
-  quantity  Decimal          @default(0) @db.Decimal(12, 2)
-  isActive  Boolean          @default(true)
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
-  createdBy BigInt?
-  updatedBy BigInt?
+  width        Decimal?         @db.Decimal(10, 2)
+  height       Decimal?         @db.Decimal(10, 2)
+  length       Decimal?         @db.Decimal(10, 2)
+  profile      TubeProfile?
+  quantity     Decimal          @default(0) @db.Decimal(12, 2)
+  minimumStock Decimal          @default(0) @db.Decimal(12, 2)
+  isActive     Boolean          @default(true)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  createdBy    BigInt?
+  updatedBy    BigInt?
 
   recipes         PartRecipe[]
   movementDetails RawMaterialMovementDetail[]

@@ -18,6 +18,18 @@ export class RawMaterialService {
 
     }
 
+    async findLowStock() {
+
+        return this.repository.findLowStock();
+
+    }
+
+    async findMediumStock() {
+
+        return this.repository.findMediumStock();
+
+    }
+
     async findById(
         id: string
     ) {
@@ -32,6 +44,21 @@ export class RawMaterialService {
 
     }
 
+    async updateMinimumStock(
+        id: string,
+        minimumStock: number
+    ) {
+
+        const rawMaterial = await this.repository.findById(BigInt(id));
+
+        if (!rawMaterial) {
+            throw new NotFoundError("Materia prima no encontrada.");
+        }
+
+        return this.repository.update(BigInt(id), { minimumStock });
+
+    }
+
     private buildAttributes(data: CreateRawMaterialDto | UpdateRawMaterialDto) {
 
         return {
@@ -43,7 +70,8 @@ export class RawMaterialService {
             width: data.width ?? null,
             height: (data.shape === "SHEET" ? data.height : (data.profile === "RECTANGULAR" ? data.height : null)) ?? null,
             length: ((data.shape === "TUBE" || data.shape === "ROD") ? data.length : null) ?? null,
-            profile: (data.shape === "TUBE" ? data.profile : null) ?? null
+            profile: (data.shape === "TUBE" ? data.profile : null) ?? null,
+            minimumStock: data.minimumStock ?? 0
         };
 
     }

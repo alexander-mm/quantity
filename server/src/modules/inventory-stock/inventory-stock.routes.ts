@@ -22,6 +22,13 @@ router.get(
 );
 
 router.get(
+    "/medium-stock",
+    authenticate,
+    blockRoles(ROLES.PRODUCTION),
+    controller.findMediumStock.bind(controller)
+);
+
+router.get(
     "/product/:productId",
     authenticate,
     blockRoles(ROLES.PRODUCTION),

@@ -116,6 +116,37 @@ export class ProductController {
         }
     }
 
+    async updateMinimumStock(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+
+        try {
+            const { id } = req.params;
+            if (!id || Array.isArray(id)) {
+                res.status(400).json(
+                    ApiResponse.error("Id inválido.")
+                );
+                return;
+            }
+
+            const product =
+                await this.service.updateMinimumStock(
+                    id,
+                    req.body.minimumStock
+                );
+            res.status(200).json(
+                ApiResponse.success(
+                    "Stock mínimo actualizado correctamente.",
+                    product
+                )
+            );
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async delete(
         req: Request,
         res: Response,

@@ -17,6 +17,12 @@ export const createCategorySchema = z.object({
     parentCategoryId: z
         .bigint()
         .nullable()
+        .optional(),
+
+    stockMultiplier: z
+        .coerce
+        .number()
+        .positive("El multiplicador debe ser mayor que cero.")
         .optional()
 
 });

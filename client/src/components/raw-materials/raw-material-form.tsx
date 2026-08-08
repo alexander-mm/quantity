@@ -43,6 +43,7 @@ export function RawMaterialForm({ onSuccess, mode = "create", rawMaterialId }: P
             height: undefined,
             length: undefined,
             profile: undefined,
+            minimumStock: undefined,
             initialQuantity: undefined
         }
     });
@@ -72,7 +73,8 @@ export function RawMaterialForm({ onSuccess, mode = "create", rawMaterialId }: P
             width: item.width !== null ? Number(item.width) : undefined,
             height: item.height !== null ? Number(item.height) : undefined,
             length: item.length !== null ? Number(item.length) : undefined,
-            profile: item.profile ?? undefined
+            profile: item.profile ?? undefined,
+            minimumStock: Number(item.minimumStock)
         });
 
     }, [mode, rawMaterialData, reset]);
@@ -89,6 +91,7 @@ export function RawMaterialForm({ onSuccess, mode = "create", rawMaterialId }: P
             height: data.height !== undefined ? Number(data.height) : undefined,
             length: data.length !== undefined ? Number(data.length) : undefined,
             profile: (data.profile || undefined) as TubeProfile | undefined,
+            minimumStock: Number(data.minimumStock) || 0,
             ...(mode === "create" ? { initialQuantity: Number(data.initialQuantity) || undefined } : {})
         };
 
@@ -281,6 +284,15 @@ export function RawMaterialForm({ onSuccess, mode = "create", rawMaterialId }: P
                         <p className="text-sm text-red-500">{errors.length?.message}</p>
                     </div>
                 )}
+
+                <div>
+                    <Label className="mb-1">Stock mínimo</Label>
+                    <Input type="number" min={0} step="1" placeholder="0" {...register("minimumStock", { setValueAs: toOptionalNumber })} />
+                    <p className="text-xs text-muted-foreground">
+                        Cuando la existencia llegue a este nivel o por debajo, se marcará como stock bajo.
+                    </p>
+                    <p className="text-sm text-red-500">{errors.minimumStock?.message}</p>
+                </div>
 
                 {mode === "create" && (
                     <div>

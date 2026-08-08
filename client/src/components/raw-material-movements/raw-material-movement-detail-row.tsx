@@ -1,4 +1,5 @@
 import { Trash2 } from "lucide-react";
+import { toast } from "react-hot-toast";
 import { Controller, useFormContext } from "react-hook-form";
 import {
     Combobox,
@@ -10,7 +11,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useRawMaterials } from "@/hooks";
+import { MinimumStockField } from "@/components/shared";
+import { useRawMaterials, useUpdateRawMaterialMinimumStock } from "@/hooks";
 
 type Props = {
     index: number;
@@ -23,6 +25,7 @@ export function RawMaterialMovementDetailRow({ index, onRemove }: Props) {
 
     const { data: rawMaterialsData } = useRawMaterials();
     const rawMaterials = rawMaterialsData?.data ?? [];
+    const updateMinimumStockMutation = useUpdateRawMaterialMinimumStock();
 
     const type = watch("type");
     const rawMaterialId = watch(`details.${index}.rawMaterialId`);
@@ -78,6 +81,23 @@ export function RawMaterialMovementDetailRow({ index, onRemove }: Props) {
                     </p>
                 )}
             </div>
+
+            {selected && (
+                <MinimumStockField
+                    currentValue={Number(selected.minimumStock)}
+                    saving={updateMinimumStockMutation.isPending}
+                    editElsewhereLabel="Para cambiarlo, edítalo desde la sección Materia Prima."
+                    onSave={(value) => {
+                        updateMinimumStockMutation.mutate(
+                            { id: selected.id, minimumStock: value },
+                            {
+                                onSuccess: () => toast.success("Stock mínimo actualizado."),
+                                onError: () => toast.error("No se pudo actualizar el stock mínimo.")
+                            }
+                        );
+                    }}
+                />
+            )}
 
             <div>
                 <Label className="mb-1">Cantidad</Label>

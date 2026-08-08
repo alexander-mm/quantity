@@ -1,4 +1,4 @@
-import { Pencil, Trash2 } from "lucide-react";
+import { AlertTriangle, Pencil, Trash2 } from "lucide-react";
 import { EntityTable } from "@/components/ui";
 import type { Part } from "@/types";
 
@@ -8,14 +8,25 @@ type Props = {
     onDelete: (part: Part) => void;
 };
 
+function isLowStock(part: Part): boolean {
+    return Number(part.minimumStock) > 0 && Number(part.quantity) <= Number(part.minimumStock);
+}
+
 export function PartsTable({ parts, onEdit, onDelete }: Props) {
     return (
         <EntityTable headers={["Código", "Nombre", "Cantidad", "Acciones"]}>
             {parts.map(part => (
-                <tr key={part.id} className="border-b transition hover:bg-muted/40">
+                <tr key={part.id} className={`border-b transition hover:bg-muted/40 ${isLowStock(part) ? "bg-amber-50" : ""}`}>
                     <td className="px-6 py-4 font-medium">{part.code}</td>
                     <td className="px-6 py-4">{part.name}</td>
-                    <td className="px-6 py-4">{Number(part.quantity)}</td>
+                    <td className="px-6 py-4">
+                        <div className="flex items-center gap-1.5">
+                            {Number(part.quantity)}
+                            {isLowStock(part) && (
+                                <AlertTriangle size={15} className="text-amber-600" />
+                            )}
+                        </div>
+                    </td>
                     <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                             <Pencil

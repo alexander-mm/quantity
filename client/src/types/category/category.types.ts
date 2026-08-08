@@ -10,6 +10,8 @@ export interface Category {
 
     parentCategoryId: string | null;
 
+    stockMultiplier: string;
+
     isActive: boolean;
 
 }

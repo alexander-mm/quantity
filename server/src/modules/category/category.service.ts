@@ -28,6 +28,8 @@ export class CategoryService {
 
         parentCategoryId?: bigint | null;
 
+        stockMultiplier?: number;
+
     }): Promise<Category> {
 
         const existingCategory =
@@ -42,6 +44,48 @@ export class CategoryService {
         }
 
         return this.repository.create(data);
+
+    }
+
+    async update(id: string, data: {
+
+        name?: string;
+
+        description?: string;
+
+        parentCategoryId?: bigint | null;
+
+        stockMultiplier?: number;
+
+    }): Promise<Category> {
+
+        const category =
+            await this.repository.findById(BigInt(id));
+
+        if (!category) {
+
+            throw new NotFoundError(
+                "Categoría no encontrada."
+            );
+
+        }
+
+        if (data.name) {
+
+            const existingCategory =
+                await this.repository.findByName(data.name);
+
+            if (existingCategory && existingCategory.id !== category.id) {
+
+                throw new ConflictError(
+                    "Ya existe una categoría con ese nombre."
+                );
+
+            }
+
+        }
+
+        return this.repository.update(BigInt(id), data);
 
     }
 

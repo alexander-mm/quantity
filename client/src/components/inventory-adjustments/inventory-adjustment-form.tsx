@@ -11,7 +11,8 @@ import { Combobox, ComboboxInput, ComboboxContent, ComboboxItem, ComboboxEmpty }
 import { StoreSelector } from "@/components/selectors/store-selector";
 import { inventoryAdjustmentSchema } from "@/validators";
 import type { InventoryAdjustmentFormData } from "@/validators";
-import { useProducts, useStores, useCreateInventoryAdjustment } from "@/hooks";
+import { MinimumStockField } from "@/components/shared";
+import { useProducts, useStores, useCreateInventoryAdjustment, useUpdateProductMinimumStock } from "@/hooks";
 import { useAuthStore } from "@/store";
 
 type Props = {
@@ -22,7 +23,7 @@ export function InventoryAdjustmentForm({ onSuccess }: Props) {
 
     const user = useAuthStore(state => state.user);
 
-    const { register, control, handleSubmit, reset, formState: { errors } } = useForm({
+    const { register, control, handleSubmit, reset, watch, formState: { errors } } = useForm({
         resolver: zodResolver(inventoryAdjustmentSchema),
         defaultValues: {
             productId: "",
@@ -36,10 +37,14 @@ export function InventoryAdjustmentForm({ onSuccess }: Props) {
     const { data: productsData } = useProducts();
     const { data: storesData } = useStores();
     const createMutation = useCreateInventoryAdjustment();
+    const updateMinimumStockMutation = useUpdateProductMinimumStock();
 
     const products = productsData?.data ?? [];
     const stores = storesData?.data ?? [];
     const loading = createMutation.isPending;
+
+    const productId = watch("productId");
+    const selectedProduct = products.find(product => product.id === productId);
 
     const onSubmit = (data: InventoryAdjustmentFormData) => {
 
@@ -108,6 +113,23 @@ export function InventoryAdjustmentForm({ onSuccess }: Props) {
                 />
                 <p className="text-sm text-red-500">{errors.productId?.message}</p>
             </div>
+
+            {selectedProduct && (
+                <MinimumStockField
+                    currentValue={Number(selectedProduct.minimumStock)}
+                    saving={updateMinimumStockMutation.isPending}
+                    editElsewhereLabel="Para cambiarlo, edítalo desde la sección Productos."
+                    onSave={(value) => {
+                        updateMinimumStockMutation.mutate(
+                            { id: selectedProduct.id, minimumStock: value },
+                            {
+                                onSuccess: () => toast.success("Stock mínimo actualizado."),
+                                onError: () => toast.error("No se pudo actualizar el stock mínimo.")
+                            }
+                        );
+                    }}
+                />
+            )}
 
             <Controller
                 control={control}

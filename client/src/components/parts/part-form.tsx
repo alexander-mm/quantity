@@ -25,6 +25,7 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
             code: "",
             name: "",
             description: "",
+            minimumStock: undefined,
             initialQuantity: undefined
         }
     });
@@ -43,7 +44,8 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
         reset({
             code: partData.data.code,
             name: partData.data.name,
-            description: partData.data.description ?? ""
+            description: partData.data.description ?? "",
+            minimumStock: Number(partData.data.minimumStock)
         });
 
     }, [mode, partData, reset]);
@@ -54,6 +56,7 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
             code: data.code,
             name: data.name,
             description: data.description || undefined,
+            minimumStock: Number(data.minimumStock) || 0,
             ...(mode === "create" ? { initialQuantity: data.initialQuantity || undefined } : {})
         };
 
@@ -105,6 +108,23 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
             <div>
                 <Label className="mb-1">Descripción (opcional)</Label>
                 <Input {...register("description")} />
+            </div>
+
+            <div>
+                <Label className="mb-1">Stock mínimo</Label>
+                <Input
+                    type="number"
+                    min={0}
+                    step="1"
+                    placeholder="0"
+                    {...register("minimumStock", {
+                        setValueAs: (v) => (v === "" ? undefined : Number(v))
+                    })}
+                />
+                <p className="text-xs text-muted-foreground">
+                    Cuando la existencia llegue a este nivel o por debajo, se marcará como stock bajo.
+                </p>
+                <p className="text-sm text-red-500">{errors.minimumStock?.message}</p>
             </div>
 
             {mode === "create" && (

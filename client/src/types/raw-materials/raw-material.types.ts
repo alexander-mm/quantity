@@ -14,6 +14,7 @@ export interface RawMaterial {
     length: string | null;
     profile: TubeProfile | null;
     quantity: string;
+    minimumStock: string;
     isActive: boolean;
 }
 

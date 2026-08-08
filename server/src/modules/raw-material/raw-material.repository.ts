@@ -1,6 +1,7 @@
 import { RawMaterial, PrismaClient, Prisma } from "@prisma/client";
 
 import { BaseRepository } from "../../repositories/base/BaseRepository.js";
+import { RAW_MATERIAL_STOCK_MULTIPLIER } from "../../shared/constants/stock-multipliers.js";
 
 export class RawMaterialRepository extends BaseRepository {
 
@@ -35,6 +36,54 @@ export class RawMaterialRepository extends BaseRepository {
             where: {
                 id
             }
+
+        });
+
+    }
+
+    async findLowStock(): Promise<RawMaterial[]> {
+
+        const rawMaterials = await this.prisma.rawMaterial.findMany({
+
+            where: {
+                isActive: true
+            },
+
+            orderBy: {
+                name: "asc"
+            }
+
+        });
+
+        return rawMaterials.filter(
+            item => item.minimumStock.gt(0) && item.quantity.lte(item.minimumStock)
+        );
+
+    }
+
+    async findMediumStock(): Promise<RawMaterial[]> {
+
+        const rawMaterials = await this.prisma.rawMaterial.findMany({
+
+            where: {
+                isActive: true
+            },
+
+            orderBy: {
+                name: "asc"
+            }
+
+        });
+
+        return rawMaterials.filter(item => {
+
+            if (!item.minimumStock.gt(0)) {
+                return false;
+            }
+
+            const mediumThreshold = item.minimumStock.times(RAW_MATERIAL_STOCK_MULTIPLIER);
+
+            return item.quantity.gt(item.minimumStock) && item.quantity.lte(mediumThreshold);
 
         });
 

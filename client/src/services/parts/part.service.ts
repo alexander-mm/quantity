@@ -11,10 +11,16 @@ export async function getPartById(id: string): Promise<ApiResponse<Part>> {
     return data;
 }
 
+export async function getLowStockParts(): Promise<ApiResponse<Part[]>> {
+    const { data } = await api.get<ApiResponse<Part[]>>("/parts/low-stock");
+    return data;
+}
+
 export type CreatePartRequest = {
     code: string;
     name: string;
     description?: string;
+    minimumStock?: number;
     initialQuantity?: number;
 };
 
@@ -25,6 +31,11 @@ export async function createPart(payload: CreatePartRequest): Promise<ApiRespons
 
 export async function updatePart(id: string, payload: CreatePartRequest): Promise<ApiResponse<Part>> {
     const { data } = await api.put<ApiResponse<Part>>(`/parts/${id}`, payload);
+    return data;
+}
+
+export async function updatePartMinimumStock(id: string, minimumStock: number): Promise<ApiResponse<Part>> {
+    const { data } = await api.patch<ApiResponse<Part>>(`/parts/${id}/minimum-stock`, { minimumStock });
     return data;
 }
 

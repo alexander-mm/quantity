@@ -31,6 +31,50 @@ export class PartController {
 
     }
 
+    async findLowStock(
+        _req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+
+        try {
+
+            const parts = await this.service.findLowStock();
+
+            res.status(200).json(
+                ApiResponse.success("Piezas con stock bajo obtenidas correctamente.", parts)
+            );
+
+        } catch (error) {
+
+            next(error);
+
+        }
+
+    }
+
+    async findMediumStock(
+        _req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+
+        try {
+
+            const parts = await this.service.findMediumStock();
+
+            res.status(200).json(
+                ApiResponse.success("Piezas con stock medio obtenidas correctamente.", parts)
+            );
+
+        } catch (error) {
+
+            next(error);
+
+        }
+
+    }
+
     async findById(
         req: Request,
         res: Response,
@@ -103,6 +147,35 @@ export class PartController {
 
             res.status(200).json(
                 ApiResponse.success("Pieza actualizada correctamente.", part)
+            );
+
+        } catch (error) {
+
+            next(error);
+
+        }
+
+    }
+
+    async updateMinimumStock(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+
+        try {
+
+            const { id } = req.params;
+
+            if (!id || Array.isArray(id)) {
+                res.status(400).json(ApiResponse.error("Id inválido."));
+                return;
+            }
+
+            const part = await this.service.updateMinimumStock(id, req.body.minimumStock);
+
+            res.status(200).json(
+                ApiResponse.success("Stock mínimo actualizado correctamente.", part)
             );
 
         } catch (error) {

@@ -19,6 +19,7 @@ export async function getCategories(): Promise<ApiResponse<Category[]>> {
 export type CreateCategoryRequest = {
     name: string;
     description?: string;
+    stockMultiplier?: number;
 };
 
 export async function createCategory(
@@ -26,6 +27,22 @@ export async function createCategory(
 ): Promise<ApiResponse<Category>> {
     const { data } = await api.post<ApiResponse<Category>>(
         "/categories",
+        payload
+    );
+    return data;
+}
+
+export async function getCategoryById(id: string): Promise<ApiResponse<Category>> {
+    const { data } = await api.get<ApiResponse<Category>>(`/categories/${id}`);
+    return data;
+}
+
+export async function updateCategory(
+    id: string,
+    payload: CreateCategoryRequest
+): Promise<ApiResponse<Category>> {
+    const { data } = await api.put<ApiResponse<Category>>(
+        `/categories/${id}`,
         payload
     );
     return data;

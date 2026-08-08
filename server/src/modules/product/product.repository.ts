@@ -128,6 +128,20 @@ export class ProductRepository extends BaseRepository {
         });
     }
 
+    async updateMinimumStock(
+        id: bigint,
+        minimumStock: number
+    ): Promise<Product> {
+        return this.prisma.product.update({
+            where: {
+                id
+            },
+            data: {
+                minimumStock
+            }
+        });
+    }
+
     async updatePricing(
         id: bigint,
         data: {

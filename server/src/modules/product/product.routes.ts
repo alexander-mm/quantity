@@ -2,6 +2,7 @@ import { Router } from "express";
 import { validate } from "../../middleware/validate.js";
 import { ProductController } from "./product.controller.js";
 import { createProductSchema } from "./product.validator.js";
+import { updateMinimumStockSchema } from "../../shared/validators/minimum-stock.validator.js";
 import { authenticate } from "../../middleware/authenticate.js";
 import { authorize } from "../../middleware/authorize.js";
 import { ROLES } from "../../shared/constants/roles.js";
@@ -35,6 +36,14 @@ router.put(
     authorize(ROLES.ADMIN),
     validate(createProductSchema),
     controller.update.bind(controller)
+);
+
+router.patch(
+    "/:id/minimum-stock",
+    authenticate,
+    authorize(ROLES.ADMIN),
+    validate(updateMinimumStockSchema),
+    controller.updateMinimumStock.bind(controller)
 );
 
 router.delete(

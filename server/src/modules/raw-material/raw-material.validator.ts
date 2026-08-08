@@ -45,6 +45,12 @@ const baseRawMaterialSchema = z.object({
         .positive("La longitud debe ser mayor que cero.")
         .optional(),
 
+    minimumStock: z
+        .coerce
+        .number()
+        .min(0, "El stock mínimo no puede ser negativo.")
+        .optional(),
+
     profile: z.preprocess(
         (value) => (value === "" ? undefined : value),
         z.enum(["ROUND", "SQUARE", "RECTANGULAR"]).optional()

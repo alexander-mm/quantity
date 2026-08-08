@@ -1,6 +1,7 @@
 import { Part, PrismaClient, Prisma } from "@prisma/client";
 
 import { BaseRepository } from "../../repositories/base/BaseRepository.js";
+import { PART_STOCK_MULTIPLIER } from "../../shared/constants/stock-multipliers.js";
 
 export class PartRepository extends BaseRepository {
 
@@ -35,6 +36,54 @@ export class PartRepository extends BaseRepository {
             where: {
                 id
             }
+
+        });
+
+    }
+
+    async findLowStock(): Promise<Part[]> {
+
+        const parts = await this.prisma.part.findMany({
+
+            where: {
+                isActive: true
+            },
+
+            orderBy: {
+                name: "asc"
+            }
+
+        });
+
+        return parts.filter(
+            item => item.minimumStock.gt(0) && item.quantity.lte(item.minimumStock)
+        );
+
+    }
+
+    async findMediumStock(): Promise<Part[]> {
+
+        const parts = await this.prisma.part.findMany({
+
+            where: {
+                isActive: true
+            },
+
+            orderBy: {
+                name: "asc"
+            }
+
+        });
+
+        return parts.filter(item => {
+
+            if (!item.minimumStock.gt(0)) {
+                return false;
+            }
+
+            const mediumThreshold = item.minimumStock.times(PART_STOCK_MULTIPLIER);
+
+            return item.quantity.gt(item.minimumStock) && item.quantity.lte(mediumThreshold);
 
         });
 

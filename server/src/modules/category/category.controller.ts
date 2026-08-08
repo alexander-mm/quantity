@@ -92,6 +92,38 @@ export class CategoryController {
         }
     }
 
+    async update(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+
+        try {
+
+            const { id } = req.params;
+
+            if (!id || Array.isArray(id)) {
+                res.status(400).json(
+                    ApiResponse.error(
+                        "Id inválido."
+                    )
+                );
+                return;
+            }
+
+            const category = await this.service.update(id, req.body);
+
+            res.status(200).json(
+                ApiResponse.success(
+                    "Categoría actualizada correctamente.",
+                    category
+                )
+            );
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async delete(
         req: Request,
         res: Response,

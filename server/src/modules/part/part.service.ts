@@ -18,6 +18,18 @@ export class PartService {
 
     }
 
+    async findLowStock(): Promise<Part[]> {
+
+        return this.repository.findLowStock();
+
+    }
+
+    async findMediumStock(): Promise<Part[]> {
+
+        return this.repository.findMediumStock();
+
+    }
+
     async findById(
         id: string
     ): Promise<Part> {
@@ -31,6 +43,21 @@ export class PartService {
         }
 
         return part;
+
+    }
+
+    async updateMinimumStock(
+        id: string,
+        minimumStock: number
+    ): Promise<Part> {
+
+        const part = await this.repository.findById(BigInt(id));
+
+        if (!part) {
+            throw new NotFoundError("Pieza no encontrada.");
+        }
+
+        return this.repository.update(BigInt(id), { minimumStock });
 
     }
 
@@ -49,7 +76,8 @@ export class PartService {
             return this.repository.create({
                 code: data.code,
                 name: data.name,
-                description: data.description
+                description: data.description,
+                minimumStock: data.minimumStock ?? 0
             });
 
         }
@@ -62,7 +90,8 @@ export class PartService {
             const part = await partRepository.create({
                 code: data.code,
                 name: data.name,
-                description: data.description
+                description: data.description,
+                minimumStock: data.minimumStock ?? 0
             });
 
             await movementRepository.create({
@@ -106,7 +135,8 @@ export class PartService {
         return this.repository.update(BigInt(id), {
             code: data.code,
             name: data.name,
-            description: data.description
+            description: data.description,
+            minimumStock: data.minimumStock ?? 0
         });
 
     }

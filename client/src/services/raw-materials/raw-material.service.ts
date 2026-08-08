@@ -6,6 +6,11 @@ export async function getRawMaterials(): Promise<ApiResponse<RawMaterial[]>> {
     return data;
 }
 
+export async function getLowStockRawMaterials(): Promise<ApiResponse<RawMaterial[]>> {
+    const { data } = await api.get<ApiResponse<RawMaterial[]>>("/raw-materials/low-stock");
+    return data;
+}
+
 export async function getRawMaterialById(id: string): Promise<ApiResponse<RawMaterial>> {
     const { data } = await api.get<ApiResponse<RawMaterial>>(`/raw-materials/${id}`);
     return data;
@@ -21,6 +26,7 @@ export type CreateRawMaterialRequest = {
     height?: number;
     length?: number;
     profile?: TubeProfile;
+    minimumStock?: number;
     initialQuantity?: number;
 };
 
@@ -31,6 +37,11 @@ export async function createRawMaterial(payload: CreateRawMaterialRequest): Prom
 
 export async function updateRawMaterial(id: string, payload: CreateRawMaterialRequest): Promise<ApiResponse<RawMaterial>> {
     const { data } = await api.put<ApiResponse<RawMaterial>>(`/raw-materials/${id}`, payload);
+    return data;
+}
+
+export async function updateRawMaterialMinimumStock(id: string, minimumStock: number): Promise<ApiResponse<RawMaterial>> {
+    const { data } = await api.patch<ApiResponse<RawMaterial>>(`/raw-materials/${id}/minimum-stock`, { minimumStock });
     return data;
 }
 

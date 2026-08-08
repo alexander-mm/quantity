@@ -130,4 +130,25 @@ export class InventoryStockController {
             next(error);
         }
     }
+
+    async findMediumStock(
+        req: AuthenticatedRequest,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+        try {
+            const stock =
+                req.user?.roleName === ROLES.STORE
+                    ? await this.service.findMediumStock(req.user.storeId)
+                    : await this.service.findMediumStock();
+            res.status(200).json(
+                ApiResponse.success(
+                    "Productos con inventario medio obtenidos correctamente.",
+                    stock
+                )
+            );
+        } catch (error) {
+            next(error);
+        }
+    }
 }

@@ -1,6 +1,10 @@
-import { Pencil, Trash2 } from "lucide-react";
+import { AlertTriangle, Pencil, Trash2 } from "lucide-react";
 import { EntityTable } from "@/components/ui";
 import type { RawMaterial } from "@/types";
+
+function isLowStock(item: RawMaterial): boolean {
+    return Number(item.minimumStock) > 0 && Number(item.quantity) <= Number(item.minimumStock);
+}
 
 type Props = {
     rawMaterials: RawMaterial[];
@@ -34,13 +38,20 @@ export function RawMaterialsTable({ rawMaterials, onEdit, onDelete }: Props) {
     return (
         <EntityTable headers={["Código", "Nombre", "Forma", "Material", "Medidas", "Stock", "Estado", "Acciones"]}>
             {rawMaterials.map(item => (
-                <tr key={item.id} className="border-b transition hover:bg-muted/40">
+                <tr key={item.id} className={`border-b transition hover:bg-muted/40 ${isLowStock(item) ? "bg-amber-50" : ""}`}>
                     <td className="px-6 py-4 font-medium">{item.code}</td>
                     <td className="px-6 py-4">{item.name}</td>
                     <td className="px-6 py-4">{SHAPE_LABELS[item.shape]}</td>
                     <td className="px-6 py-4">{item.material}</td>
                     <td className="px-6 py-4 text-sm text-muted-foreground">{formatDimensions(item)}</td>
-                    <td className="px-6 py-4">{Number(item.quantity)}</td>
+                    <td className="px-6 py-4">
+                        <div className="flex items-center gap-1.5">
+                            {Number(item.quantity)}
+                            {isLowStock(item) && (
+                                <AlertTriangle size={15} className="text-amber-600" />
+                            )}
+                        </div>
+                    </td>
                     <td className="px-6 py-4">
                         <span
                             className={`rounded-full px-3 py-1 text-xs font-medium ${

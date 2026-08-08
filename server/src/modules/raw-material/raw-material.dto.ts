@@ -11,6 +11,7 @@ export interface CreateRawMaterialDto {
     height?: number;
     length?: number;
     profile?: TubeProfile;
+    minimumStock?: number;
     initialQuantity?: number;
     userId: string;
 }
@@ -25,4 +26,5 @@ export interface UpdateRawMaterialDto {
     height?: number;
     length?: number;
     profile?: TubeProfile;
+    minimumStock?: number;
 }

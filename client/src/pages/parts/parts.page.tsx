@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import {
@@ -10,17 +10,43 @@ import {
     PartModal,
     DeletePartDialog
 } from "@/components";
-import { useParts, useDeletePart } from "@/hooks";
+import { Button } from "@/components/ui/button";
+import { useParts, useLowStockParts, useDeletePart } from "@/hooks";
 import type { Part } from "@/types";
 
 export function PartsPage() {
 
-    const { data, isLoading, isError } = useParts();
-    const deleteMutation = useDeletePart();
+    const [onlyLowStock, setOnlyLowStock] = useState(false);
+    const [search, setSearch] = useState("");
     const [open, setOpen] = useState(false);
     const [selectedPart, setSelectedPart] = useState<Part | null>(null);
     const [partToDelete, setPartToDelete] = useState<Part | null>(null);
-    const [search, setSearch] = useState("");
+
+    const allQuery = useParts();
+    const lowStockQuery = useLowStockParts();
+    const deleteMutation = useDeletePart();
+
+    const { data, isLoading, isError } = onlyLowStock ? lowStockQuery : allQuery;
+
+    const lowStockCount = lowStockQuery.data?.data.length ?? 0;
+    const hasWarnedRef = useRef(false);
+
+    useEffect(() => {
+
+        if (hasWarnedRef.current || !lowStockQuery.data) {
+            return;
+        }
+
+        hasWarnedRef.current = true;
+
+        if (lowStockCount > 0) {
+            toast(
+                `Hay ${lowStockCount} pieza${lowStockCount === 1 ? "" : "s"} con stock bajo.`,
+                { icon: "⚠️" }
+            );
+        }
+
+    }, [lowStockQuery.data, lowStockCount]);
 
     const parts = useMemo(() => {
 
@@ -47,12 +73,24 @@ export function PartsPage() {
                 description="Inventario de piezas de metal fabricadas en corte láser."
             />
 
-            <div className="mt-8">
-                <PartsToolbar
-                    onNewPart={() => setOpen(true)}
-                    search={search}
-                    onSearchChange={setSearch}
-                />
+            <div className="mt-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+
+                <div className="flex-1">
+                    <PartsToolbar
+                        onNewPart={() => setOpen(true)}
+                        search={search}
+                        onSearchChange={setSearch}
+                    />
+                </div>
+
+                <Button
+                    type="button"
+                    variant={onlyLowStock ? "default" : "outline"}
+                    onClick={() => setOnlyLowStock(prev => !prev)}
+                >
+                    {onlyLowStock ? "Mostrando solo stock bajo" : `Solo stock bajo${lowStockCount > 0 ? ` (${lowStockCount})` : ""}`}
+                </Button>
+
             </div>
 
             <div className="mt-6">

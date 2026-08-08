@@ -1,4 +1,5 @@
 export * from "./ui";
+export * from "./shared";
 export * from "./dashboard";
 export * from "./products";
 export * from "./inventory-movements";

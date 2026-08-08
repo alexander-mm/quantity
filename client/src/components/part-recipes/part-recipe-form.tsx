@@ -160,14 +160,14 @@ export function PartRecipeForm({ part, onSuccess }: Props) {
             {rawMaterialShape === "SHEET" && (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
-                        <Label>Ancho de la pieza</Label>
+                        <Label>Ancho de la pieza (cm)</Label>
                         <Input type="number" step="0.01" min={0} placeholder="0" {...register("pieceWidth", {
                             setValueAs: (v) => (v === "" ? undefined : Number(v))
                         })} />
                         <p className="text-sm text-red-500">{errors.pieceWidth?.message}</p>
                     </div>
                     <div>
-                        <Label>Alto de la pieza</Label>
+                        <Label>Alto de la pieza (cm)</Label>
                         <Input type="number" step="0.01" min={0} placeholder="0" {...register("pieceHeight", {
                             setValueAs: (v) => (v === "" ? undefined : Number(v))
                         })} />
@@ -178,7 +178,7 @@ export function PartRecipeForm({ part, onSuccess }: Props) {
 
             {(rawMaterialShape === "TUBE" || rawMaterialShape === "ROD") && (
                 <div>
-                    <Label>Longitud de la pieza</Label>
+                    <Label>Longitud de la pieza (cm)</Label>
                     <Input type="number" step="0.01" min={0} placeholder="0" {...register("pieceLength", {
                         setValueAs: (v) => (v === "" ? undefined : Number(v))
                     })} />

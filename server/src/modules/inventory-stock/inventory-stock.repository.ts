@@ -130,6 +130,40 @@ export class InventoryStockRepository extends BaseRepository {
 
     }
 
+    async findMediumStock(
+        storeId?: bigint
+    ): Promise<InventoryStock[]> {
+
+        const stock = await this.prisma.inventoryStock.findMany({
+            include: {
+                product: {
+                    include: {
+                        category: true
+                    }
+                },
+                store: true
+            },
+            where: storeId
+                ? {
+                    OR: [
+                        { storeId },
+                        { store: { type: "MAIN_WAREHOUSE" } }
+                    ]
+                }
+                : undefined
+        });
+
+        return stock.filter(item => {
+
+            const minimum = item.product.minimumStock;
+            const mediumThreshold = minimum.times(item.product.category.stockMultiplier);
+
+            return item.quantity.gt(minimum) && item.quantity.lte(mediumThreshold);
+
+        });
+
+    }
+
     async create(
         productId: bigint,
         storeId: bigint,

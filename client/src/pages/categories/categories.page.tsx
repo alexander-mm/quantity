@@ -17,6 +17,7 @@ export function CategoriesPage() {
     const deleteMutation = useDeleteCategory();
     const categories = data?.data ?? [];
     const [open, setOpen] = useState(false);
+    const [selected, setSelected] = useState<Category | null>(null);
     const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
 
     return (
@@ -40,13 +41,27 @@ export function CategoriesPage() {
                         : (
                             <CategoriesTable
                                 categories={categories}
+                                onEdit={(category) => {
+                                    setSelected(category);
+                                    setOpen(true);
+                                }}
                                 onDelete={(category) => setCategoryToDelete(category)}
                             />
                         )
                 )}
             </div>
 
-            <CategoryModal open={open} onOpenChange={setOpen} />
+            <CategoryModal
+                open={open}
+                onOpenChange={(value) => {
+                    setOpen(value);
+                    if (!value) {
+                        setSelected(null);
+                    }
+                }}
+                mode={selected ? "edit" : "create"}
+                categoryId={selected?.id}
+            />
 
             <DeleteCategoryDialog
                 open={!!categoryToDelete}

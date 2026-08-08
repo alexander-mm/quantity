@@ -14,6 +14,7 @@ export const rawMaterialSchema = z.object({
         (value) => (value === "" ? undefined : value),
         z.enum(["ROUND", "SQUARE", "RECTANGULAR"]).optional()
     ),
+    minimumStock: z.coerce.number().min(0, "No puede ser negativo.").optional(),
     initialQuantity: z.coerce.number().min(0, "No puede ser negativo.").optional()
 
 }).superRefine((data, ctx) => {

@@ -32,6 +32,26 @@ export class ProductService {
         );
     }
 
+    async updateMinimumStock(
+        id: string,
+        minimumStock: number
+    ): Promise<Product> {
+
+        const product = await this.repository.findById(BigInt(id));
+
+        if (!product) {
+            throw new NotFoundError(
+                "Producto no encontrado."
+            );
+        }
+
+        return this.repository.updateMinimumStock(
+            BigInt(id),
+            minimumStock
+        );
+
+    }
+
     async delete(
         id: string
     ): Promise<Product> {

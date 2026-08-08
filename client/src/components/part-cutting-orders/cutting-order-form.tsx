@@ -16,12 +16,14 @@ import {
 } from "@/components/ui/combobox";
 import { partCuttingOrderSchema } from "@/validators";
 import type { PartCuttingOrderFormData } from "@/validators";
+import { MinimumStockField } from "@/components/shared";
 import {
     useParts,
     usePartRecipe,
     usePartCuttingOrder,
     useCreatePartCuttingOrder,
-    useUpdatePartCuttingOrder
+    useUpdatePartCuttingOrder,
+    useUpdatePartMinimumStock
 } from "@/hooks";
 
 type Props = {
@@ -57,9 +59,11 @@ export function CuttingOrderForm({ onSuccess, mode = "create", orderId }: Props)
 
     const parts = partsData?.data ?? [];
     const recipe = recipeData?.data;
+    const selectedPart = parts.find(part => part.id === partId);
 
     const createMutation = useCreatePartCuttingOrder();
     const updateMutation = useUpdatePartCuttingOrder();
+    const updateMinimumStockMutation = useUpdatePartMinimumStock();
     const loading = createMutation.isPending || updateMutation.isPending;
 
     useEffect(() => {
@@ -183,6 +187,25 @@ export function CuttingOrderForm({ onSuccess, mode = "create", orderId }: Props)
                         La pieza debe tener una receta de corte definida (sección "Recetas de corte").
                     </p>
                     <p className="text-sm text-red-500">{errors.partId?.message}</p>
+
+                    {selectedPart && (
+                        <div className="mt-3">
+                            <MinimumStockField
+                                currentValue={Number(selectedPart.minimumStock)}
+                                saving={updateMinimumStockMutation.isPending}
+                                editElsewhereLabel="Para cambiarlo, edítalo desde la sección Piezas."
+                                onSave={(value) => {
+                                    updateMinimumStockMutation.mutate(
+                                        { id: selectedPart.id, minimumStock: value },
+                                        {
+                                            onSuccess: () => toast.success("Stock mínimo actualizado."),
+                                            onError: () => toast.error("No se pudo actualizar el stock mínimo.")
+                                        }
+                                    );
+                                }}
+                            />
+                        </div>
+                    )}
                 </div>
 
                 <div className="md:col-span-2">

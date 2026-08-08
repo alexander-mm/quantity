@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import {
@@ -10,17 +10,43 @@ import {
     RawMaterialModal,
     DeleteRawMaterialDialog
 } from "@/components";
-import { useRawMaterials, useDeleteRawMaterial } from "@/hooks";
+import { Button } from "@/components/ui/button";
+import { useRawMaterials, useLowStockRawMaterials, useDeleteRawMaterial } from "@/hooks";
 import type { RawMaterial } from "@/types";
 
 export function RawMaterialsPage() {
 
-    const { data, isLoading, isError } = useRawMaterials();
-    const deleteMutation = useDeleteRawMaterial();
+    const [onlyLowStock, setOnlyLowStock] = useState(false);
+    const [search, setSearch] = useState("");
     const [open, setOpen] = useState(false);
     const [selected, setSelected] = useState<RawMaterial | null>(null);
     const [toDelete, setToDelete] = useState<RawMaterial | null>(null);
-    const [search, setSearch] = useState("");
+
+    const allQuery = useRawMaterials();
+    const lowStockQuery = useLowStockRawMaterials();
+    const deleteMutation = useDeleteRawMaterial();
+
+    const { data, isLoading, isError } = onlyLowStock ? lowStockQuery : allQuery;
+
+    const lowStockCount = lowStockQuery.data?.data.length ?? 0;
+    const hasWarnedRef = useRef(false);
+
+    useEffect(() => {
+
+        if (hasWarnedRef.current || !lowStockQuery.data) {
+            return;
+        }
+
+        hasWarnedRef.current = true;
+
+        if (lowStockCount > 0) {
+            toast(
+                `Hay ${lowStockCount} materia${lowStockCount === 1 ? "" : "s"} prima${lowStockCount === 1 ? "" : "s"} con stock bajo.`,
+                { icon: "⚠️" }
+            );
+        }
+
+    }, [lowStockQuery.data, lowStockCount]);
 
     const rawMaterials = useMemo(() => {
 
@@ -48,12 +74,24 @@ export function RawMaterialsPage() {
                 description="Láminas, tubos y varillas vírgenes usados para cortar piezas."
             />
 
-            <div className="mt-8">
-                <RawMaterialsToolbar
-                    onNewRawMaterial={() => setOpen(true)}
-                    search={search}
-                    onSearchChange={setSearch}
-                />
+            <div className="mt-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+
+                <div className="flex-1">
+                    <RawMaterialsToolbar
+                        onNewRawMaterial={() => setOpen(true)}
+                        search={search}
+                        onSearchChange={setSearch}
+                    />
+                </div>
+
+                <Button
+                    type="button"
+                    variant={onlyLowStock ? "default" : "outline"}
+                    onClick={() => setOnlyLowStock(prev => !prev)}
+                >
+                    {onlyLowStock ? "Mostrando solo stock bajo" : `Solo stock bajo${lowStockCount > 0 ? ` (${lowStockCount})` : ""}`}
+                </Button>
+
             </div>
 
             <div className="mt-6">

@@ -83,6 +83,17 @@ export async function updateProduct(
     return data;
 }
 
+export async function updateProductMinimumStock(
+    id: string,
+    minimumStock: number
+): Promise<ApiResponse<Product>> {
+    const { data } = await api.patch<ApiResponse<Product>>(
+        `/products/${id}/minimum-stock`,
+        { minimumStock }
+    );
+    return data;
+}
+
 export async function deleteProduct(
     id: string
 ): Promise<void> {

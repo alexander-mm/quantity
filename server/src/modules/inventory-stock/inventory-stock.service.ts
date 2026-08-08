@@ -77,6 +77,14 @@ export class InventoryStockService {
         );
     }
 
+    async findMediumStock(
+        storeId?: string
+    ): Promise<InventoryStock[]> {
+        return this.repository.findMediumStock(
+            storeId ? BigInt(storeId) : undefined
+        );
+    }
+
     // ============================
     // OPERACIONES DE STOCK
     // ============================

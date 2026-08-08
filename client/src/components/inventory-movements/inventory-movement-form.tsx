@@ -7,7 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { inventoryMovementSchema } from "@/validators";
 import type { InventoryMovementFormData } from "@/validators";
-import { useMovementTypes, useProducts, useStores, useUsers, useCreateInventoryMovement } from "@/hooks";
+import { MinimumStockField } from "@/components/shared";
+import {
+    useMovementTypes,
+    useProducts,
+    useStores,
+    useUsers,
+    useCreateInventoryMovement,
+    useUpdateProductMinimumStock
+} from "@/hooks";
 import { toast } from "react-hot-toast";
 
 type Props = {
@@ -16,7 +24,7 @@ type Props = {
 
 export function InventoryMovementForm({ onSuccess }: Props) {
 
-    const { register, control, handleSubmit, reset, formState: { errors } } = useForm({
+    const { register, control, handleSubmit, reset, watch, formState: { errors } } = useForm({
         resolver: zodResolver(inventoryMovementSchema),
         defaultValues: {
             movementTypeId: "",
@@ -33,11 +41,15 @@ export function InventoryMovementForm({ onSuccess }: Props) {
     const { data: storesData } = useStores();
     const { data: usersData } = useUsers();
     const createMutation = useCreateInventoryMovement();
+    const updateMinimumStockMutation = useUpdateProductMinimumStock();
     const movementTypes = movementTypesData?.data ?? [];
     const products = productsData?.data ?? [];
     const stores = storesData?.data ?? [];
     const users = usersData?.data ?? [];
     const loading = createMutation.isPending;
+
+    const productId = watch("productId");
+    const selectedProduct = products.find(product => product.id === productId);
 
     const onSubmit = (data: InventoryMovementFormData) => {
 
@@ -112,6 +124,23 @@ export function InventoryMovementForm({ onSuccess }: Props) {
                     {errors.productId?.message}
                 </p>
             </div>
+
+            {selectedProduct && (
+                <MinimumStockField
+                    currentValue={Number(selectedProduct.minimumStock)}
+                    saving={updateMinimumStockMutation.isPending}
+                    editElsewhereLabel="Para cambiarlo, edítalo desde la sección Productos."
+                    onSave={(value) => {
+                        updateMinimumStockMutation.mutate(
+                            { id: selectedProduct.id, minimumStock: value },
+                            {
+                                onSuccess: () => toast.success("Stock mínimo actualizado."),
+                                onError: () => toast.error("No se pudo actualizar el stock mínimo.")
+                            }
+                        );
+                    }}
+                />
+            )}
 
             <div>
                 <Label className="mb-1">Bodega</Label>

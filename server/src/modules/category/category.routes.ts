@@ -6,7 +6,8 @@ import { authorize } from "../../middleware/authorize.js";
 import { ROLES } from "../../shared/constants/roles.js";
 
 import {
-    createCategorySchema
+    createCategorySchema,
+    updateCategorySchema
 } from "./category.validator.js";
 
 import { CategoryController } from "./category.controller.js";
@@ -33,6 +34,14 @@ router.post(
     authorize(ROLES.ADMIN),
     validate(createCategorySchema),
     controller.create.bind(controller)
+);
+
+router.put(
+    "/:id",
+    authenticate,
+    authorize(ROLES.ADMIN),
+    validate(updateCategorySchema),
+    controller.update.bind(controller)
 );
 
 router.delete(

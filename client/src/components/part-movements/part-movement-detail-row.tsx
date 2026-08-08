@@ -1,4 +1,5 @@
 import { Trash2 } from "lucide-react";
+import { toast } from "react-hot-toast";
 import { Controller, useFormContext } from "react-hook-form";
 import {
     Combobox,
@@ -10,7 +11,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useParts } from "@/hooks";
+import { MinimumStockField } from "@/components/shared";
+import { useParts, useUpdatePartMinimumStock } from "@/hooks";
 
 type Props = {
     index: number;
@@ -23,6 +25,7 @@ export function PartMovementDetailRow({ index, onRemove }: Props) {
 
     const { data: partsData } = useParts();
     const parts = partsData?.data ?? [];
+    const updateMinimumStockMutation = useUpdatePartMinimumStock();
 
     const type = watch("type");
     const partId = watch(`details.${index}.partId`);
@@ -78,6 +81,23 @@ export function PartMovementDetailRow({ index, onRemove }: Props) {
                     </p>
                 )}
             </div>
+
+            {selectedPart && (
+                <MinimumStockField
+                    currentValue={Number(selectedPart.minimumStock)}
+                    saving={updateMinimumStockMutation.isPending}
+                    editElsewhereLabel="Para cambiarlo, edítalo desde la sección Piezas."
+                    onSave={(value) => {
+                        updateMinimumStockMutation.mutate(
+                            { id: selectedPart.id, minimumStock: value },
+                            {
+                                onSuccess: () => toast.success("Stock mínimo actualizado."),
+                                onError: () => toast.error("No se pudo actualizar el stock mínimo.")
+                            }
+                        );
+                    }}
+                />
+            )}
 
             <div>
                 <Label className="mb-1">Cantidad</Label>

@@ -31,6 +31,50 @@ export class RawMaterialController {
 
     }
 
+    async findLowStock(
+        _req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+
+        try {
+
+            const rawMaterials = await this.service.findLowStock();
+
+            res.status(200).json(
+                ApiResponse.success("Materias primas con stock bajo obtenidas correctamente.", rawMaterials)
+            );
+
+        } catch (error) {
+
+            next(error);
+
+        }
+
+    }
+
+    async findMediumStock(
+        _req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+
+        try {
+
+            const rawMaterials = await this.service.findMediumStock();
+
+            res.status(200).json(
+                ApiResponse.success("Materias primas con stock medio obtenidas correctamente.", rawMaterials)
+            );
+
+        } catch (error) {
+
+            next(error);
+
+        }
+
+    }
+
     async findById(
         req: Request,
         res: Response,
@@ -103,6 +147,35 @@ export class RawMaterialController {
 
             res.status(200).json(
                 ApiResponse.success("Materia prima actualizada correctamente.", rawMaterial)
+            );
+
+        } catch (error) {
+
+            next(error);
+
+        }
+
+    }
+
+    async updateMinimumStock(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+
+        try {
+
+            const { id } = req.params;
+
+            if (!id || Array.isArray(id)) {
+                res.status(400).json(ApiResponse.error("Id inválido."));
+                return;
+            }
+
+            const rawMaterial = await this.service.updateMinimumStock(id, req.body.minimumStock);
+
+            res.status(200).json(
+                ApiResponse.success("Stock mínimo actualizado correctamente.", rawMaterial)
             );
 
         } catch (error) {

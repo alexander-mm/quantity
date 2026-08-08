@@ -48,8 +48,23 @@ export class CategoryRepository extends BaseRepository {
         name: string;
         description?: string;
         parentCategoryId?: bigint | null;
+        stockMultiplier?: number;
     }): Promise<Category> {
         return this.prisma.category.create({
+            data
+        });
+    }
+
+    async update(id: bigint, data: {
+        name?: string;
+        description?: string;
+        parentCategoryId?: bigint | null;
+        stockMultiplier?: number;
+    }): Promise<Category> {
+        return this.prisma.category.update({
+            where: {
+                id
+            },
             data
         });
     }
