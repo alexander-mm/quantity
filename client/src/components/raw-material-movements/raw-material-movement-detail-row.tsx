@@ -31,6 +31,14 @@ export function RawMaterialMovementDetailRow({ index, onRemove }: Props) {
     const rawMaterialId = watch(`details.${index}.rawMaterialId`);
     const quantity = Number(watch(`details.${index}.quantity`)) || 0;
 
+    const details = watch("details") as { rawMaterialId?: string }[] | undefined;
+    const selectedRawMaterialIds = new Set(
+        (details ?? [])
+            .filter((_, detailIndex) => detailIndex !== index)
+            .map(detail => detail?.rawMaterialId)
+            .filter(Boolean)
+    );
+
     const selected = rawMaterials.find(item => item.id === rawMaterialId);
     const available = selected ? Number(selected.quantity) : null;
     const insufficient = type === "OUT" && available !== null && quantity > available;
@@ -46,10 +54,12 @@ export function RawMaterialMovementDetailRow({ index, onRemove }: Props) {
                     name={`details.${index}.rawMaterialId`}
                     render={({ field }) => {
 
-                        const items = rawMaterials.map(item => ({
-                            value: item.id,
-                            label: `${item.code} - ${item.name}`
-                        }));
+                        const items = rawMaterials
+                            .filter(item => !selectedRawMaterialIds.has(item.id))
+                            .map(item => ({
+                                value: item.id,
+                                label: `${item.code} - ${item.name}`
+                            }));
 
                         const selectedItem = items.find(item => item.value === field.value) ?? null;
 

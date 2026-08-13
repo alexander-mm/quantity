@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Controller, useForm, useFieldArray } from "react-hook-form";
+import { Controller, useForm, useFieldArray, useWatch } from "react-hook-form";
 import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-hot-toast";
@@ -50,6 +50,7 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
     });
 
     const { fields, append, remove } = useFieldArray({ control, name: "components" });
+    const watchedComponents = useWatch({ control, name: "components" }) ?? [];
 
     const createMutation = useCreatePart();
     const updateMutation = useUpdatePart();
@@ -250,9 +251,17 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
 
                     const type = field.type;
                     const isProduct = type === "PRODUCT";
+
+                    const usedRefIds = new Set(
+                        watchedComponents
+                            .filter((component, componentIndex) => componentIndex !== index && component?.type === type)
+                            .map(component => component?.refId)
+                            .filter(Boolean)
+                    );
+
                     const options = isProduct
-                        ? products.map(product => ({ value: product.id, label: `${product.internalCode} - ${product.name}` }))
-                        : parts.map(part => ({ value: part.id, label: `${part.code} - ${part.name}` }));
+                        ? products.filter(product => !usedRefIds.has(product.id)).map(product => ({ value: product.id, label: `${product.internalCode} - ${product.name}` }))
+                        : parts.filter(part => !usedRefIds.has(part.id)).map(part => ({ value: part.id, label: `${part.code} - ${part.name}` }));
 
                     return (
 

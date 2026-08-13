@@ -50,9 +50,20 @@ export function SaleDetailRow({
     const allProducts=
         useOfflineCollection(productsData?.data, () => offlineDb.products.toArray());
 
+    const details=
+        watch("details") as { productId?: string }[] | undefined;
+
+    const selectedProductIds=
+        new Set(
+            (details??[])
+                .filter((_, detailIndex)=>detailIndex!==index)
+                .map(detail=>detail?.productId)
+                .filter(Boolean)
+        );
+
     const products=
         allProducts.filter(
-            product=>!isCop||!!product.pvpCop
+            product=>(!isCop||!!product.pvpCop)&&!selectedProductIds.has(product.id)
         );
 
     const productId=

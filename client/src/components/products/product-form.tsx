@@ -499,9 +499,17 @@ export function ProductForm({
 
                     const type = field.type;
                     const isPart = type === "PART";
+
+                    const usedRefIds = new Set(
+                        watchedComponents
+                            .filter((component, componentIndex) => componentIndex !== index && component?.type === type)
+                            .map(component => component?.refId)
+                            .filter(Boolean)
+                    );
+
                     const options = isPart
-                        ? parts.map(part => ({ value: part.id, label: `${part.code} - ${part.name}` }))
-                        : products.map(product => ({ value: product.id, label: `${product.internalCode} - ${product.name}` }));
+                        ? parts.filter(part => !usedRefIds.has(part.id)).map(part => ({ value: part.id, label: `${part.code} - ${part.name}` }))
+                        : products.filter(product => !usedRefIds.has(product.id)).map(product => ({ value: product.id, label: `${product.internalCode} - ${product.name}` }));
 
                     return (
 

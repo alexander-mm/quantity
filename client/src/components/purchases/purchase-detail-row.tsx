@@ -39,6 +39,17 @@ export function PurchaseDetailRow({
     const products=
         productsData?.data??[];
 
+    const details=
+        watch("details") as { productId?: string }[] | undefined;
+
+    const selectedProductIds=
+        new Set(
+            (details??[])
+                .filter((_, detailIndex)=>detailIndex!==index)
+                .map(detail=>detail?.productId)
+                .filter(Boolean)
+        );
+
     const quantity=
         Number(
             watch(`details.${index}.quantity`)
@@ -98,10 +109,12 @@ export function PurchaseDetailRow({
                     name={`details.${index}.productId`}
                     render={({field})=>{
 
-                        const items=products.map(product=>({
-                            value:product.id,
-                            label:`${product.internalCode} - ${product.name}`
-                        }));
+                        const items=products
+                            .filter(product=>!selectedProductIds.has(product.id))
+                            .map(product=>({
+                                value:product.id,
+                                label:`${product.internalCode} - ${product.name}`
+                            }));
 
                         const selected=
                             items.find(item=>item.value===field.value)

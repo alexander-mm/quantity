@@ -31,6 +31,14 @@ export function PartMovementDetailRow({ index, onRemove }: Props) {
     const partId = watch(`details.${index}.partId`);
     const quantity = Number(watch(`details.${index}.quantity`)) || 0;
 
+    const details = watch("details") as { partId?: string }[] | undefined;
+    const selectedPartIds = new Set(
+        (details ?? [])
+            .filter((_, detailIndex) => detailIndex !== index)
+            .map(detail => detail?.partId)
+            .filter(Boolean)
+    );
+
     const selectedPart = parts.find(part => part.id === partId);
     const available = selectedPart ? Number(selectedPart.quantity) : null;
     const insufficient = type === "OUT" && available !== null && quantity > available;
@@ -46,10 +54,12 @@ export function PartMovementDetailRow({ index, onRemove }: Props) {
                     name={`details.${index}.partId`}
                     render={({ field }) => {
 
-                        const items = parts.map(part => ({
-                            value: part.id,
-                            label: `${part.code} - ${part.name}`
-                        }));
+                        const items = parts
+                            .filter(part => !selectedPartIds.has(part.id))
+                            .map(part => ({
+                                value: part.id,
+                                label: `${part.code} - ${part.name}`
+                            }));
 
                         const selected = items.find(item => item.value === field.value) ?? null;
 

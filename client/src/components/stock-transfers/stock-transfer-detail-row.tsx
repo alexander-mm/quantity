@@ -11,9 +11,17 @@ type Props = { index: number; onRemove: () => void; };
 
 export function StockTransferDetailRow({ index, onRemove }: Props) {
 
-    const { control, register } = useFormContext();
+    const { control, register, watch } = useFormContext();
     const { data: productsData } = useProducts();
     const products = productsData?.data ?? [];
+
+    const details = watch("details") as { productId?: string }[] | undefined;
+    const selectedProductIds = new Set(
+        (details ?? [])
+            .filter((_, detailIndex) => detailIndex !== index)
+            .map(detail => detail?.productId)
+            .filter(Boolean)
+    );
 
     return (
         <tr className="border-b">
@@ -23,10 +31,12 @@ export function StockTransferDetailRow({ index, onRemove }: Props) {
                     name={`details.${index}.productId`}
                     render={({ field }) => {
 
-                        const items = products.map(product => ({
-                            value: product.id,
-                            label: `${product.internalCode} - ${product.name}`
-                        }));
+                        const items = products
+                            .filter(product => !selectedProductIds.has(product.id))
+                            .map(product => ({
+                                value: product.id,
+                                label: `${product.internalCode} - ${product.name}`
+                            }));
 
                         const selected = items.find(item => item.value === field.value) ?? null;
 
