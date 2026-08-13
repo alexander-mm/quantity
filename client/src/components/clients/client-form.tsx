@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-hot-toast";
@@ -20,7 +20,7 @@ type Props = {
 
 export function ClientForm({ onSuccess, mode = "create", clientId }: Props) {
 
-    const { register, control, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<ClientFormData>({
+    const { register, control, handleSubmit, reset, setValue, formState: { errors } } = useForm<ClientFormData>({
         resolver: zodResolver(clientSchema),
         defaultValues: {
             document: "",
@@ -37,7 +37,7 @@ export function ClientForm({ onSuccess, mode = "create", clientId }: Props) {
         }
     });
 
-    const isWholesaler = watch("isWholesaler");
+    const isWholesaler = useWatch({ control, name: "isWholesaler" });
 
     const createMutation = useCreateClient();
     const updateMutation = useUpdateClient();

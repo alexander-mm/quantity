@@ -1,4 +1,4 @@
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-hot-toast";
@@ -23,7 +23,7 @@ export function InventoryAdjustmentForm({ onSuccess }: Props) {
 
     const user = useAuthStore(state => state.user);
 
-    const { register, control, handleSubmit, reset, watch, formState: { errors } } = useForm({
+    const { register, control, handleSubmit, reset, formState: { errors } } = useForm({
         resolver: zodResolver(inventoryAdjustmentSchema),
         defaultValues: {
             productId: "",
@@ -43,7 +43,7 @@ export function InventoryAdjustmentForm({ onSuccess }: Props) {
     const stores = storesData?.data ?? [];
     const loading = createMutation.isPending;
 
-    const productId = watch("productId");
+    const productId = useWatch({ control, name: "productId" });
     const selectedProduct = products.find(product => product.id === productId);
 
     const onSubmit = (data: InventoryAdjustmentFormData) => {

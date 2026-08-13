@@ -1,4 +1,4 @@
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,7 @@ type Props = {
 
 export function InventoryMovementForm({ onSuccess }: Props) {
 
-    const { register, control, handleSubmit, reset, watch, formState: { errors } } = useForm({
+    const { register, control, handleSubmit, reset, formState: { errors } } = useForm({
         resolver: zodResolver(inventoryMovementSchema),
         defaultValues: {
             movementTypeId: "",
@@ -48,7 +48,7 @@ export function InventoryMovementForm({ onSuccess }: Props) {
     const users = usersData?.data ?? [];
     const loading = createMutation.isPending;
 
-    const productId = watch("productId");
+    const productId = useWatch({ control, name: "productId" });
     const selectedProduct = products.find(product => product.id === productId);
 
     const onSubmit = (data: InventoryMovementFormData) => {
