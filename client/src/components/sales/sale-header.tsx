@@ -14,9 +14,10 @@ import {
     useClients,
     useStores,
     useProducts,
-    useProductPriceEntryLabels
+    useProductPriceEntryLabels,
+    useOfflineCollection
 } from "@/hooks";
-import { getProductPriceEntries } from "@/services";
+import { resolveProductPriceEntries, getCachedPriceEntryLabels, offlineDb } from "@/lib";
 import { ClientSelector } from "@/components/selectors";
 
 export function SaleHeader() {
@@ -46,16 +47,16 @@ export function SaleHeader() {
     } = useProducts();
 
     const clients =
-        clientsData?.data ?? [];
+        useOfflineCollection(clientsData?.data, () => offlineDb.clients.toArray());
 
     const stores =
-        storesData?.data ?? [];
+        useOfflineCollection(storesData?.data, () => offlineDb.stores.toArray());
 
     const priceEntryLabels =
-        priceEntryLabelsData?.data ?? [];
+        useOfflineCollection(priceEntryLabelsData?.data, getCachedPriceEntryLabels);
 
     const products =
-        productsData?.data ?? [];
+        useOfflineCollection(productsData?.data, () => offlineDb.products.toArray());
 
     const clientId = watch("clientId");
     const selectedClient = clients.find(client => client.id === clientId);
@@ -114,8 +115,8 @@ export function SaleHeader() {
 
             try {
 
-                const response = await getProductPriceEntries(productId);
-                const match = response.data.find(
+                const entries = await resolveProductPriceEntries(productId);
+                const match = entries.find(
                     entry => entry.currency === entryCurrency && entry.sequence === entrySequence
                 );
 

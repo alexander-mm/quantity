@@ -71,9 +71,27 @@ export class SaleRepository extends BaseRepository {
         });
     }
 
+    async findByClientUuid(
+        clientUuid: string
+    ): Promise<SaleWithRelations | null> {
+        return this.prisma.sale.findUnique({
+            where: { clientUuid },
+            include: {
+                client: true,
+                store: true,
+                user: { select: safeUserSelect },
+                details: {
+                    include: {
+                        product: true
+                    }
+                }
+            }
+        });
+    }
+
     async create(
         data: CreateSaleDto
-    ): Promise<Sale> {
+    ): Promise<SaleWithRelations> {
 
         const subtotal = data.details.reduce(
             (sum, item) => sum + (item.quantity * item.unitPrice),
@@ -94,6 +112,7 @@ export class SaleRepository extends BaseRepository {
 
         return this.prisma.sale.create({
             data: {
+                clientUuid: data.clientUuid,
                 number: data.number,
                 clientId: BigInt(data.clientId),
                 storeId: BigInt(data.storeId),

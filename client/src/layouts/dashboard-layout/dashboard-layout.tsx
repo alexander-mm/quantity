@@ -14,7 +14,7 @@ import {
     Factory,
     Settings
 } from "lucide-react";
-import { useAuth, useStockTransfers } from "@/hooks";
+import { useAuth, useStockTransfers, useOutboxPendingCount } from "@/hooks";
 import { ROLES } from "@/constants/roles";
 
 const BRAND_BLUE = "#0170B8";
@@ -50,7 +50,7 @@ function Badge({ count }: { count: number }) {
     }
     return (
         <span
-            className="inline-flex min-w-[18px] items-center justify-center rounded-full bg-white px-1.5 py-0.5 text-[11px] font-semibold leading-none"
+            className="inline-flex items-center justify-center rounded-full bg-white px-1.5 py-0.5 text-[11px] font-semibold leading-none"
             style={{ color: BRAND_BLUE }}
         >
             {count}
@@ -87,15 +87,19 @@ export function DashboardLayout({
         ).length
         : 0;
 
+    const pendingSyncSalesCount = useOutboxPendingCount("sale");
+
     const groups: NavGroup[] = [
         {
             key: "ventas",
             label: "Ventas",
             icon: ShoppingCart,
             items: [
-                { to: "/clients", label: "Clientes", visibility: "nonProduction" },
+                { to: "/clients", label: "Admin. de Clientes", visibility: "nonProduction" },
                 { to: "/sales", label: "Ventas", visibility: "nonProduction" },
-                { to: "/wholesalers", label: "Mayoristas", visibility: "adminOnly" }
+                { to: "/pending-sync", label: "Mis pendientes", visibility: "nonProduction", badge: pendingSyncSalesCount },
+                { to: "/returns", label: "Devoluciones", visibility: "nonProduction" },
+                { to: "/wholesalers", label: "Admin. de Mayoristas", visibility: "adminOnly" }
             ]
         },
         {
@@ -112,7 +116,7 @@ export function DashboardLayout({
             label: "Catálogo",
             icon: Tags,
             items: [
-                { to: "/products", label: "Productos", visibility: "adminOnly" },
+                { to: "/products", label: "Admin. de Productos", visibility: "adminOnly" },
                 { to: "/brands", label: "Marcas", visibility: "adminOnly" },
                 { to: "/categories", label: "Categorías", visibility: "adminOnly" },
                 { to: "/units-of-measure", label: "Unidades de Medida", visibility: "adminOnly" },
@@ -124,7 +128,7 @@ export function DashboardLayout({
             label: "Inventario",
             icon: Warehouse,
             items: [
-                { to: "/inventory-stock", label: "Inventario", visibility: "nonProduction" },
+                { to: "/inventory-stock", label: "Admin. de Inventario", visibility: "nonProduction" },
                 { to: "/inventory-movements", label: "Movimientos", visibility: "adminOnly" },
                 { to: "/inventory-adjustments", label: "Ajustes", visibility: "adminOnly" },
                 { to: "/kardex", label: "Kardex", visibility: "nonProduction" }
@@ -135,16 +139,16 @@ export function DashboardLayout({
             label: "Transferencias",
             icon: ArrowLeftRight,
             items: [
+                { to: "/stock-transfers", label: "Admin. de Envíos", visibility: "nonProduction" },
                 {
                     to: "/pending-receptions",
                     label: "Recepciones pendientes",
                     visibility: "nonProduction",
                     badge: pendingReceptionsCount
                 },
-                { to: "/stock-transfers", label: "Envíos", visibility: "nonProduction" },
                 {
                     to: "/transfer-issues",
-                    label: "Novedades de Transferencias",
+                    label: "Novedades",
                     visibility: "nonProduction",
                     badge: issuesCount
                 }
@@ -155,10 +159,10 @@ export function DashboardLayout({
             label: "Producción",
             icon: Factory,
             items: [
-                { to: "/parts", label: "Piezas Láser", visibility: "adminOrProduction" },
+                { to: "/parts", label: "Admin. de Piezas", visibility: "adminOrProduction" },
                 { to: "/part-movements", label: "Movimientos de Piezas", visibility: "adminOrProduction" },
-                { to: "/raw-materials", label: "Materia Prima", visibility: "adminOrProduction" },
-                { to: "/raw-material-movements", label: "Movimientos de Materia Prima", visibility: "adminOrProduction" },
+                { to: "/raw-materials", label: "Admin. de M. Prima", visibility: "adminOrProduction" },
+                { to: "/raw-material-movements", label: "Movimientos de M. Prima", visibility: "adminOrProduction" },
                 { to: "/part-recipes", label: "Recetas de Corte", visibility: "adminOrProduction" },
                 { to: "/part-cutting-orders", label: "Órdenes de Corte", visibility: "adminOrProduction" },
                 { to: "/equipment-parts", label: "Cálculo de Producción", visibility: "adminOrProduction" },
@@ -289,7 +293,7 @@ export function DashboardLayout({
                                 </button>
 
                                 {isOpen && (
-                                    <div className="mt-0.5 mb-1.5 ml-[27px] flex flex-col gap-0.5 border-l border-white/20 pl-3">
+                                    <div className="mt-0.5 mb-1.5 flex flex-col gap-0.5 border-l border-white/20 pl-3">
                                         {group.items.map(item => (
                                             <NavLink key={item.to} to={item.to} className={navItemClassName}>
                                                 <span className="flex items-center justify-between gap-2">

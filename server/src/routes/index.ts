@@ -30,6 +30,11 @@ import partRecipeRoutes from "../modules/part-recipe/part-recipe.routes.js";
 import equipmentPartRoutes from "../modules/equipment-part/equipment-part.routes.js";
 import partCuttingOrderRoutes from "../modules/part-cutting-order/part-cutting-order.routes.js";
 import productPriceEntryRoutes from "../modules/product-price-entries/product-price-entry.routes.js";
+import returnRoutes from "../modules/return/return.routes.js";
+import partComponentRoutes from "../modules/part-component/part-component.routes.js";
+import partComponentProductRoutes from "../modules/part-component-product/part-component-product.routes.js";
+import partAssemblyRoutes from "../modules/part-assembly/part-assembly.routes.js";
+
 
 const router = Router();
 
@@ -83,6 +88,12 @@ router.use("/product-components", productComponentRoutes);
 
 router.use("/product-assemblies", productAssemblyRoutes);
 
+router.use("/part-components", partComponentRoutes);
+
+router.use("/part-component-products", partComponentProductRoutes);
+
+router.use("/part-assemblies", partAssemblyRoutes);
+
 router.use("/accounts-receivable", accountReceivableRoutes);
 
 router.use("/raw-materials", rawMaterialRoutes);
@@ -96,5 +107,7 @@ router.use("/equipment-parts", equipmentPartRoutes);
 router.use("/part-cutting-orders", partCuttingOrderRoutes);
 
 router.use("/product-price-entries", productPriceEntryRoutes);
+
+router.use("/returns", returnRoutes);
 
 export default router;

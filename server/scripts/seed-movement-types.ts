@@ -71,6 +71,13 @@ const movementTypes = [
         description: "Carga inicial de inventario (importación)",
         affectsStock: true,
         stockOperation: StockOperation.IN
+    },
+    {
+        code: "RETURN_IN",
+        name: "Devolución",
+        description: "Ingreso por devolución de cliente (vuelve a stock vendible)",
+        affectsStock: true,
+        stockOperation: StockOperation.IN
     }
 ];
 

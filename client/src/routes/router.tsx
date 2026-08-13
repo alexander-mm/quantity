@@ -1,8 +1,8 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
-import { LoginPage, DashboardPage } from "@/pages";
+import { createBrowserRouter } from "react-router-dom";
+import { LoginPage } from "@/pages";
 import { ProtectedRoute } from "@/routes/components";
 import { DashboardLayout } from "@/layouts/dashboard-layout";
-import { useAuth } from "@/hooks";
+import { DashboardRoute } from "./dashboard-route";
 import { ProductsPage } from "@/pages/products/products.page";
 import { InventoryMovementsPage } from "@/pages/inventory-movements";
 import { InventoryStockPage } from "@/pages/inventory-stock";
@@ -20,6 +20,8 @@ import { StoresPage } from "@/pages/stores";
 import { ROLES } from "@/constants/roles";
 import { RolesPage } from "@/pages/roles";
 import { StockTransfersPage } from "@/pages/stock-transfers";
+import { ReturnsPage } from "@/pages/returns";
+import { PendingSyncPage } from "@/pages/pending-sync";
 import { PendingReceptionsPage } from "@/pages/pending-receptions";
 import { TransferIssuesPage } from "@/pages/transfer-issues";
 import { ClientsPage } from "@/pages/clients";
@@ -32,22 +34,6 @@ import { RawMaterialMovementsPage } from "@/pages/raw-material-movements";
 import { PartRecipesPage } from "@/pages/part-recipes";
 import { EquipmentPartsPage } from "@/pages/equipment-parts";
 import { PartCuttingOrdersPage } from "@/pages/part-cutting-orders";
-
-function DashboardRoute() {
-
-    const { user } = useAuth();
-
-    if (user?.roleName === ROLES.PRODUCTION) {
-        return <Navigate to="/parts" replace />;
-    }
-
-    return (
-        <DashboardLayout>
-            <DashboardPage />
-        </DashboardLayout>
-    );
-
-}
 
 const router = createBrowserRouter([
 
@@ -248,6 +234,28 @@ const router = createBrowserRouter([
         <ProtectedRoute blockedRoles={[ROLES.PRODUCTION]}>
             <DashboardLayout>
                 <StockTransfersPage />
+            </DashboardLayout>
+        </ProtectedRoute>
+    )
+},
+
+{
+    path: "/returns",
+    element: (
+        <ProtectedRoute blockedRoles={[ROLES.PRODUCTION]}>
+            <DashboardLayout>
+                <ReturnsPage />
+            </DashboardLayout>
+        </ProtectedRoute>
+    )
+},
+
+{
+    path: "/pending-sync",
+    element: (
+        <ProtectedRoute blockedRoles={[ROLES.PRODUCTION]}>
+            <DashboardLayout>
+                <PendingSyncPage />
             </DashboardLayout>
         </ProtectedRoute>
     )

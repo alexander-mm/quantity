@@ -6,7 +6,8 @@ import { toast } from "react-hot-toast";
 import axios from "axios";
 import { saleSchema } from "@/validators";
 import type { SaleFormData } from "@/validators";
-import { useCreateSale, useUsers } from "@/hooks";
+import { useCreateSale, useUsers, useAuth } from "@/hooks";
+import { generateOfflineId } from "@/lib";
 import { SaleHeader } from "./sale-header";
 import { SaleDetailsTable } from "./sale-details-table";
 import { SaleTotals } from "./sale-totals";
@@ -99,6 +100,8 @@ const total =
     const users =
         usersData?.data ?? [];
 
+    const { user: currentUser } = useAuth();
+
     const createMutation =
         useCreateSale();
 
@@ -109,21 +112,28 @@ const total =
         data: SaleFormData
     ) => {
 
-        if (users.length === 0) {
+        const userId = users[0]?.id ?? currentUser?.id;
+
+        if (!userId) {
             toast.error( "No existen usuarios registrados." );
             return;
         }
         createMutation.mutate({
             ...data,
-            userId:
-                users[0]!.id,
+            clientUuid:
+                generateOfflineId(),
+            userId,
             saleDate:
                 new Date(
                     data.saleDate
                 )
         }, {
-            onSuccess: () => {
-                toast.success( "Venta registrada." );
+            onSuccess: (result) => {
+                if (result.queued) {
+                    toast.success( "Sin conexión: la venta quedó guardada y se sincronizará automáticamente." );
+                } else {
+                    toast.success( "Venta registrada." );
+                }
                 methods.reset();
                 onSuccess?.();
             },

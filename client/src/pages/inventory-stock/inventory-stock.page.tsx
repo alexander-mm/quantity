@@ -51,7 +51,7 @@ export function InventoryStockPage() {
     return (
         <PageContainer>
             <PageHeader
-                title="Inventario"
+                title="Admin. de Inventario"
                 description="Consulta las existencias actuales por tienda."
             />
 

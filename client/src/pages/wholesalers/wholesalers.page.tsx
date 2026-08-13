@@ -22,7 +22,7 @@ export function WholesalersPage() {
         <PageContainer>
 
             <PageHeader
-                title="Mayoristas"
+                title="Admin. de Mayoristas"
                 description="Clientes mayoristas y el crédito pendiente de cada uno."
             />
 

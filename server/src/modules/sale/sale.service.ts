@@ -57,6 +57,18 @@ export class SaleService {
         data: CreateSaleDto
     ): Promise<Sale> {
 
+        if (data.clientUuid) {
+
+            const existingByClientUuid = await this.repository.findByClientUuid(
+                data.clientUuid
+            );
+
+            if (existingByClientUuid) {
+                return existingByClientUuid;
+            }
+
+        }
+
         const existing = await this.repository.findByNumber(
             data.number
         );

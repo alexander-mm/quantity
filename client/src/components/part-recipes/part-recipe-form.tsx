@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -49,7 +49,7 @@ export function PartRecipeForm({ part, onSuccess }: Props) {
     const rawMaterialShape = useWatch({ control, name: "rawMaterialShape" });
 
     const { data: rawMaterialsData } = useRawMaterials();
-    const rawMaterials = rawMaterialsData?.data ?? [];
+    const rawMaterials = useMemo(() => rawMaterialsData?.data ?? [], [rawMaterialsData]);
 
     const { data: recipeData } = usePartRecipe(part.id);
     const setRecipeMutation = useSetPartRecipe();
@@ -187,7 +187,7 @@ export function PartRecipeForm({ part, onSuccess }: Props) {
             )}
 
             <div>
-                <Label>Piezas por unidad de materia prima</Label>
+                <Label className="mb-1">Piezas por unidad de materia prima</Label>
                 <Input type="number" step="1" min={0} placeholder="0" {...register("piecesPerUnit", {
                     setValueAs: (v) => (v === "" ? undefined : Number(v))
                 })} />

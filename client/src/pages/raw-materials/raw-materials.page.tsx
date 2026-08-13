@@ -70,7 +70,7 @@ export function RawMaterialsPage() {
         <PageContainer>
 
             <PageHeader
-                title="Materia Prima"
+                title="Admin. de Materia Prima"
                 description="Láminas, tubos y varillas vírgenes usados para cortar piezas."
             />
 

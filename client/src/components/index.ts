@@ -28,3 +28,5 @@ export * from "./raw-material-movements";
 export * from "./part-recipes";
 export * from "./equipment-parts";
 export * from "./part-cutting-orders";
+export * from "./returns";
+export * from "./pending-sync";

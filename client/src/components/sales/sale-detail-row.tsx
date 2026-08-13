@@ -13,8 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useProducts, useProductPriceEntries, useClients, useMarginProfiles } from "@/hooks";
-import { getProductById, getProductPriceEntries } from "@/services";
+import { useProducts, useProductPriceEntries, useClients, useMarginProfiles, useOfflineCollection } from "@/hooks";
+import { resolveProductPriceEntries, getCachedProductPriceEntries, offlineDb } from "@/lib";
 import { formatCurrency } from "@/lib/format-currency";
 
 const NO_PROFILE = "none";
@@ -47,8 +47,11 @@ export function SaleDetailRow({
     const isCop=
         currency==="COP";
 
+    const allProducts=
+        useOfflineCollection(productsData?.data, () => offlineDb.products.toArray());
+
     const products=
-        (productsData?.data??[]).filter(
+        allProducts.filter(
             product=>!isCop||!!product.pvpCop
         );
 
@@ -60,7 +63,10 @@ export function SaleDetailRow({
     }=useProductPriceEntries(productId||undefined);
 
     const priceEntries=
-        priceEntriesData?.data??[];
+        useOfflineCollection(
+            priceEntriesData?.data,
+            () => (productId ? getCachedProductPriceEntries(productId) : Promise.resolve([]))
+        );
 
     const priceEntryKey = useWatch({ control, name: "priceEntryKey" });
     const [entryCurrency, entrySequenceRaw] = (priceEntryKey ?? "").split("-");
@@ -77,11 +83,14 @@ export function SaleDetailRow({
         data:clientsData
     }=useClients();
 
+    const clients=
+        useOfflineCollection(clientsData?.data, () => offlineDb.clients.toArray());
+
     const clientId=
         watch("clientId");
 
     const selectedClient=
-        (clientsData?.data??[]).find(
+        clients.find(
             client=>client.id===clientId
         );
 
@@ -96,7 +105,7 @@ export function SaleDetailRow({
     }=useMarginProfiles();
 
     const marginProfiles=
-        marginProfilesData?.data??[];
+        useOfflineCollection(marginProfilesData?.data, () => offlineDb.marginProfiles.toArray());
 
     const [selectedProfileId,setSelectedProfileId]=
         useState<string>(NO_PROFILE);
@@ -197,9 +206,9 @@ export function SaleDetailRow({
 
                                     if(priceEntryKey){
 
-                                        getProductPriceEntries(item.value).then(response=>{
+                                        resolveProductPriceEntries(item.value).then(entries=>{
 
-                                            const match = response.data.find(
+                                            const match = entries.find(
                                                 entry=>entry.currency===entryCurrency&&entry.sequence===entrySequence
                                             );
 
@@ -225,31 +234,25 @@ export function SaleDetailRow({
 
                                     }
 
-                                    getProductById(item.value).then(response=>{
+                                    const product = allProducts.find(p => p.id === item.value);
 
-                                        const product=response.data;
+                                    const priceForCurrency=
+                                        isCop
+                                            ?product?.pvpCop
+                                            :product?.pvp;
 
-                                        const priceForCurrency=
-                                            isCop
-                                                ?product.pvpCop
-                                                :product.pvp;
+                                    if(priceForCurrency!==undefined&&priceForCurrency!==null){
 
-                                        if(priceForCurrency!==undefined&&priceForCurrency!==null){
+                                        const newUnitPrice=Number(priceForCurrency);
 
-                                            const newUnitPrice=Number(priceForCurrency);
+                                        setValue(
+                                            `details.${index}.unitPrice`,
+                                            newUnitPrice
+                                        );
 
-                                            setValue(
-                                                `details.${index}.unitPrice`,
-                                                newUnitPrice
-                                            );
+                                        applyClientDiscount(quantity,newUnitPrice);
 
-                                            applyClientDiscount(quantity,newUnitPrice);
-
-                                        }
-
-                                    }).catch(error=>{
-                                        console.error(error);
-                                    });
+                                    }
 
                                 }}
                             >

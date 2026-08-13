@@ -36,7 +36,7 @@ function formatDimensions(item: RawMaterial): string {
 
 export function RawMaterialsTable({ rawMaterials, onEdit, onDelete }: Props) {
     return (
-        <EntityTable headers={["Código", "Nombre", "Forma", "Material", "Medidas", "Stock", "Estado", "Acciones"]}>
+        <EntityTable headers={["Código", "Nombre", "Forma", "Material", "Medidas", "Stock", "Acciones"]}>
             {rawMaterials.map(item => (
                 <tr key={item.id} className={`border-b transition hover:bg-muted/40 ${isLowStock(item) ? "bg-amber-50" : ""}`}>
                     <td className="px-6 py-4 font-medium">{item.code}</td>
@@ -51,17 +51,6 @@ export function RawMaterialsTable({ rawMaterials, onEdit, onDelete }: Props) {
                                 <AlertTriangle size={15} className="text-amber-600" />
                             )}
                         </div>
-                    </td>
-                    <td className="px-6 py-4">
-                        <span
-                            className={`rounded-full px-3 py-1 text-xs font-medium ${
-                                item.isActive
-                                    ? "bg-green-100 text-green-700"
-                                    : "bg-red-100 text-red-700"
-                            }`}
-                        >
-                            {item.isActive ? "Activo" : "Inactivo"}
-                        </span>
                     </td>
                     <td className="px-6 py-4">
                         <div className="flex items-center gap-3">

@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const createSaleSchema=z.object({
+    clientUuid:z.string().trim().uuid().optional(),
     number:z.string().trim().min(1).max(50),
     clientId:z.string().trim().min(1),
     storeId:z.string().trim().min(1),

@@ -20,3 +20,7 @@ export * from "./raw-material-movements";
 export * from "./part-recipes";
 export * from "./equipment-parts";
 export * from "./part-cutting-orders";
+export * from "./returns/return.schema";
+export * from "./part-components";
+export * from "./part-component-products";
+export * from "./part-assembly.schema";

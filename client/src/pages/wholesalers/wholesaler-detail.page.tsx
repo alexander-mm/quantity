@@ -68,9 +68,9 @@ export function WholesalerDetailPage() {
     return (
         <PageContainer>
 
-            <Button variant="ghost" className="mb-2" onClick={() => navigate("/wholesalers")}>
+            <Button variant="ghost" className="mb-4 border-2 border-gray-400" onClick={() => navigate("/wholesalers")}>
                 <ArrowLeft size={18} />
-                Mayoristas
+                Volver al Admin. de Mayoristas
             </Button>
 
             <PageHeader

@@ -47,7 +47,7 @@ export function ClientsPage() {
         <PageContainer>
 
             <PageHeader
-                title="Clientes"
+                title="Admin. de Clientes"
                 description="Administra los clientes y sus descuentos especiales."
             />
 

@@ -7,6 +7,7 @@ export interface CreateSaleDetailDto {
 }
 
 export interface CreateSaleDto {
+    clientUuid?: string;
     number: string;
     clientId: string;
     storeId: string;

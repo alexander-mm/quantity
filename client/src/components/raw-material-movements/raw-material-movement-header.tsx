@@ -22,7 +22,7 @@ export function RawMaterialMovementHeader() {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 
             <div>
-                <Label>Número</Label>
+                <Label className="mb-1">Número</Label>
                 <Input {...register("number")} />
                 <p className="text-sm text-red-500">
                     {errors.number?.message as string}
@@ -30,7 +30,7 @@ export function RawMaterialMovementHeader() {
             </div>
 
             <div>
-                <Label>Tipo de movimiento</Label>
+                <Label className="mb-1">Tipo de movimiento</Label>
                 <Controller
                     control={control}
                     name="type"
@@ -52,7 +52,7 @@ export function RawMaterialMovementHeader() {
             </div>
 
             <div>
-                <Label>Fecha</Label>
+                <Label className="mb-1">Fecha</Label>
                 <Input type="date" {...register("movementDate")} />
                 <p className="text-sm text-red-500">
                     {errors.movementDate?.message as string}
@@ -60,7 +60,7 @@ export function RawMaterialMovementHeader() {
             </div>
 
             <div>
-                <Label>Observaciones (opcional)</Label>
+                <Label className="mb-1">Observaciones (opcional)</Label>
                 <Input {...register("observations")} />
             </div>
 

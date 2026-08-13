@@ -17,7 +17,7 @@ export function InventoryMovementsTable({
         <EntityTable
             headers={[
                 "Fecha",
-                "Movimiento",
+                "Tipo de Movimiento",
                 "Bodega",
                 "Producto",
                 "Cantidad",

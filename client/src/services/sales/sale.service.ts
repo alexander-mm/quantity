@@ -29,6 +29,7 @@ export async function getSaleById(
 
 export type CreateSaleRequest={
 
+    clientUuid:string;
     number:string;
     clientId:string;
     storeId:string;

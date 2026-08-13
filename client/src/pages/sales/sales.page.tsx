@@ -40,48 +40,6 @@ export function SalesPage() {
         setSaleToView
     ] = useState<Sale | null>(null);
 
-    if (isLoading) {
-
-        return (
-
-            <PageContainer>
-
-                <PageHeader
-                    title="Ventas"
-                    description="Administra las ventas del inventario."
-                />
-
-                <p className="mt-6">
-                    Cargando...
-                </p>
-
-            </PageContainer>
-
-        );
-
-    }
-
-    if (isError) {
-
-        return (
-
-            <PageContainer>
-
-                <PageHeader
-                    title="Ventas"
-                    description="Administra las ventas del inventario."
-                />
-
-                <p className="mt-6">
-                    Error al cargar las ventas.
-                </p>
-
-            </PageContainer>
-
-        );
-
-    }
-
     return (
 
         <PageContainer>
@@ -105,7 +63,19 @@ export function SalesPage() {
 
             <div className="mt-6">
 
-                {
+                {isLoading && (
+                    <p>Cargando...</p>
+                )}
+
+                {!isLoading && isError && (
+                    <p>
+                        Error al cargar las ventas.
+                        {!navigator.onLine && " Estás sin conexión — el historial no está disponible, pero aún necesitas conexión para guardar una venta nueva."}
+                    </p>
+                )}
+
+                {!isLoading && !isError && (
+
                     sales.length === 0
                         ? (
                             <div className="rounded-xl border border-dashed p-12 text-center">
@@ -136,7 +106,8 @@ export function SalesPage() {
                                 </p>
                             </>
                         )
-                }
+
+                )}
 
             </div>
 

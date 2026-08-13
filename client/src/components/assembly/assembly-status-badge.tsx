@@ -1,8 +1,7 @@
 import { Badge } from "@/components/ui/badge";
-import type { ProductAssemblyStatus } from "@/types";
 
 type Props = {
-    status: ProductAssemblyStatus;
+    status: "DRAFT" | "CONFIRMED" | "CANCELLED";
 };
 
 export function AssemblyStatusBadge({ status }: Props) {

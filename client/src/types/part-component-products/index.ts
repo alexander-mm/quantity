@@ -1,0 +1,1 @@
+export * from "./part-component-product.types";

@@ -69,7 +69,7 @@ export function ProductsPage() {
         return (
             <PageContainer>
                 <PageHeader
-                    title="Productos"
+                    title="Admin. de Productos"
                     description="Administra los productos del sistema."
                 />
                 <div className="mt-8">
@@ -93,7 +93,7 @@ export function ProductsPage() {
         return (
             <PageContainer>
                 <PageHeader
-                    title="Productos"
+                    title="Admin. de Productos"
                     description="Administra los productos del sistema."
                 />
                 <div className="mt-6">
@@ -105,7 +105,7 @@ export function ProductsPage() {
     return (
         <PageContainer>
             <PageHeader
-                title="Productos"
+                title="Admin. de Productos"
                 description="Administra los productos del sistema."
             />
             <div className="mt-8">

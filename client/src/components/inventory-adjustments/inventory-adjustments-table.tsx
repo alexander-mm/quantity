@@ -8,7 +8,7 @@ type Props = {
 export function InventoryAdjustmentsTable({ adjustments }: Props) {
     return (
         <EntityTable
-            headers={["Fecha", "Tipo", "Producto", "Bodega", "Cantidad", "Motivo", "Usuario"]}
+            headers={["Fecha", "Tipo de Ajuste", "Producto", "Bodega", "Cantidad", "Motivo", "Usuario"]}
         >
             {adjustments.map(adjustment => (
                 <tr key={adjustment.id} className="border-b transition hover:bg-muted/40">
