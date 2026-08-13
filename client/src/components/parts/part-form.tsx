@@ -37,7 +37,7 @@ type Props = {
 
 export function PartForm({ onSuccess, mode = "create", partId }: Props) {
 
-    const { register, control, handleSubmit, reset, formState: { errors } } = useForm<PartFormData>({
+    const { register, control, handleSubmit, reset, setError, formState: { errors } } = useForm<PartFormData>({
         resolver: zodResolver(partSchema),
         defaultValues: {
             code: "",
@@ -123,6 +123,16 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
     }
 
     const onSubmit = (data: PartFormData) => {
+
+        const normalizedName = data.name.trim().toLowerCase();
+        const isDuplicateName = parts.some(
+            part => part.name.trim().toLowerCase() === normalizedName
+        );
+
+        if (isDuplicateName) {
+            setError("name", { message: "Ya existe una pieza con este nombre." });
+            return;
+        }
 
         const { components, ...rest } = data;
 

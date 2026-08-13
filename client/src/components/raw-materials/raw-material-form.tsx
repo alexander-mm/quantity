@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { rawMaterialSchema } from "@/validators";
 import type { RawMaterialFormData } from "@/validators";
-import { useCreateRawMaterial, useUpdateRawMaterial, useRawMaterial } from "@/hooks";
+import { useCreateRawMaterial, useUpdateRawMaterial, useRawMaterial, useRawMaterials } from "@/hooks";
 import type { TubeProfile } from "@/types";
 
 type Props = {
@@ -31,7 +31,7 @@ function toOptionalNumber(value: string): number | undefined {
 
 export function RawMaterialForm({ onSuccess, mode = "create", rawMaterialId }: Props) {
 
-    const { register, control, handleSubmit, reset, setValue, formState: { errors } } = useForm<RawMaterialFormData>({
+    const { register, control, handleSubmit, reset, setValue, setError, formState: { errors } } = useForm<RawMaterialFormData>({
         resolver: zodResolver(rawMaterialSchema),
         defaultValues: {
             code: "",
@@ -54,7 +54,10 @@ export function RawMaterialForm({ onSuccess, mode = "create", rawMaterialId }: P
     const createMutation = useCreateRawMaterial();
     const updateMutation = useUpdateRawMaterial();
     const { data: rawMaterialData } = useRawMaterial(mode === "edit" ? rawMaterialId : undefined);
+    const { data: rawMaterialsData } = useRawMaterials();
     const loading = createMutation.isPending || updateMutation.isPending;
+
+    const otherRawMaterials = (rawMaterialsData?.data ?? []).filter(item => item.id !== rawMaterialId);
 
     useEffect(() => {
 
@@ -80,6 +83,16 @@ export function RawMaterialForm({ onSuccess, mode = "create", rawMaterialId }: P
     }, [mode, rawMaterialData, reset]);
 
     const onSubmit = (data: RawMaterialFormData) => {
+
+        const normalizedName = data.name.trim().toLowerCase();
+        const isDuplicateName = otherRawMaterials.some(
+            item => item.name.trim().toLowerCase() === normalizedName
+        );
+
+        if (isDuplicateName) {
+            setError("name", { message: "Ya existe una materia prima con este nombre." });
+            return;
+        }
 
         const payload = {
             code: data.code,
