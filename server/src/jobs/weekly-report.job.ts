@@ -1,5 +1,5 @@
 import { ReportDataService, type ReportRange } from "../modules/reports/report-data.service.js";
-import { buildSalesReportPdf, buildMoneyReportPdf, buildComparisonReportPdf } from "../modules/reports/report-pdf.builder.js";
+import { buildWeeklyReportPdf } from "../modules/reports/report-pdf.builder.js";
 import { TelegramService } from "../integrations/telegram/telegram.service.js";
 
 const reportDataService = new ReportDataService();
@@ -50,18 +50,15 @@ export async function runWeeklyReport(): Promise<void> {
             reportDataService.getReportData(previousRange)
         ]);
 
-        const [salesPdf, moneyPdf, comparisonPdf] = await Promise.all([
-            buildSalesReportPdf(currentData),
-            buildMoneyReportPdf(currentData),
-            buildComparisonReportPdf(currentData, previousData)
-        ]);
+        const pdf = await buildWeeklyReportPdf(currentData, previousData);
 
         const label = `${isoDate(currentRange.from)} a ${isoDate(currentRange.to)}`;
 
-        await telegramService.sendMessage(`📊 <b>Reportes semanales</b> (${label})`);
-        await telegramService.sendDocument(salesPdf, `reporte-ventas-${isoDate(currentRange.from)}.pdf`, "Reporte de ventas");
-        await telegramService.sendDocument(moneyPdf, `reporte-dinero-${isoDate(currentRange.from)}.pdf`, "Reporte de dinero");
-        await telegramService.sendDocument(comparisonPdf, `comparacion-semanal-${isoDate(currentRange.from)}.pdf`, "Comparación con la semana anterior");
+        await telegramService.sendDocument(
+            pdf,
+            `reporte-semanal-${isoDate(currentRange.from)}.pdf`,
+            `📊 <b>Reporte semanal</b> (${label})\nVentas, dinero y comparación con la semana anterior.`
+        );
 
     } catch (error) {
         console.error("❌ Error generando el paquete de reportes semanales:", error);

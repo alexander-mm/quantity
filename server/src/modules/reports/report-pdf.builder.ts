@@ -62,19 +62,19 @@ function generatePdf(docDefinition: DocDefinition): Promise<Buffer> {
 }
 
 const baseStyles = {
-    header: { fontSize: 16, bold: true, margin: [0, 0, 0, 4] as [number, number, number, number] },
+    header: { fontSize: 18, bold: true, margin: [0, 0, 0, 4] as [number, number, number, number] },
     subheader: { fontSize: 10, color: "#666666", margin: [0, 0, 0, 16] as [number, number, number, number] },
+    sectionTitle: { fontSize: 14, bold: true, margin: [0, 0, 0, 8] as [number, number, number, number] },
     sectionHeader: { fontSize: 12, bold: true, margin: [0, 8, 0, 4] as [number, number, number, number] }
 };
 
-export async function buildSalesReportPdf(data: ReportData): Promise<Buffer> {
+function salesSection(data: ReportData): Content[] {
 
     const storeRows = data.totalsByStore.map((item: StoreTotal) => [item.storeName, item.currency, formatMoney(item.total, item.currency)]);
     const productRows = data.topProducts.map(item => [item.code, item.name, String(item.quantity), formatMoney(item.total, "")]);
 
-    const content: Content[] = [
-        { text: "Reporte de Ventas", style: "header" },
-        { text: formatRange(data.range), style: "subheader" },
+    return [
+        { text: "1. Reporte de Ventas", style: "sectionTitle" },
         { text: `Ventas confirmadas: ${data.salesCount}`, margin: [0, 0, 0, 12] },
         ...currencyTotalsTable("Total por moneda", data.totalsByCurrency),
         { text: "Ventas por tienda", style: "sectionHeader" },
@@ -87,26 +87,21 @@ export async function buildSalesReportPdf(data: ReportData): Promise<Buffer> {
             : { text: "Sin datos en este período.", margin: [0, 0, 0, 12] }
     ];
 
-    return generatePdf({ content, styles: baseStyles, defaultStyle: { font: FONT_FAMILY, fontSize: 9 } });
-
 }
 
-export async function buildMoneyReportPdf(data: ReportData): Promise<Buffer> {
+function moneySection(data: ReportData): Content[] {
 
-    const content: Content[] = [
-        { text: "Reporte de Dinero", style: "header" },
-        { text: formatRange(data.range), style: "subheader" },
+    return [
+        { text: "2. Reporte de Dinero", style: "sectionTitle", pageBreak: "before" },
         ...currencyTotalsTable("Total de ventas", data.totalsByCurrency),
         ...currencyTotalsTable("Ventas de contado", data.cashByCurrency),
         ...currencyTotalsTable("Ventas a crédito", data.creditByCurrency),
         ...currencyTotalsTable("Cuentas por cobrar pendientes (al corte)", data.pendingReceivablesByCurrency)
     ];
 
-    return generatePdf({ content, styles: baseStyles, defaultStyle: { font: FONT_FAMILY, fontSize: 9 } });
-
 }
 
-export async function buildComparisonReportPdf(current: ReportData, previous: ReportData): Promise<Buffer> {
+function comparisonSection(current: ReportData, previous: ReportData): Content[] {
 
     const currencies = new Set([
         ...current.totalsByCurrency.map(item => item.currency),
@@ -125,8 +120,8 @@ export async function buildComparisonReportPdf(current: ReportData, previous: Re
 
     });
 
-    const content: Content[] = [
-        { text: "Comparación semanal", style: "header" },
+    return [
+        { text: "3. Comparación con la semana anterior", style: "sectionTitle", pageBreak: "before" },
         { text: `Semana actual: ${formatRange(current.range)}`, style: "subheader" },
         { text: `Semana anterior: ${formatRange(previous.range)}`, margin: [0, -12, 0, 16] },
         {
@@ -137,6 +132,18 @@ export async function buildComparisonReportPdf(current: ReportData, previous: Re
             margin: [0, 0, 0, 12]
         },
         { text: `Ventas confirmadas: ${previous.salesCount} → ${current.salesCount}`, margin: [0, 0, 0, 12] }
+    ];
+
+}
+
+export async function buildWeeklyReportPdf(current: ReportData, previous: ReportData): Promise<Buffer> {
+
+    const content: Content[] = [
+        { text: "Reporte Semanal", style: "header" },
+        { text: formatRange(current.range), style: "subheader" },
+        ...salesSection(current),
+        ...moneySection(current),
+        ...comparisonSection(current, previous)
     ];
 
     return generatePdf({ content, styles: baseStyles, defaultStyle: { font: FONT_FAMILY, fontSize: 9 } });
