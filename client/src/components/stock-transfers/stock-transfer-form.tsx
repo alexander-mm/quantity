@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -6,7 +7,8 @@ import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { stockTransferSchema } from "@/validators";
 import type { StockTransferFormData } from "@/validators";
-import { useCreateStockTransfer, useAuth } from "@/hooks";
+import { useCreateStockTransfer, useAuth, useStockTransfers } from "@/hooks";
+import { getNextSequentialCode } from "@/lib";
 import { StockTransferHeader } from "./stock-transfer-header";
 import { StockTransferDetailsTable } from "./stock-transfer-details-table";
 import { ROLES } from "@/constants/roles";
@@ -34,6 +36,25 @@ export function StockTransferForm({ onSuccess }: Props) {
     });
 
     const createMutation = useCreateStockTransfer();
+    const { data: transfersData } = useStockTransfers();
+
+    useEffect(() => {
+
+        if (!transfersData?.data || methods.getValues("number")) {
+            return;
+        }
+
+        const [lastTransfer] = [...transfersData.data].sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+        const nextNumber = getNextSequentialCode(lastTransfer?.number);
+
+        if (nextNumber) {
+            methods.setValue("number", nextNumber);
+        }
+
+    }, [transfersData, methods]);
 
     const onSubmit = (data: StockTransferFormData) => {
 

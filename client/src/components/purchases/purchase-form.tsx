@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -5,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "react-hot-toast";
 import { purchaseSchema } from "@/validators";
 import type { PurchaseFormData } from "@/validators";
-import { useCreatePurchase, useUsers } from "@/hooks";
+import { useCreatePurchase, useUsers, usePurchases } from "@/hooks";
+import { getNextSequentialCode } from "@/lib";
 import { PurchaseHeader } from "./purchase-header";
 import { PurchaseDetailsTable } from "./purchase-details-table";
 import { PurchaseTotals } from "./purchase-totals";
@@ -89,8 +91,28 @@ const total =
     const createMutation =
         useCreatePurchase();
 
+    const { data: purchasesData } = usePurchases();
+
     const loading =
         createMutation.isPending;
+
+    useEffect(() => {
+
+        if (!purchasesData?.data || methods.getValues("number")) {
+            return;
+        }
+
+        const [lastPurchase] = [...purchasesData.data].sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+        const nextNumber = getNextSequentialCode(lastPurchase?.number);
+
+        if (nextNumber) {
+            methods.setValue("number", nextNumber);
+        }
+
+    }, [purchasesData, methods]);
 
     const onSubmit = (
         data: PurchaseFormData

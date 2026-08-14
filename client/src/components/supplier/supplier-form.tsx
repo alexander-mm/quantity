@@ -15,8 +15,10 @@ import {
 import {
     useCreateSupplier,
     useSupplier,
+    useSuppliers,
     useUpdateSupplier
 } from "@/hooks";
+import { getNextSequentialCode } from "@/lib";
 
 import { toast } from "react-hot-toast";
 
@@ -40,6 +42,8 @@ export function SupplierForm({
         register,
         handleSubmit,
         reset,
+        setValue,
+        getValues,
         formState: {
             errors
         }
@@ -67,6 +71,25 @@ export function SupplierForm({
     const { data: supplierData } = useSupplier(
         supplierId
     );
+    const { data: suppliersData } = useSuppliers();
+
+    useEffect(() => {
+
+        if (
+            mode !== "create" ||
+            !suppliersData?.data ||
+            getValues("code")
+        ) {
+            return;
+        }
+
+        const nextCode = getNextSequentialCode(suppliersData.data[0]?.code);
+
+        if (nextCode) {
+            setValue("code", nextCode);
+        }
+
+    }, [mode, suppliersData, getValues, setValue]);
 
     useEffect(() => {
         if (

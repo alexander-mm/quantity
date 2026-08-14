@@ -16,6 +16,7 @@ export interface StockTransfer {
     dispatchDate: string;
     receivedAt: string | null;
     observations: string | null;
+    createdAt: string;
     originStore: { id: string; name: string; };
     destStore: { id: string; name: string; } | null;
     destUser: { id: string; firstName: string; lastName: string; } | null;

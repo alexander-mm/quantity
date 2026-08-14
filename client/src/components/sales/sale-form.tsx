@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -6,8 +7,8 @@ import { toast } from "react-hot-toast";
 import axios from "axios";
 import { saleSchema } from "@/validators";
 import type { SaleFormData } from "@/validators";
-import { useCreateSale, useUsers, useAuth } from "@/hooks";
-import { generateOfflineId } from "@/lib";
+import { useCreateSale, useUsers, useAuth, useSales } from "@/hooks";
+import { generateOfflineId, getNextSequentialCode } from "@/lib";
 import { SaleHeader } from "./sale-header";
 import { SaleDetailsTable } from "./sale-details-table";
 import { SaleTotals } from "./sale-totals";
@@ -105,8 +106,28 @@ const total =
     const createMutation =
         useCreateSale();
 
+    const { data: salesData } = useSales();
+
     const loading =
         createMutation.isPending;
+
+    useEffect(() => {
+
+        if (!salesData?.data || methods.getValues("number")) {
+            return;
+        }
+
+        const [lastSale] = [...salesData.data].sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+        const nextNumber = getNextSequentialCode(lastSale?.number);
+
+        if (nextNumber) {
+            methods.setValue("number", nextNumber);
+        }
+
+    }, [salesData, methods]);
 
     const onSubmit = (
         data: SaleFormData

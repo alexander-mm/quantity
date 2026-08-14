@@ -8,6 +8,7 @@ export interface Purchase{
     purchaseDate:string;
     reference:string|null;
     observations:string|null;
+    createdAt:string;
 
     subtotal:string;
     discount:string;
