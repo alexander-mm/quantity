@@ -16,6 +16,8 @@ const SEARCH_RESULT_LIMIT = 8;
 const HELP_TEXT =
     "<b>Comandos disponibles</b>\n" +
     "/stock &lt;código o texto&gt; — consulta stock de una pieza, materia prima o producto\n" +
+    "/piezas &lt;código o texto&gt; — consulta solo piezas\n" +
+    "/productos &lt;código o texto&gt; — consulta solo productos\n" +
     "/bajo — piezas, materia prima y productos con stock bajo ahora mismo\n" +
     "/medio — lo mismo, con stock medio\n" +
     "/ayuda — este mensaje";
@@ -37,6 +39,12 @@ export async function handleCommand(rawText: string): Promise<string> {
 
         case "/stock":
             return handleStockQuery(argument);
+
+        case "/piezas":
+            return handlePartsQuery(argument);
+
+        case "/productos":
+            return handleProductsQuery(argument);
 
         case "/bajo":
             return (await buildLowStockMessage())
@@ -77,7 +85,98 @@ async function handleStockQuery(query: string): Promise<string> {
         return formatProductStock(product);
     }
 
-    return searchByText(query);
+    const normalized = query.toLowerCase();
+
+    const [parts, rawMaterials, products] = await Promise.all([
+        partService.findAll(),
+        rawMaterialService.findAll(),
+        productService.findAll()
+    ]);
+
+    const matches = [
+        ...parts.filter(item => matchesQuery(item.code, item.name, normalized)).map(item => partLine(item)),
+        ...rawMaterials.filter(item => matchesQuery(item.code, item.name, normalized)).map(item => rawMaterialLine(item)),
+        ...products.filter(item => matchesQuery(item.internalCode, item.name, normalized)).map(item => productLine(item))
+    ];
+
+    return formatResultsList("Resultados", query, matches, "nada");
+
+}
+
+async function handlePartsQuery(query: string): Promise<string> {
+
+    if (!query) {
+        return "Usá /piezas &lt;código o texto&gt;, por ejemplo: /piezas PZ-054 o /piezas tornillo";
+    }
+
+    const exact = await partService.findByCode(query);
+
+    if (exact) {
+        return formatPartOrRawMaterial("🔧 Pieza", exact);
+    }
+
+    const normalized = query.toLowerCase();
+    const parts = await partService.findAll();
+    const matches = parts
+        .filter(item => matchesQuery(item.code, item.name, normalized))
+        .map(item => partLine(item));
+
+    return formatResultsList("Piezas", query, matches, "piezas");
+
+}
+
+async function handleProductsQuery(query: string): Promise<string> {
+
+    if (!query) {
+        return "Usá /productos &lt;código o texto&gt;, por ejemplo: /productos INT-001 o /productos tornillo";
+    }
+
+    const exact = await productService.findByInternalCode(query);
+
+    if (exact) {
+        return formatProductStock(exact);
+    }
+
+    const normalized = query.toLowerCase();
+    const products = await productService.findAll();
+    const matches = products
+        .filter(item => matchesQuery(item.internalCode, item.name, normalized))
+        .map(item => productLine(item));
+
+    return formatResultsList("Productos", query, matches, "productos")
+        + (matches.length > 0 ? "\n\nEscribí el código exacto de alguno para ver el stock por tienda." : "");
+
+}
+
+function matchesQuery(code: string, name: string, normalizedQuery: string): boolean {
+    return name.toLowerCase().includes(normalizedQuery) || code.toLowerCase().includes(normalizedQuery);
+}
+
+function partLine(item: Part): string {
+    return `🔧 ${escapeTelegramHtml(item.code)} - ${escapeTelegramHtml(item.name)}: ${item.quantity}`;
+}
+
+function rawMaterialLine(item: RawMaterial): string {
+    return `🧱 ${escapeTelegramHtml(item.code)} - ${escapeTelegramHtml(item.name)}: ${item.quantity}`;
+}
+
+function productLine(item: Product): string {
+    return `📦 ${escapeTelegramHtml(item.internalCode)} - ${escapeTelegramHtml(item.name)}`;
+}
+
+function formatResultsList(title: string, query: string, lines: string[], notFoundLabel: string): string {
+
+    if (lines.length === 0) {
+        return `No encontré ${notFoundLabel} para "${escapeTelegramHtml(query)}".`;
+    }
+
+    const shown = lines.slice(0, SEARCH_RESULT_LIMIT);
+    const remaining = lines.length - shown.length;
+    const suffix = remaining > 0
+        ? `\n\n… y ${remaining} más. Afiná la búsqueda para ver menos resultados.`
+        : "";
+
+    return `<b>${title} para "${escapeTelegramHtml(query)}"</b>\n\n${shown.join("\n")}${suffix}`;
 
 }
 
@@ -103,50 +202,5 @@ async function formatProductStock(product: Product): Promise<string> {
     }
 
     return `${header}\n${lines.join("\n")}\n(mín. ${product.minimumStock})`;
-
-}
-
-async function searchByText(query: string): Promise<string> {
-
-    const normalized = query.toLowerCase();
-
-    const [parts, rawMaterials, products] = await Promise.all([
-        partService.findAll(),
-        rawMaterialService.findAll(),
-        productService.findAll()
-    ]);
-
-    const matches: string[] = [];
-
-    for (const item of parts) {
-        if (item.name.toLowerCase().includes(normalized) || item.code.toLowerCase().includes(normalized)) {
-            matches.push(`🔧 ${escapeTelegramHtml(item.code)} - ${escapeTelegramHtml(item.name)}: ${item.quantity}`);
-        }
-    }
-
-    for (const item of rawMaterials) {
-        if (item.name.toLowerCase().includes(normalized) || item.code.toLowerCase().includes(normalized)) {
-            matches.push(`🧱 ${escapeTelegramHtml(item.code)} - ${escapeTelegramHtml(item.name)}: ${item.quantity}`);
-        }
-    }
-
-    for (const item of products) {
-        if (item.name.toLowerCase().includes(normalized) || item.internalCode.toLowerCase().includes(normalized)) {
-            matches.push(`📦 ${escapeTelegramHtml(item.internalCode)} - ${escapeTelegramHtml(item.name)}`);
-        }
-    }
-
-    if (matches.length === 0) {
-        return `No encontré nada para "${escapeTelegramHtml(query)}".`;
-    }
-
-    const shown = matches.slice(0, SEARCH_RESULT_LIMIT);
-    const remaining = matches.length - shown.length;
-    const suffix = remaining > 0
-        ? `\n\n… y ${remaining} más. Afiná la búsqueda para ver menos resultados.`
-        : "";
-
-    return `<b>Resultados para "${escapeTelegramHtml(query)}"</b>\n\n${shown.join("\n")}${suffix}\n\n` +
-        "Escribí el código exacto de alguno para ver el detalle completo.";
 
 }
