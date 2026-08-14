@@ -8,6 +8,8 @@ export const env = {
 
     telegramBotToken: process.env.TELEGRAM_BOT_TOKEN,
 
-    telegramChatId: process.env.TELEGRAM_CHAT_ID
+    telegramChatId: process.env.TELEGRAM_CHAT_ID,
+
+    telegramWebhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET
 
 }

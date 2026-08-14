@@ -30,6 +30,14 @@ export class PartService {
 
     }
 
+    async findByCode(
+        code: string
+    ): Promise<Part | null> {
+
+        return this.repository.findByCode(code);
+
+    }
+
     async findById(
         id: string
     ): Promise<Part> {

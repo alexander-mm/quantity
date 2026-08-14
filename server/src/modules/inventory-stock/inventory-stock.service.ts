@@ -3,7 +3,8 @@ import { ConflictError, NotFoundError } from "../../shared/errors/index.js";
 import {
     InventoryStockRepository,
     type InventoryStockWithProductAndStore,
-    type InventoryStockWithProductCategoryAndStore
+    type InventoryStockWithProductCategoryAndStore,
+    type InventoryStockWithStore
 } from "./inventory-stock.repository.js";
 import { prisma } from "../../database/index.js";
 
@@ -49,7 +50,7 @@ export class InventoryStockService {
 
     async findByProduct(
         productId: string
-    ): Promise<InventoryStock[]> {
+    ): Promise<InventoryStockWithStore[]> {
         return this.repository.findByProduct(
             BigInt(productId)
         );

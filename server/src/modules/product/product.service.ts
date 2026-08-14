@@ -32,6 +32,14 @@ export class ProductService {
         );
     }
 
+    async findByInternalCode(
+        internalCode: string
+    ): Promise<Product | null> {
+        return this.repository.findByInternalCode(
+            internalCode
+        );
+    }
+
     async updateMinimumStock(
         id: string,
         minimumStock: number

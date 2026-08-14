@@ -34,6 +34,7 @@ import returnRoutes from "../modules/return/return.routes.js";
 import partComponentRoutes from "../modules/part-component/part-component.routes.js";
 import partComponentProductRoutes from "../modules/part-component-product/part-component-product.routes.js";
 import partAssemblyRoutes from "../modules/part-assembly/part-assembly.routes.js";
+import telegramRoutes from "../modules/telegram/telegram.routes.js";
 
 
 const router = Router();
@@ -109,5 +110,7 @@ router.use("/part-cutting-orders", partCuttingOrderRoutes);
 router.use("/product-price-entries", productPriceEntryRoutes);
 
 router.use("/returns", returnRoutes);
+
+router.use("/telegram", telegramRoutes);
 
 export default router;

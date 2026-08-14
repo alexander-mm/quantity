@@ -18,39 +18,83 @@ function formatSection(title: string, lines: string[]): string {
 
 }
 
+export async function buildLowStockMessage(): Promise<string | null> {
+
+    const [parts, rawMaterials, stock] = await Promise.all([
+        partService.findLowStock(),
+        rawMaterialService.findLowStock(),
+        inventoryStockService.findLowStock()
+    ]);
+
+    const partLines = parts.map(
+        item => `• ${escapeTelegramHtml(item.code)} - ${escapeTelegramHtml(item.name)}: ${item.quantity} / mín. ${item.minimumStock}`
+    );
+
+    const rawMaterialLines = rawMaterials.map(
+        item => `• ${escapeTelegramHtml(item.code)} - ${escapeTelegramHtml(item.name)}: ${item.quantity} / mín. ${item.minimumStock}`
+    );
+
+    const productLines = stock.map(
+        item => `• ${escapeTelegramHtml(item.product.internalCode)} - ${escapeTelegramHtml(item.product.name)} (${escapeTelegramHtml(item.store.name)}): ${item.quantity} / mín. ${item.product.minimumStock}`
+    );
+
+    if (partLines.length === 0 && rawMaterialLines.length === 0 && productLines.length === 0) {
+        return null;
+    }
+
+    const message =
+        "🔴 <b>Stock bajo</b>\n\n" +
+        formatSection("Piezas", partLines) +
+        formatSection("Materia prima", rawMaterialLines) +
+        formatSection("Productos", productLines);
+
+    return message.trim();
+
+}
+
+export async function buildMediumStockMessage(): Promise<string | null> {
+
+    const [parts, rawMaterials, stock] = await Promise.all([
+        partService.findMediumStock(),
+        rawMaterialService.findMediumStock(),
+        inventoryStockService.findMediumStock()
+    ]);
+
+    const partLines = parts.map(
+        item => `• ${escapeTelegramHtml(item.code)} - ${escapeTelegramHtml(item.name)}: ${item.quantity} / mín. ${item.minimumStock}`
+    );
+
+    const rawMaterialLines = rawMaterials.map(
+        item => `• ${escapeTelegramHtml(item.code)} - ${escapeTelegramHtml(item.name)}: ${item.quantity} / mín. ${item.minimumStock}`
+    );
+
+    const productLines = stock.map(
+        item => `• ${escapeTelegramHtml(item.product.internalCode)} - ${escapeTelegramHtml(item.product.name)} (${escapeTelegramHtml(item.store.name)}): ${item.quantity} / mín. ${item.product.minimumStock}`
+    );
+
+    if (partLines.length === 0 && rawMaterialLines.length === 0 && productLines.length === 0) {
+        return null;
+    }
+
+    const message =
+        "🟡 <b>Stock medio</b>\n\n" +
+        formatSection("Piezas", partLines) +
+        formatSection("Materia prima", rawMaterialLines) +
+        formatSection("Productos", productLines);
+
+    return message.trim();
+
+}
+
 export async function runLowStockAlert(): Promise<void> {
 
     try {
 
-        const [parts, rawMaterials, stock] = await Promise.all([
-            partService.findLowStock(),
-            rawMaterialService.findLowStock(),
-            inventoryStockService.findLowStock()
-        ]);
+        const message = await buildLowStockMessage();
 
-        const partLines = parts.map(
-            item => `• ${escapeTelegramHtml(item.code)} - ${escapeTelegramHtml(item.name)}: ${item.quantity} / mín. ${item.minimumStock}`
-        );
-
-        const rawMaterialLines = rawMaterials.map(
-            item => `• ${escapeTelegramHtml(item.code)} - ${escapeTelegramHtml(item.name)}: ${item.quantity} / mín. ${item.minimumStock}`
-        );
-
-        const productLines = stock.map(
-            item => `• ${escapeTelegramHtml(item.product.internalCode)} - ${escapeTelegramHtml(item.product.name)} (${escapeTelegramHtml(item.store.name)}): ${item.quantity} / mín. ${item.product.minimumStock}`
-        );
-
-        if (partLines.length === 0 && rawMaterialLines.length === 0 && productLines.length === 0) {
-            return;
+        if (message) {
+            await telegramService.sendMessage(message);
         }
-
-        const message =
-            "🔴 <b>Stock bajo</b>\n\n" +
-            formatSection("Piezas", partLines) +
-            formatSection("Materia prima", rawMaterialLines) +
-            formatSection("Productos", productLines);
-
-        await telegramService.sendMessage(message.trim());
 
     } catch (error) {
         console.error("❌ Error generando la alerta de stock bajo:", error);
@@ -62,35 +106,11 @@ export async function runMediumStockAlert(): Promise<void> {
 
     try {
 
-        const [parts, rawMaterials, stock] = await Promise.all([
-            partService.findMediumStock(),
-            rawMaterialService.findMediumStock(),
-            inventoryStockService.findMediumStock()
-        ]);
+        const message = await buildMediumStockMessage();
 
-        const partLines = parts.map(
-            item => `• ${escapeTelegramHtml(item.code)} - ${escapeTelegramHtml(item.name)}: ${item.quantity} / mín. ${item.minimumStock}`
-        );
-
-        const rawMaterialLines = rawMaterials.map(
-            item => `• ${escapeTelegramHtml(item.code)} - ${escapeTelegramHtml(item.name)}: ${item.quantity} / mín. ${item.minimumStock}`
-        );
-
-        const productLines = stock.map(
-            item => `• ${escapeTelegramHtml(item.product.internalCode)} - ${escapeTelegramHtml(item.product.name)} (${escapeTelegramHtml(item.store.name)}): ${item.quantity} / mín. ${item.product.minimumStock}`
-        );
-
-        if (partLines.length === 0 && rawMaterialLines.length === 0 && productLines.length === 0) {
-            return;
+        if (message) {
+            await telegramService.sendMessage(message);
         }
-
-        const message =
-            "🟡 <b>Stock medio</b>\n\n" +
-            formatSection("Piezas", partLines) +
-            formatSection("Materia prima", rawMaterialLines) +
-            formatSection("Productos", productLines);
-
-        await telegramService.sendMessage(message.trim());
 
     } catch (error) {
         console.error("❌ Error generando la alerta de stock medio:", error);

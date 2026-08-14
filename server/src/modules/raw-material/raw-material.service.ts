@@ -30,6 +30,14 @@ export class RawMaterialService {
 
     }
 
+    async findByCode(
+        code: string
+    ) {
+
+        return this.repository.findByCode(code);
+
+    }
+
     async findById(
         id: string
     ) {

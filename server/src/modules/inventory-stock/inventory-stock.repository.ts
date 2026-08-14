@@ -11,6 +11,11 @@ export type InventoryStockWithProductCategoryAndStore =
         include: { product: { include: { category: true } }; store: true };
     }>;
 
+export type InventoryStockWithStore =
+    Prisma.InventoryStockGetPayload<{
+        include: { store: true };
+    }>;
+
 export class InventoryStockRepository extends BaseRepository {
 
     constructor(
@@ -52,7 +57,7 @@ export class InventoryStockRepository extends BaseRepository {
 
     async findByProduct(
         productId: bigint
-    ): Promise<InventoryStock[]> {
+    ): Promise<InventoryStockWithStore[]> {
         return this.prisma.inventoryStock.findMany({
             where: {
                 productId
