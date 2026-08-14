@@ -61,6 +61,7 @@ export interface PartAssembly {
     status: PartAssemblyStatus;
     assemblyDate: string;
     observations: string | null;
+    createdAt: string;
     part: Part;
     user: {
         id: string;

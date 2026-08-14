@@ -61,6 +61,7 @@ export interface ProductAssembly {
     status: ProductAssemblyStatus;
     assemblyDate: string;
     observations: string | null;
+    createdAt: string;
     product: Product;
     user: {
         id: string;

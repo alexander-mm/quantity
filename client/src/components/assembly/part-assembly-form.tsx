@@ -16,11 +16,13 @@ import {
 } from "@/components/ui/combobox";
 import { partAssemblySchema } from "@/validators";
 import type { PartAssemblyFormData } from "@/validators";
+import { getNextSequentialCode } from "@/lib";
 import {
     useParts,
     usePartIdsWithRecipe,
     usePartAssemblyPreview,
     usePartAssembly,
+    usePartAssemblies,
     useCreatePartAssembly,
     useUpdatePartAssembly
 } from "@/hooks";
@@ -38,6 +40,8 @@ export function PartAssemblyForm({ onSuccess, mode = "create", assemblyId }: Pro
         control,
         handleSubmit,
         reset,
+        setValue,
+        getValues,
         formState: { errors }
     } = useForm<PartAssemblyFormData>({
         resolver: zodResolver(partAssemblySchema),
@@ -61,6 +65,7 @@ export function PartAssemblyForm({ onSuccess, mode = "create", assemblyId }: Pro
     const { data: assemblyData } = usePartAssembly(
         mode === "edit" ? assemblyId : undefined
     );
+    const { data: assembliesData } = usePartAssemblies();
 
     const parts = partsData?.data ?? [];
     const recipeIds = new Set(recipeIdsData?.data ?? []);
@@ -70,6 +75,24 @@ export function PartAssemblyForm({ onSuccess, mode = "create", assemblyId }: Pro
     const createMutation = useCreatePartAssembly();
     const updateMutation = useUpdatePartAssembly();
     const loading = createMutation.isPending || updateMutation.isPending;
+
+    useEffect(() => {
+
+        if (mode !== "create" || !assembliesData?.data || getValues("number")) {
+            return;
+        }
+
+        const [lastAssembly] = [...assembliesData.data].sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+        const nextNumber = getNextSequentialCode(lastAssembly?.number);
+
+        if (nextNumber) {
+            setValue("number", nextNumber);
+        }
+
+    }, [mode, assembliesData, getValues, setValue]);
 
     useEffect(() => {
 

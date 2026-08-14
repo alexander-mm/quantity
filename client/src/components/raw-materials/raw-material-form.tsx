@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -60,19 +60,31 @@ export function RawMaterialForm({ onSuccess, mode = "create", rawMaterialId }: P
 
     const otherRawMaterials = (rawMaterialsData?.data ?? []).filter(item => item.id !== rawMaterialId);
 
+    const lastAutoCodeRef = useRef<string | null>(null);
+
     useEffect(() => {
 
-        if (mode !== "create" || !rawMaterialsData?.data || getValues("code")) {
+        // El codigo sigue una convencion por forma (TUB-/LAM-/VAR-), asi que el "ultimo"
+        // debe buscarse dentro de la misma forma seleccionada, no en la lista completa.
+        if (mode !== "create" || !rawMaterialsData?.data) {
             return;
         }
 
-        const nextCode = getNextSequentialCode(rawMaterialsData.data[0]?.code);
+        const currentCode = getValues("code");
 
-        if (nextCode) {
-            setValue("code", nextCode);
+        if (currentCode && currentCode !== lastAutoCodeRef.current) {
+            return;
         }
 
-    }, [mode, rawMaterialsData, getValues, setValue]);
+        const lastOfShape = rawMaterialsData.data.find(item => item.shape === shape);
+        const nextCode = getNextSequentialCode(lastOfShape?.code);
+
+        if (nextCode && nextCode !== currentCode) {
+            setValue("code", nextCode);
+            lastAutoCodeRef.current = nextCode;
+        }
+
+    }, [mode, rawMaterialsData, shape, getValues, setValue]);
 
     useEffect(() => {
 

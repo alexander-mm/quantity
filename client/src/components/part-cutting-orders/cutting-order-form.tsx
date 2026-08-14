@@ -17,10 +17,12 @@ import {
 import { partCuttingOrderSchema } from "@/validators";
 import type { PartCuttingOrderFormData } from "@/validators";
 import { MinimumStockField } from "@/components/shared";
+import { getNextSequentialCode } from "@/lib";
 import {
     useParts,
     usePartRecipe,
     usePartCuttingOrder,
+    usePartCuttingOrders,
     useCreatePartCuttingOrder,
     useUpdatePartCuttingOrder,
     useUpdatePartMinimumStock
@@ -39,6 +41,8 @@ export function CuttingOrderForm({ onSuccess, mode = "create", orderId }: Props)
         control,
         handleSubmit,
         reset,
+        setValue,
+        getValues,
         formState: { errors }
     } = useForm<PartCuttingOrderFormData>({
         resolver: zodResolver(partCuttingOrderSchema),
@@ -56,6 +60,7 @@ export function CuttingOrderForm({ onSuccess, mode = "create", orderId }: Props)
     const { data: partsData } = useParts();
     const { data: recipeData } = usePartRecipe(partId || undefined);
     const { data: orderData } = usePartCuttingOrder(mode === "edit" ? orderId : undefined);
+    const { data: ordersData } = usePartCuttingOrders();
 
     const parts = partsData?.data ?? [];
     const recipe = recipeData?.data;
@@ -65,6 +70,24 @@ export function CuttingOrderForm({ onSuccess, mode = "create", orderId }: Props)
     const updateMutation = useUpdatePartCuttingOrder();
     const updateMinimumStockMutation = useUpdatePartMinimumStock();
     const loading = createMutation.isPending || updateMutation.isPending;
+
+    useEffect(() => {
+
+        if (mode !== "create" || !ordersData?.data || getValues("number")) {
+            return;
+        }
+
+        const [lastOrder] = [...ordersData.data].sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+        const nextNumber = getNextSequentialCode(lastOrder?.number);
+
+        if (nextNumber) {
+            setValue("number", nextNumber);
+        }
+
+    }, [mode, ordersData, getValues, setValue]);
 
     useEffect(() => {
 

@@ -16,6 +16,7 @@ export interface PartCuttingOrder {
     userId: string;
     cuttingDate: string;
     observations: string | null;
+    createdAt: string;
     part: Part;
     rawMaterial: RawMaterial;
     user: {
