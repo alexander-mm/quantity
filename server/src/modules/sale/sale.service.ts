@@ -9,6 +9,8 @@ import { ClientRepository } from "../client/client.repository.js";
 import { AccountReceivableRepository } from "../account-receivable/account-receivable.repository.js";
 import { ProductRepository } from "../product/product.repository.js";
 import { InventoryStockService } from "../inventory-stock/inventory-stock.service.js";
+import { TelegramService, escapeTelegramHtml } from "../../integrations/telegram/telegram.service.js";
+import type { SaleWithRelations } from "./sale.repository.js";
 
 export class SaleService {
 
@@ -30,6 +32,9 @@ export class SaleService {
 
     private readonly inventoryStockService =
         new InventoryStockService();
+
+    private readonly telegramService =
+        new TelegramService();
 
     async findAll(): Promise<Sale[]> {
         return this.repository.findAll();
@@ -325,7 +330,40 @@ export class SaleService {
 
             return confirmedSale;
 
+        }).then((confirmedSale) => {
+
+            void this.notifyNewSale(confirmedSale);
+
+            return confirmedSale;
+
         });
+
+    }
+
+    private async notifyNewSale(
+        sale: SaleWithRelations
+    ): Promise<void> {
+
+        try {
+
+            const clientName =
+                sale.client.companyName ||
+                `${sale.client.firstName ?? ""} ${sale.client.lastName ?? ""}`.trim() ||
+                "Cliente";
+
+            const itemCount = sale.details.length;
+
+            const message =
+                "🟢 <b>Venta confirmada</b>\n" +
+                `${escapeTelegramHtml(sale.number)} - ${escapeTelegramHtml(clientName)}\n` +
+                `Tienda: ${escapeTelegramHtml(sale.store.name)}\n` +
+                `${itemCount} producto(s) — Total: ${sale.currency} ${Number(sale.total).toLocaleString("es-CO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+            await this.telegramService.sendMessage(message);
+
+        } catch (error) {
+            console.error("❌ Error enviando alerta de venta a Telegram:", error);
+        }
 
     }
 

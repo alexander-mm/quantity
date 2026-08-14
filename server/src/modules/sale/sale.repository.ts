@@ -3,7 +3,7 @@ import { BaseRepository } from "../../repositories/base/BaseRepository.js";
 import { CreateSaleDto, UpdateSaleDto } from "./sale.dto.js";
 import { safeUserSelect } from "../../shared/constants/safe-user-select.js";
 
-type SaleWithRelations =
+export type SaleWithRelations =
     Prisma.SaleGetPayload<{
         include: {
             client: true;

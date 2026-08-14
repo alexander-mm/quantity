@@ -4,6 +4,10 @@ export const env = {
 
     jwtSecret: process.env.JWT_SECRET!,
 
-    jwtExpiresIn: process.env.JWT_EXPIRES_IN as string
+    jwtExpiresIn: process.env.JWT_EXPIRES_IN as string,
+
+    telegramBotToken: process.env.TELEGRAM_BOT_TOKEN,
+
+    telegramChatId: process.env.TELEGRAM_CHAT_ID
 
 }

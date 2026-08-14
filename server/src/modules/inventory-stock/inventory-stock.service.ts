@@ -1,6 +1,10 @@
 import { InventoryStock, Prisma } from "@prisma/client";
 import { ConflictError, NotFoundError } from "../../shared/errors/index.js";
-import { InventoryStockRepository } from "./inventory-stock.repository.js";
+import {
+    InventoryStockRepository,
+    type InventoryStockWithProductAndStore,
+    type InventoryStockWithProductCategoryAndStore
+} from "./inventory-stock.repository.js";
 import { prisma } from "../../database/index.js";
 
 export class InventoryStockService {
@@ -71,7 +75,7 @@ export class InventoryStockService {
 
     async findLowStock(
         storeId?: string
-    ): Promise<InventoryStock[]> {
+    ): Promise<InventoryStockWithProductAndStore[]> {
         return this.repository.findLowStock(
             storeId ? BigInt(storeId) : undefined
         );
@@ -79,7 +83,7 @@ export class InventoryStockService {
 
     async findMediumStock(
         storeId?: string
-    ): Promise<InventoryStock[]> {
+    ): Promise<InventoryStockWithProductCategoryAndStore[]> {
         return this.repository.findMediumStock(
             storeId ? BigInt(storeId) : undefined
         );

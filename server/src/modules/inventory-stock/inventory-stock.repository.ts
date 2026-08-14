@@ -1,6 +1,16 @@
 import { InventoryStock, PrismaClient, Prisma } from "@prisma/client";
 import { BaseRepository } from "../../repositories/base/BaseRepository.js";
 
+export type InventoryStockWithProductAndStore =
+    Prisma.InventoryStockGetPayload<{
+        include: { product: true; store: true };
+    }>;
+
+export type InventoryStockWithProductCategoryAndStore =
+    Prisma.InventoryStockGetPayload<{
+        include: { product: { include: { category: true } }; store: true };
+    }>;
+
 export class InventoryStockRepository extends BaseRepository {
 
     constructor(
@@ -107,7 +117,7 @@ export class InventoryStockRepository extends BaseRepository {
 
     async findLowStock(
         storeId?: bigint
-    ): Promise<InventoryStock[]> {
+    ): Promise<InventoryStockWithProductAndStore[]> {
 
         const stock = await this.prisma.inventoryStock.findMany({
             include: {
@@ -132,7 +142,7 @@ export class InventoryStockRepository extends BaseRepository {
 
     async findMediumStock(
         storeId?: bigint
-    ): Promise<InventoryStock[]> {
+    ): Promise<InventoryStockWithProductCategoryAndStore[]> {
 
         const stock = await this.prisma.inventoryStock.findMany({
             include: {
