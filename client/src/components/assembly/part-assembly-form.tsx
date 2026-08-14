@@ -88,6 +88,11 @@ export function PartAssemblyForm({ onSuccess, mode = "create", assemblyId }: Pro
 
     const onSubmit = (data: PartAssemblyFormData) => {
 
+        if (preview && !preview.canAssemble) {
+            toast.error("No hay stock suficiente para ensamblar esta cantidad. Ajusta la cantidad o espera a que llegue el stock.");
+            return;
+        }
+
         const payload = {
             ...data,
             quantity: Number(data.quantity),
@@ -245,9 +250,9 @@ export function PartAssemblyForm({ onSuccess, mode = "create", assemblyId }: Pro
                             )}
 
                             {!preview.canAssemble && (
-                                <p className="pt-2 text-sm text-amber-600">
-                                    Aún no hay stock suficiente — puedes guardar el borrador de todas formas y
-                                    confirmarlo más adelante cuando llegue el stock.
+                                <p className="pt-2 text-sm text-red-500">
+                                    No hay stock suficiente para ensamblar esta cantidad — ajusta la cantidad o
+                                    espera a que llegue el stock antes de guardar.
                                 </p>
                             )}
                         </>
@@ -258,7 +263,7 @@ export function PartAssemblyForm({ onSuccess, mode = "create", assemblyId }: Pro
             )}
 
             <div className="flex justify-end">
-                <Button type="submit" disabled={loading}>
+                <Button type="submit" disabled={loading || (preview ? !preview.canAssemble : false)}>
                     {loading
                         ? "Guardando..."
                         : mode === "edit" ? "Guardar cambios" : "Guardar borrador"}

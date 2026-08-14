@@ -157,6 +157,14 @@ export class ProductAssemblyService {
             throw new ConflictError("Ya existe un ensamblaje con ese número.");
         }
 
+        const preview = await this.preview(data.productId, data.quantity);
+
+        if (!preview.canAssemble) {
+            throw new ValidationError(
+                "No hay stock suficiente para ensamblar esta cantidad. Ajusta la cantidad o espera a que llegue el stock."
+            );
+        }
+
         const { components, parts } = await this.buildAssemblySnapshot(data.productId, data.quantity);
 
         return this.repository.create(data, components, parts);
@@ -179,6 +187,14 @@ export class ProductAssemblyService {
 
         if (existing && existing.id !== assembly.id) {
             throw new ConflictError("Ya existe un ensamblaje con ese número.");
+        }
+
+        const preview = await this.preview(data.productId, data.quantity);
+
+        if (!preview.canAssemble) {
+            throw new ValidationError(
+                "No hay stock suficiente para ensamblar esta cantidad. Ajusta la cantidad o espera a que llegue el stock."
+            );
         }
 
         const { components, parts } = await this.buildAssemblySnapshot(data.productId, data.quantity);
