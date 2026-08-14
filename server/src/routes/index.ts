@@ -35,6 +35,7 @@ import partComponentRoutes from "../modules/part-component/part-component.routes
 import partComponentProductRoutes from "../modules/part-component-product/part-component-product.routes.js";
 import partAssemblyRoutes from "../modules/part-assembly/part-assembly.routes.js";
 import telegramRoutes from "../modules/telegram/telegram.routes.js";
+import jobsRoutes from "../modules/jobs/jobs.routes.js";
 
 
 const router = Router();
@@ -112,5 +113,7 @@ router.use("/product-price-entries", productPriceEntryRoutes);
 router.use("/returns", returnRoutes);
 
 router.use("/telegram", telegramRoutes);
+
+router.use("/jobs", jobsRoutes);
 
 export default router;

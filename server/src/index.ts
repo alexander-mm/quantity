@@ -1,2 +1,2 @@
-import "./bootstrap/server.js";
 import "dotenv/config";
+import "./bootstrap/server.js";
