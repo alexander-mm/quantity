@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { useOnlineStatus } from "./use-online-status";
 
 export function useOfflineCollection<T>(
     liveData: T[] | undefined,
     readCached: () => Promise<T[]>
 ): T[] {
 
-    const isOnline = useOnlineStatus();
     const [cached, setCached] = useState<T[]>([]);
     const readCachedRef = useRef(readCached);
 
@@ -18,7 +16,12 @@ export function useOfflineCollection<T>(
 
     useEffect(() => {
 
-        if (isOnline || hasLiveData) {
+        // No dependemos de navigator.onLine/eventos de conexión aquí — no son confiables
+        // (ej. con la emulación de red de DevTools, o justo tras recargar la página).
+        // En su lugar: si todavía no hay datos en vivo (sea porque estamos offline o porque
+        // la petición sigue en curso), se intenta leer del caché local como respaldo. En
+        // cuanto la petición en vivo resuelva, esos datos tienen prioridad de todas formas.
+        if (hasLiveData) {
             return;
         }
 
@@ -34,12 +37,8 @@ export function useOfflineCollection<T>(
             cancelled = true;
         };
 
-    }, [isOnline, hasLiveData]);
+    }, [hasLiveData]);
 
-    if (hasLiveData) {
-        return liveData;
-    }
-
-    return isOnline ? (liveData ?? []) : cached;
+    return hasLiveData ? liveData : cached;
 
 }

@@ -23,8 +23,9 @@ export async function enqueueOutboxItem(item: EnqueueInput): Promise<void> {
 
 }
 
-const ENTITY_QUERY_KEYS: Record<string, string[]> = {
-    sale: ["sales"]
+const ENTITY_QUERY_KEYS: Record<string, string[][]> = {
+    sale: [["sales"]],
+    return: [["returns"], ["inventory-stock"]]
 };
 
 let processingInFlight: Promise<void> | null = null;
@@ -66,9 +67,9 @@ async function runProcessOutbox(): Promise<void> {
 
             await offlineDb.outbox.delete(item.id);
 
-            const queryKey = ENTITY_QUERY_KEYS[item.entity];
+            const queryKeys = ENTITY_QUERY_KEYS[item.entity] ?? [];
 
-            if (queryKey) {
+            for (const queryKey of queryKeys) {
                 queryClient.invalidateQueries({ queryKey });
             }
 

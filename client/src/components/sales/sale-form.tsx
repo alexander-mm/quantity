@@ -133,7 +133,7 @@ const total =
         data: SaleFormData
     ) => {
 
-        const userId = users[0]?.id ?? currentUser?.id;
+        const userId = currentUser?.id ?? users[0]?.id;
 
         if (!userId) {
             toast.error( "No existen usuarios registrados." );

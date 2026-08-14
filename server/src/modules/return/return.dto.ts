@@ -9,6 +9,7 @@ export type ReturnReason =
 export type ReturnDisposition = "RESTOCK" | "DAMAGED";
 
 export interface CreateReturnDto {
+    clientUuid?: string;
     number: string;
     saleId?: string;
     saleDetailId?: string;

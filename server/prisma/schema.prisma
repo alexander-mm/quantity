@@ -436,6 +436,7 @@ enum ReturnDisposition {
 model Return {
   id           BigInt             @id @default(autoincrement())
   uuid         String             @unique @default(uuid())
+  clientUuid   String?            @unique
   number       String             @unique
   saleId       BigInt?
   saleDetailId BigInt?

@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Combobox, ComboboxInput, ComboboxContent, ComboboxItem, ComboboxEmpty } from "@/components/ui/combobox";
 import { returnSchema } from "@/validators";
 import type { ReturnFormData } from "@/validators";
-import { useSales, useProducts, useStores, useCreateReturn } from "@/hooks";
+import { useSales, useProducts, useStores, useCreateReturn, useOfflineCollection } from "@/hooks";
+import { generateOfflineId, offlineDb } from "@/lib";
 import { RETURN_REASON_LABELS } from "./return-reason-labels";
 import type { ReturnDisposition } from "@/types";
 
@@ -52,9 +53,9 @@ export function ReturnForm({ onSuccess }: Props) {
     const { data: storesData } = useStores();
     const createMutation = useCreateReturn();
 
-    const sales = salesData?.data ?? [];
-    const products = productsData?.data ?? [];
-    const stores = storesData?.data ?? [];
+    const sales = useOfflineCollection(salesData?.data, () => offlineDb.sales.toArray());
+    const products = useOfflineCollection(productsData?.data, () => offlineDb.products.toArray());
+    const stores = useOfflineCollection(storesData?.data, () => offlineDb.stores.toArray());
 
     const confirmedSales = sales.filter(sale => sale.status === "CONFIRMED");
     const selectedSale = confirmedSales.find(sale => sale.id === saleId);
@@ -62,6 +63,7 @@ export function ReturnForm({ onSuccess }: Props) {
     const onSubmit = (data: ReturnFormData) => {
 
         const payload = {
+            clientUuid: generateOfflineId(),
             number: data.number,
             saleId: linkToSale ? (data.saleId || undefined) : undefined,
             saleDetailId: linkToSale ? (data.saleDetailId || undefined) : undefined,
@@ -75,8 +77,12 @@ export function ReturnForm({ onSuccess }: Props) {
         };
 
         createMutation.mutate(payload, {
-            onSuccess: () => {
-                toast.success("Devolución registrada correctamente.");
+            onSuccess: (result) => {
+                if (result.queued) {
+                    toast.success("Sin conexión: la devolución quedó guardada y se sincronizará automáticamente.");
+                } else {
+                    toast.success("Devolución registrada correctamente.");
+                }
                 reset();
                 onSuccess?.();
             },

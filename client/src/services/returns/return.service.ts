@@ -12,6 +12,7 @@ export async function getReturnById(id: string): Promise<ApiResponse<Return>> {
 }
 
 export type CreateReturnRequest = {
+    clientUuid: string;
     number: string;
     saleId?: string;
     saleDetailId?: string;

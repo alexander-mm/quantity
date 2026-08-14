@@ -41,6 +41,13 @@ export class ReturnRepository extends BaseRepository {
         });
     }
 
+    async findByClientUuid(clientUuid: string): Promise<ReturnWithRelations | null> {
+        return this.prisma.return.findUnique({
+            where: { clientUuid },
+            include: includeRelations
+        });
+    }
+
     async create(data: Prisma.ReturnCreateInput): Promise<ReturnWithRelations> {
         return this.prisma.return.create({
             data,

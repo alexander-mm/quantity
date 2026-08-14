@@ -6,9 +6,30 @@ import type {
     MarginProfile,
     User,
     InventoryStock,
-    ProductPriceEntry
+    ProductPriceEntry,
+    Role,
+    Sale,
+    Brand,
+    Category,
+    UnitOfMeasure,
+    Supplier,
+    Purchase,
+    StockTransfer,
+    Part,
+    RawMaterial,
+    PartCuttingOrder,
+    PartAssembly,
+    ProductAssembly,
+    AccountReceivable,
+    MovementType,
+    InventoryAdjustment,
+    InventoryMovement,
+    PartMovement,
+    RawMaterialMovement,
+    Return
 } from "@/types";
 import type { PriceEntryLabel } from "@/services";
+import type { ProductFormData } from "@/validators";
 
 export type OutboxStatus = "pending" | "syncing" | "synced" | "error";
 
@@ -43,6 +64,10 @@ export interface ReferenceSyncMeta {
     lastSyncedAt: number;
 }
 
+export interface CachedProductDetail extends ProductFormData {
+    id: string;
+}
+
 class QuantityOfflineDB extends Dexie {
 
     outbox!: Table<OutboxItem, string>;
@@ -56,6 +81,28 @@ class QuantityOfflineDB extends Dexie {
     productPriceEntries!: Table<CachedProductPriceEntries, string>;
     priceEntryLabels!: Table<CachedPriceEntryLabels, string>;
     referenceMeta!: Table<ReferenceSyncMeta, string>;
+    roles!: Table<Role, string>;
+    sales!: Table<Sale, string>;
+    productDetails!: Table<CachedProductDetail, string>;
+
+    brands!: Table<Brand, string>;
+    categories!: Table<Category, string>;
+    unitsOfMeasure!: Table<UnitOfMeasure, string>;
+    suppliers!: Table<Supplier, string>;
+    purchases!: Table<Purchase, string>;
+    stockTransfers!: Table<StockTransfer, string>;
+    parts!: Table<Part, string>;
+    rawMaterials!: Table<RawMaterial, string>;
+    partCuttingOrders!: Table<PartCuttingOrder, string>;
+    partAssemblies!: Table<PartAssembly, string>;
+    productAssemblies!: Table<ProductAssembly, string>;
+    accountsReceivable!: Table<AccountReceivable, string>;
+    movementTypes!: Table<MovementType, string>;
+    inventoryAdjustments!: Table<InventoryAdjustment, string>;
+    inventoryMovements!: Table<InventoryMovement, string>;
+    partMovements!: Table<PartMovement, string>;
+    rawMaterialMovements!: Table<RawMaterialMovement, string>;
+    returns!: Table<Return, string>;
 
     constructor() {
         super("quantity-offline");
@@ -78,6 +125,36 @@ class QuantityOfflineDB extends Dexie {
 
         this.version(3).stores({
             outbox: "id, entity, status, createdAt, userId"
+        });
+
+        this.version(4).stores({
+            roles: "id",
+            sales: "id, status"
+        });
+
+        this.version(5).stores({
+            productDetails: "id"
+        });
+
+        this.version(6).stores({
+            brands: "id",
+            categories: "id",
+            unitsOfMeasure: "id",
+            suppliers: "id",
+            purchases: "id, status",
+            stockTransfers: "id, status",
+            parts: "id, code",
+            rawMaterials: "id, code",
+            partCuttingOrders: "id, status",
+            partAssemblies: "id, status",
+            productAssemblies: "id, status",
+            accountsReceivable: "id, isPaid",
+            movementTypes: "id",
+            inventoryAdjustments: "id",
+            inventoryMovements: "id",
+            partMovements: "id",
+            rawMaterialMovements: "id",
+            returns: "id, status"
         });
     }
 

@@ -6,6 +6,8 @@ import { offlineDb, type OutboxItem } from "@/lib/dexie";
 import { retryOutboxItem, discardOutboxItem, processOutbox } from "@/lib/outbox";
 import { useLiveQuery } from "@/hooks/sync";
 import { formatCurrency } from "@/lib/format-currency";
+import { RETURN_REASON_LABELS } from "@/components/returns";
+import type { ReturnReason } from "@/types";
 import { PendingSyncStatusBadge } from "./pending-sync-status-badge";
 import { DiscardOutboxItemDialog } from "./discard-outbox-item-dialog";
 
@@ -17,43 +19,75 @@ type SalePayload = {
     details: { quantity: number; unitPrice: number; discount?: number; tax?: number }[];
 };
 
+type ReturnPayload = {
+    number: string;
+    productId: string;
+    storeId: string;
+    quantity: number;
+    reason: ReturnReason;
+};
+
 function OutboxRowSummary({ item }: { item: OutboxItem }) {
 
-    const payload = item.entity === "sale" ? (item.payload as SalePayload) : null;
+    const salePayload = item.entity === "sale" ? (item.payload as SalePayload) : null;
+    const returnPayload = item.entity === "return" ? (item.payload as ReturnPayload) : null;
 
     const client = useLiveQuery(
-        () => payload ? offlineDb.clients.get(payload.clientId) : Promise.resolve(undefined),
-        [payload?.clientId],
+        () => salePayload ? offlineDb.clients.get(salePayload.clientId) : Promise.resolve(undefined),
+        [salePayload?.clientId],
         undefined
     );
+
+    const product = useLiveQuery(
+        () => returnPayload ? offlineDb.products.get(returnPayload.productId) : Promise.resolve(undefined),
+        [returnPayload?.productId],
+        undefined
+    );
+
+    const storeId = salePayload?.storeId ?? returnPayload?.storeId;
 
     const store = useLiveQuery(
-        () => payload ? offlineDb.stores.get(payload.storeId) : Promise.resolve(undefined),
-        [payload?.storeId],
+        () => storeId ? offlineDb.stores.get(storeId) : Promise.resolve(undefined),
+        [storeId],
         undefined
     );
 
-    if (!payload) {
-        return <p className="font-medium">{item.entity}</p>;
+    if (salePayload) {
+
+        const total = salePayload.details.reduce(
+            (sum, detail) => sum + (detail.quantity * detail.unitPrice) - (detail.discount ?? 0) + (detail.tax ?? 0),
+            0
+        );
+
+        const clientLabel = client
+            ? (client.companyName || [client.firstName, client.lastName].filter(Boolean).join(" ") || client.document)
+            : salePayload.clientId;
+
+        return (
+            <div>
+                <p className="font-medium">Venta {salePayload.number}</p>
+                <p className="text-sm text-muted-foreground">
+                    {clientLabel} · {store?.name ?? salePayload.storeId} · {salePayload.details.length} producto(s) · {formatCurrency(total, salePayload.currency)}
+                </p>
+            </div>
+        );
+
     }
 
-    const total = payload.details.reduce(
-        (sum, detail) => sum + (detail.quantity * detail.unitPrice) - (detail.discount ?? 0) + (detail.tax ?? 0),
-        0
-    );
+    if (returnPayload) {
 
-    const clientLabel = client
-        ? (client.companyName || [client.firstName, client.lastName].filter(Boolean).join(" ") || client.document)
-        : payload.clientId;
+        return (
+            <div>
+                <p className="font-medium">Devolución {returnPayload.number}</p>
+                <p className="text-sm text-muted-foreground">
+                    {product ? `${product.internalCode} - ${product.name}` : returnPayload.productId} · {returnPayload.quantity} unidad(es) · {RETURN_REASON_LABELS[returnPayload.reason]} · {store?.name ?? returnPayload.storeId}
+                </p>
+            </div>
+        );
 
-    return (
-        <div>
-            <p className="font-medium">Venta {payload.number}</p>
-            <p className="text-sm text-muted-foreground">
-                {clientLabel} · {store?.name ?? payload.storeId} · {payload.details.length} producto(s) · {formatCurrency(total, payload.currency)}
-            </p>
-        </div>
-    );
+    }
+
+    return <p className="font-medium">{item.entity}</p>;
 
 }
 
@@ -61,6 +95,10 @@ function outboxItemSummaryText(item: OutboxItem): string {
     if (item.entity === "sale") {
         const payload = item.payload as SalePayload;
         return `la venta ${payload.number}`;
+    }
+    if (item.entity === "return") {
+        const payload = item.payload as ReturnPayload;
+        return `la devolución ${payload.number}`;
     }
     return "este registro";
 }

@@ -28,6 +28,16 @@ export class ReturnService {
 
     async create(data: CreateReturnDto) {
 
+        if (data.clientUuid) {
+
+            const existingByClientUuid = await this.repository.findByClientUuid(data.clientUuid);
+
+            if (existingByClientUuid) {
+                return existingByClientUuid;
+            }
+
+        }
+
         const existing = await this.repository.findByNumber(data.number);
 
         if (existing) {
@@ -71,6 +81,7 @@ export class ReturnService {
             const repository = this.repository.withTransaction(tx);
 
             const returnRecord = await repository.create({
+                clientUuid: data.clientUuid,
                 number: data.number,
                 sale: data.saleId ? { connect: { id: BigInt(data.saleId) } } : undefined,
                 saleDetail: data.saleDetailId ? { connect: { id: BigInt(data.saleDetailId) } } : undefined,

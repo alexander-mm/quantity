@@ -6,9 +6,31 @@ import {
     getUsers,
     getInventoryStock,
     getProductPriceEntryLabels,
-    getProductPriceEntries
+    getProductPriceEntries,
+    getProductById,
+    getRoles,
+    getSales,
+    getBrands,
+    getCategories,
+    getUnitsOfMeasure,
+    getSuppliers,
+    getPurchases,
+    getStockTransfers,
+    getParts,
+    getRawMaterials,
+    getPartCuttingOrders,
+    getPartAssemblies,
+    getProductAssemblies,
+    getAccountsReceivable,
+    getMovementTypes,
+    getInventoryAdjustments,
+    getInventoryMovements,
+    getPartMovements,
+    getRawMaterialMovements,
+    getReturns
 } from "@/services";
-import { useSyncStore } from "@/store";
+import { useSyncStore, useAuthStore } from "@/store";
+import { ROLES } from "@/constants/roles";
 import { offlineDb } from "./dexie";
 
 const PRICE_ENTRY_CONCURRENCY = 8;
@@ -61,6 +83,10 @@ async function runSync(): Promise<void> {
 
     try {
 
+        const currentUser = useAuthStore.getState().user;
+        const isAdmin = currentUser?.roleName === ROLES.ADMIN;
+        const storeId = currentUser?.storeId;
+
         const [
             clients,
             stores,
@@ -68,7 +94,27 @@ async function runSync(): Promise<void> {
             marginProfiles,
             users,
             inventoryStock,
-            priceEntryLabels
+            priceEntryLabels,
+            roles,
+            sales,
+            brands,
+            categories,
+            unitsOfMeasure,
+            suppliers,
+            purchases,
+            stockTransfers,
+            parts,
+            rawMaterials,
+            partCuttingOrders,
+            partAssemblies,
+            productAssemblies,
+            accountsReceivable,
+            movementTypes,
+            inventoryAdjustments,
+            inventoryMovements,
+            partMovements,
+            rawMaterialMovements,
+            returns
         ] = await Promise.all([
             getClients(),
             getStores(),
@@ -76,8 +122,57 @@ async function runSync(): Promise<void> {
             getMarginProfiles(),
             getUsers(),
             getInventoryStock(),
-            getProductPriceEntryLabels()
+            getProductPriceEntryLabels(),
+            getRoles(),
+            getSales(),
+            getBrands(),
+            getCategories(),
+            getUnitsOfMeasure(),
+            getSuppliers(),
+            getPurchases(),
+            getStockTransfers(),
+            getParts(),
+            getRawMaterials(),
+            getPartCuttingOrders(),
+            getPartAssemblies(),
+            getProductAssemblies(),
+            getAccountsReceivable(),
+            getMovementTypes(),
+            getInventoryAdjustments(),
+            getInventoryMovements(),
+            getPartMovements(),
+            getRawMaterialMovements(),
+            getReturns()
         ]);
+
+        // El inventario ya llega filtrado por tienda desde el backend para roles no-admin.
+        // Las ventas y otros documentos con tienda propia no, así que para no descargar
+        // los de todas las sucursales en un dispositivo de tienda, se filtran aquí.
+        const scopedSales = isAdmin
+            ? sales.data
+            : sales.data.filter(sale => sale.store.id === storeId);
+
+        const scopedPurchases = isAdmin
+            ? purchases.data
+            : purchases.data.filter(purchase => purchase.store.id === storeId);
+
+        const scopedStockTransfers = isAdmin
+            ? stockTransfers.data
+            : stockTransfers.data.filter(transfer =>
+                transfer.originStore.id === storeId || transfer.destStore?.id === storeId
+            );
+
+        const scopedInventoryAdjustments = isAdmin
+            ? inventoryAdjustments.data
+            : inventoryAdjustments.data.filter(adjustment => adjustment.store.id === storeId);
+
+        const scopedInventoryMovements = isAdmin
+            ? inventoryMovements.data
+            : inventoryMovements.data.filter(movement => movement.store.id === storeId);
+
+        const scopedReturns = isAdmin
+            ? returns.data
+            : returns.data.filter(item => item.store.id === storeId);
 
         const priceEntriesByProduct = await mapWithConcurrency(
             products.data,
@@ -85,6 +180,15 @@ async function runSync(): Promise<void> {
             async (product) => {
                 const response = await getProductPriceEntries(product.id);
                 return { productId: product.id, entries: response.data };
+            }
+        );
+
+        const productDetails = await mapWithConcurrency(
+            products.data,
+            PRICE_ENTRY_CONCURRENCY,
+            async (product) => {
+                const response = await getProductById(product.id);
+                return { ...response.data, id: product.id };
             }
         );
 
@@ -99,7 +203,28 @@ async function runSync(): Promise<void> {
                 offlineDb.inventoryStock,
                 offlineDb.productPriceEntries,
                 offlineDb.priceEntryLabels,
-                offlineDb.referenceMeta
+                offlineDb.referenceMeta,
+                offlineDb.roles,
+                offlineDb.sales,
+                offlineDb.productDetails,
+                offlineDb.brands,
+                offlineDb.categories,
+                offlineDb.unitsOfMeasure,
+                offlineDb.suppliers,
+                offlineDb.purchases,
+                offlineDb.stockTransfers,
+                offlineDb.parts,
+                offlineDb.rawMaterials,
+                offlineDb.partCuttingOrders,
+                offlineDb.partAssemblies,
+                offlineDb.productAssemblies,
+                offlineDb.accountsReceivable,
+                offlineDb.movementTypes,
+                offlineDb.inventoryAdjustments,
+                offlineDb.inventoryMovements,
+                offlineDb.partMovements,
+                offlineDb.rawMaterialMovements,
+                offlineDb.returns
             ],
             async () => {
 
@@ -110,7 +235,28 @@ async function runSync(): Promise<void> {
                     offlineDb.marginProfiles.clear(),
                     offlineDb.users.clear(),
                     offlineDb.inventoryStock.clear(),
-                    offlineDb.productPriceEntries.clear()
+                    offlineDb.productPriceEntries.clear(),
+                    offlineDb.roles.clear(),
+                    offlineDb.sales.clear(),
+                    offlineDb.productDetails.clear(),
+                    offlineDb.brands.clear(),
+                    offlineDb.categories.clear(),
+                    offlineDb.unitsOfMeasure.clear(),
+                    offlineDb.suppliers.clear(),
+                    offlineDb.purchases.clear(),
+                    offlineDb.stockTransfers.clear(),
+                    offlineDb.parts.clear(),
+                    offlineDb.rawMaterials.clear(),
+                    offlineDb.partCuttingOrders.clear(),
+                    offlineDb.partAssemblies.clear(),
+                    offlineDb.productAssemblies.clear(),
+                    offlineDb.accountsReceivable.clear(),
+                    offlineDb.movementTypes.clear(),
+                    offlineDb.inventoryAdjustments.clear(),
+                    offlineDb.inventoryMovements.clear(),
+                    offlineDb.partMovements.clear(),
+                    offlineDb.rawMaterialMovements.clear(),
+                    offlineDb.returns.clear()
                 ]);
 
                 await Promise.all([
@@ -122,6 +268,27 @@ async function runSync(): Promise<void> {
                     offlineDb.inventoryStock.bulkPut(inventoryStock.data),
                     offlineDb.productPriceEntries.bulkPut(priceEntriesByProduct),
                     offlineDb.priceEntryLabels.put({ key: "labels", labels: priceEntryLabels.data }),
+                    offlineDb.roles.bulkPut(roles.data),
+                    offlineDb.sales.bulkPut(scopedSales),
+                    offlineDb.productDetails.bulkPut(productDetails),
+                    offlineDb.brands.bulkPut(brands.data),
+                    offlineDb.categories.bulkPut(categories.data),
+                    offlineDb.unitsOfMeasure.bulkPut(unitsOfMeasure.data),
+                    offlineDb.suppliers.bulkPut(suppliers.data),
+                    offlineDb.purchases.bulkPut(scopedPurchases),
+                    offlineDb.stockTransfers.bulkPut(scopedStockTransfers),
+                    offlineDb.parts.bulkPut(parts.data),
+                    offlineDb.rawMaterials.bulkPut(rawMaterials.data),
+                    offlineDb.partCuttingOrders.bulkPut(partCuttingOrders.data),
+                    offlineDb.partAssemblies.bulkPut(partAssemblies.data),
+                    offlineDb.productAssemblies.bulkPut(productAssemblies.data),
+                    offlineDb.accountsReceivable.bulkPut(accountsReceivable.data),
+                    offlineDb.movementTypes.bulkPut(movementTypes.data),
+                    offlineDb.inventoryAdjustments.bulkPut(scopedInventoryAdjustments),
+                    offlineDb.inventoryMovements.bulkPut(scopedInventoryMovements),
+                    offlineDb.partMovements.bulkPut(partMovements.data),
+                    offlineDb.rawMaterialMovements.bulkPut(rawMaterialMovements.data),
+                    offlineDb.returns.bulkPut(scopedReturns),
                     offlineDb.referenceMeta.put({ key: "reference", lastSyncedAt: Date.now() })
                 ]);
 
@@ -138,6 +305,10 @@ async function runSync(): Promise<void> {
 
     }
 
+}
+
+export async function getCachedProductDetail(productId: string) {
+    return offlineDb.productDetails.get(productId);
 }
 
 export async function getCachedPriceEntryLabels() {

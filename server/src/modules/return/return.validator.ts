@@ -2,6 +2,8 @@ import { z } from "zod";
 
 export const createReturnSchema = z.object({
 
+    clientUuid: z.string().trim().uuid().optional(),
+
     number: z
         .string()
         .trim()
