@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -6,8 +7,9 @@ import { toast } from "react-hot-toast";
 import axios from "axios";
 import { partMovementSchema } from "@/validators";
 import type { PartMovementFormData } from "@/validators";
+import { getNextSequentialCode } from "@/lib";
 
-import { useCreatePartMovement } from "@/hooks";
+import { useCreatePartMovement, usePartMovements } from "@/hooks";
 import { PartMovementHeader } from "./part-movement-header";
 import { PartMovementDetailsTable } from "./part-movement-details-table";
 
@@ -28,8 +30,29 @@ export function PartMovementForm({ onSuccess }: Props) {
         }
     });
 
+    const { setValue, getValues } = methods;
+
     const createMutation = useCreatePartMovement();
+    const { data: partMovementsData } = usePartMovements();
     const loading = createMutation.isPending;
+
+    useEffect(() => {
+
+        if (!partMovementsData?.data || getValues("number")) {
+            return;
+        }
+
+        const [lastMovement] = [...partMovementsData.data].sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+        const nextNumber = getNextSequentialCode(lastMovement?.number);
+
+        if (nextNumber) {
+            setValue("number", nextNumber);
+        }
+
+    }, [partMovementsData, getValues, setValue]);
 
     const onSubmit = (data: PartMovementFormData) => {
 

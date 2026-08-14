@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/combobox";
 import { partSchema } from "@/validators";
 import type { PartFormData } from "@/validators";
+import { getNextSequentialCode } from "@/lib";
 import {
     useCreatePart,
     useUpdatePart,
@@ -37,7 +38,7 @@ type Props = {
 
 export function PartForm({ onSuccess, mode = "create", partId }: Props) {
 
-    const { register, control, handleSubmit, reset, setError, formState: { errors } } = useForm<PartFormData>({
+    const { register, control, handleSubmit, reset, setError, setValue, getValues, formState: { errors } } = useForm<PartFormData>({
         resolver: zodResolver(partSchema),
         defaultValues: {
             code: "",
@@ -65,6 +66,20 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
 
     const parts = (partsData?.data ?? []).filter(part => part.id !== partId);
     const products = productsData?.data ?? [];
+
+    useEffect(() => {
+
+        if (mode !== "create" || !partsData?.data || getValues("code")) {
+            return;
+        }
+
+        const nextCode = getNextSequentialCode(partsData.data[0]?.code);
+
+        if (nextCode) {
+            setValue("code", nextCode);
+        }
+
+    }, [mode, partsData, getValues, setValue]);
 
     useEffect(() => {
 

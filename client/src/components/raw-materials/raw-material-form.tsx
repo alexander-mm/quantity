@@ -17,6 +17,7 @@ import {
 import { rawMaterialSchema } from "@/validators";
 import type { RawMaterialFormData } from "@/validators";
 import { useCreateRawMaterial, useUpdateRawMaterial, useRawMaterial, useRawMaterials } from "@/hooks";
+import { getNextSequentialCode } from "@/lib";
 import type { TubeProfile } from "@/types";
 
 type Props = {
@@ -31,7 +32,7 @@ function toOptionalNumber(value: string): number | undefined {
 
 export function RawMaterialForm({ onSuccess, mode = "create", rawMaterialId }: Props) {
 
-    const { register, control, handleSubmit, reset, setValue, setError, formState: { errors } } = useForm<RawMaterialFormData>({
+    const { register, control, handleSubmit, reset, setValue, setError, getValues, formState: { errors } } = useForm<RawMaterialFormData>({
         resolver: zodResolver(rawMaterialSchema),
         defaultValues: {
             code: "",
@@ -58,6 +59,20 @@ export function RawMaterialForm({ onSuccess, mode = "create", rawMaterialId }: P
     const loading = createMutation.isPending || updateMutation.isPending;
 
     const otherRawMaterials = (rawMaterialsData?.data ?? []).filter(item => item.id !== rawMaterialId);
+
+    useEffect(() => {
+
+        if (mode !== "create" || !rawMaterialsData?.data || getValues("code")) {
+            return;
+        }
+
+        const nextCode = getNextSequentialCode(rawMaterialsData.data[0]?.code);
+
+        if (nextCode) {
+            setValue("code", nextCode);
+        }
+
+    }, [mode, rawMaterialsData, getValues, setValue]);
 
     useEffect(() => {
 

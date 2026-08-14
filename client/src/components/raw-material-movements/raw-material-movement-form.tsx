@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -6,8 +7,9 @@ import { toast } from "react-hot-toast";
 import axios from "axios";
 import { rawMaterialMovementSchema } from "@/validators";
 import type { RawMaterialMovementFormData } from "@/validators";
+import { getNextSequentialCode } from "@/lib";
 
-import { useCreateRawMaterialMovement } from "@/hooks";
+import { useCreateRawMaterialMovement, useRawMaterialMovements } from "@/hooks";
 import { RawMaterialMovementHeader } from "./raw-material-movement-header";
 import { RawMaterialMovementDetailsTable } from "./raw-material-movement-details-table";
 
@@ -28,8 +30,29 @@ export function RawMaterialMovementForm({ onSuccess }: Props) {
         }
     });
 
+    const { setValue, getValues } = methods;
+
     const createMutation = useCreateRawMaterialMovement();
+    const { data: rawMaterialMovementsData } = useRawMaterialMovements();
     const loading = createMutation.isPending;
+
+    useEffect(() => {
+
+        if (!rawMaterialMovementsData?.data || getValues("number")) {
+            return;
+        }
+
+        const [lastMovement] = [...rawMaterialMovementsData.data].sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+        const nextNumber = getNextSequentialCode(lastMovement?.number);
+
+        if (nextNumber) {
+            setValue("number", nextNumber);
+        }
+
+    }, [rawMaterialMovementsData, getValues, setValue]);
 
     const onSubmit = (data: RawMaterialMovementFormData) => {
 
