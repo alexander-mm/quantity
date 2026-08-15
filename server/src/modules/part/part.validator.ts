@@ -26,6 +26,11 @@ export const createPartSchema = z.object({
         .min(0, "El stock mínimo no puede ser negativo.")
         .optional(),
 
+    cost: z
+        .coerce
+        .number({ error: "El costo es obligatorio." })
+        .min(0, "El costo no puede ser negativo."),
+
     initialQuantity: z
         .coerce
         .number()

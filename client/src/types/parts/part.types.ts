@@ -6,6 +6,7 @@ export interface Part {
     description: string | null;
     quantity: string;
     minimumStock: string;
+    cost: string;
     isActive: boolean;
 }
 

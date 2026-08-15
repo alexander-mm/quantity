@@ -45,6 +45,7 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
             name: "",
             description: "",
             minimumStock: undefined,
+            cost: undefined,
             initialQuantity: undefined,
             components: []
         }
@@ -67,6 +68,8 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
     const parts = (partsData?.data ?? []).filter(part => part.id !== partId);
     const products = productsData?.data ?? [];
 
+    const validComponents = watchedComponents.filter(item => item?.refId);
+
     useEffect(() => {
 
         if (mode !== "create" || !partsData?.data || getValues("code")) {
@@ -83,6 +86,27 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
 
     useEffect(() => {
 
+        if (validComponents.length === 0) {
+            return;
+        }
+
+        const total = validComponents.reduce((sum, item) => {
+
+            const unitCost = item.type === "PART"
+                ? Number(parts.find(part => part.id === item.refId)?.cost ?? 0)
+                : Number(products.find(product => product.id === item.refId)?.costPrice ?? 0);
+
+            return sum + unitCost * (Number(item.quantity) || 0);
+
+        }, 0);
+
+        setValue("cost", total);
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [JSON.stringify(validComponents), parts, products]);
+
+    useEffect(() => {
+
         if (mode !== "edit" || !partData?.data) {
             return;
         }
@@ -92,6 +116,7 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
             name: partData.data.name,
             description: partData.data.description ?? "",
             minimumStock: Number(partData.data.minimumStock),
+            cost: Number(partData.data.cost),
             components: [
                 ...(componentsData?.data ?? []).map(item => ({
                     type: "PART" as const,
@@ -156,6 +181,7 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
             name: rest.name,
             description: rest.description || undefined,
             minimumStock: Number(rest.minimumStock) || 0,
+            cost: Number(rest.cost) || 0,
             ...(mode === "create" ? { initialQuantity: Number(rest.initialQuantity) || undefined } : {})
         };
 
@@ -367,6 +393,25 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
                     </Button>
                 </div>
 
+            </div>
+
+            <div>
+                <Label className="mb-1">Costo</Label>
+                <Input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    placeholder="0"
+                    {...register("cost", {
+                        setValueAs: (v) => (v === "" ? undefined : Number(v))
+                    })}
+                />
+                {validComponents.length > 0 && (
+                    <p className="text-sm text-muted-foreground">
+                        Calculado automáticamente sumando el costo de los componentes de la receta.
+                    </p>
+                )}
+                <p className="text-sm text-red-500">{errors.cost?.message}</p>
             </div>
 
             <div className="flex justify-end">

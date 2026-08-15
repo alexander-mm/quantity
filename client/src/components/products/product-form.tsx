@@ -113,18 +113,18 @@ export function ProductForm({
     const watchedComponents = useWatch({ control, name: "components" }) ?? [];
     const watchedPriceEntries = useWatch({ control, name: "priceEntries" }) ?? [];
     const validComponents = watchedComponents.filter(item => item?.refId);
-    const validProductComponents = validComponents.filter(item => item.type === "PRODUCT");
 
     useEffect(() => {
 
-        if (validProductComponents.length === 0) {
+        if (validComponents.length === 0) {
             return;
         }
 
-        const total = validProductComponents.reduce((sum, item) => {
+        const total = validComponents.reduce((sum, item) => {
 
-            const componentProduct = products.find(product => product.id === item.refId);
-            const unitCost = componentProduct ? Number(componentProduct.costPrice ?? 0) : 0;
+            const unitCost = item.type === "PART"
+                ? Number(parts.find(part => part.id === item.refId)?.cost ?? 0)
+                : Number(products.find(product => product.id === item.refId)?.costPrice ?? 0);
 
             return sum + unitCost * (Number(item.quantity) || 0);
 
@@ -133,7 +133,7 @@ export function ProductForm({
         setValue("costPrice", total);
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [JSON.stringify(validProductComponents), products]);
+    }, [JSON.stringify(validComponents), parts, products]);
 
     useEffect(() => {
 

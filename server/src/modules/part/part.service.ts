@@ -85,7 +85,8 @@ export class PartService {
                 code: data.code,
                 name: data.name,
                 description: data.description,
-                minimumStock: data.minimumStock ?? 0
+                minimumStock: data.minimumStock ?? 0,
+                cost: data.cost
             });
 
         }
@@ -99,7 +100,8 @@ export class PartService {
                 code: data.code,
                 name: data.name,
                 description: data.description,
-                minimumStock: data.minimumStock ?? 0
+                minimumStock: data.minimumStock ?? 0,
+                cost: data.cost
             });
 
             await movementRepository.create({
@@ -144,7 +146,8 @@ export class PartService {
             code: data.code,
             name: data.name,
             description: data.description,
-            minimumStock: data.minimumStock ?? 0
+            minimumStock: data.minimumStock ?? 0,
+            cost: data.cost
         });
 
     }

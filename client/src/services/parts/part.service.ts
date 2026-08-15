@@ -21,6 +21,7 @@ export type CreatePartRequest = {
     name: string;
     description?: string;
     minimumStock?: number;
+    cost: number;
     initialQuantity?: number;
 };
 
