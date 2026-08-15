@@ -3,6 +3,7 @@ export interface CreatePartDto {
     name: string;
     description?: string;
     minimumStock?: number;
+    cost: number;
     initialQuantity?: number;
     userId: string;
 }
@@ -12,4 +13,5 @@ export interface UpdatePartDto {
     name: string;
     description?: string;
     minimumStock?: number;
+    cost: number;
 }

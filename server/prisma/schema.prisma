@@ -666,6 +666,7 @@ model Part {
   description  String?
   quantity     Decimal  @default(0) @db.Decimal(12, 2)
   minimumStock Decimal  @default(0) @db.Decimal(12, 2)
+  cost         Decimal  @default(0) @db.Decimal(12, 2)
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
