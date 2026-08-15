@@ -21,7 +21,8 @@
     "products:wipe": "tsx scripts/wipe-product-catalog.ts",
     "prisma:deploy:prod": "dotenv -e .env.production -- prisma migrate deploy",
     "prisma:deploy:branch": "dotenv -e .env.branch -- prisma migrate deploy",
-    "products:import:branch": "dotenv -e .env.branch -- tsx scripts/import-products.ts"
+    "products:import:branch": "dotenv -e .env.branch -- tsx scripts/import-products.ts",
+    "products:import:prod": "dotenv -e .env.production -- tsx scripts/import-products.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",
