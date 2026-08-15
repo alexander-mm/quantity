@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useAuth, useStockTransfers, useOutboxPendingCount } from "@/hooks";
 import { ROLES } from "@/constants/roles";
+import { authService } from "@/services";
 
 const BRAND_BLUE = "#0170B8";
 
@@ -62,7 +63,7 @@ export function DashboardLayout({
     children
 }: PropsWithChildren) {
 
-    const { user, logout } = useAuth();
+    const { user, refreshToken, logout } = useAuth();
     const location = useLocation();
     const isAdmin = user?.roleName === ROLES.ADMIN;
     const isProduction = user?.roleName === ROLES.PRODUCTION;
@@ -213,6 +214,9 @@ export function DashboardLayout({
         }
     };
     const handleLogout = () => {
+        if (refreshToken) {
+            void authService.logout(refreshToken);
+        }
         logout();
         setIsMobileMenuOpen(false);
     };

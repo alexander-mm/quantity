@@ -80,8 +80,24 @@ model User {
   partCuttingOrders          PartCuttingOrder[]
   returnsRegistered          Return[]              @relation("ReturnRegisteredBy")
   returnsResolved            Return[]              @relation("ReturnResolvedBy")
+  refreshTokens              RefreshToken[]
 
   @@index([isActive])
+}
+
+model RefreshToken {
+  id        BigInt    @id @default(autoincrement())
+  uuid      String    @unique @default(uuid())
+  tokenHash String    @unique
+  userId    BigInt
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model Category {

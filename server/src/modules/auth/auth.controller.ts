@@ -46,4 +46,64 @@ export class AuthController {
 
     }
 
+    async refresh(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+
+        try {
+
+            const { refreshToken } = req.body;
+
+            const result = await this.service.refresh(refreshToken);
+
+            res.status(200).json(
+
+                ApiResponse.success(
+
+                    "Sesión renovada.",
+
+                    result
+
+                )
+
+            );
+
+        } catch (error) {
+
+            next(error);
+
+        }
+
+    }
+
+    async logout(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+
+        try {
+
+            const { refreshToken } = req.body;
+
+            await this.service.logout(refreshToken);
+
+            res.status(200).json(
+
+                ApiResponse.success(
+                    "Sesión cerrada."
+                )
+
+            );
+
+        } catch (error) {
+
+            next(error);
+
+        }
+
+    }
+
 }

@@ -6,9 +6,92 @@ import { JwtService } from "../../shared/auth/index.js";
 
 import { UserRepository } from "../user/user.repository.js";
 
+import { RefreshTokenRepository } from "./refresh-token.repository.js";
+
+import {
+    generateRefreshToken,
+    hashRefreshToken
+} from "./refresh-token.util.js";
+
 export class AuthService {
 
     private readonly userRepository = new UserRepository();
+
+    private readonly refreshTokenRepository = new RefreshTokenRepository();
+
+    private buildAuthPayload(
+        user: {
+
+            id: bigint;
+            username: string;
+            firstName: string;
+            lastName: string;
+            roleId: bigint;
+            storeId: bigint;
+            role: { name: string };
+
+        }
+    ) {
+
+        const accessToken = JwtService.generateToken({
+
+            userId: user.id.toString(),
+
+            username: user.username,
+
+            roleId: user.roleId.toString(),
+
+            roleName: user.role.name,
+
+            storeId: user.storeId.toString()
+
+        });
+
+        return {
+
+            accessToken,
+
+            user: {
+
+                id: user.id.toString(),
+
+                username: user.username,
+
+                firstName: user.firstName,
+
+                lastName: user.lastName,
+
+                roleId: user.roleId.toString(),
+
+                roleName: user.role.name,
+
+                storeId: user.storeId.toString()
+
+            }
+
+        };
+
+    }
+
+    private async issueRefreshToken(
+        userId: bigint
+    ): Promise<string> {
+
+        const {
+            token,
+            tokenHash,
+            expiresAt
+        } = generateRefreshToken();
+
+        await this.refreshTokenRepository.create(
+            userId,
+            tokenHash,
+            expiresAt
+        );
+
+        return token;
+
+    }
 
     async login(
 
@@ -20,7 +103,7 @@ export class AuthService {
 
         const user = await this.userRepository.findByUsername(username);
 
-        if (!user) {
+        if (!user || !user.isActive) {
 
             throw new UnauthorizedError(
                 "Usuario o contraseña incorrectos."
@@ -44,43 +127,71 @@ export class AuthService {
 
         }
 
-        const token = JwtService.generateToken({
+        const { accessToken, user: authUser } = this.buildAuthPayload(user);
 
-            userId: user.id.toString(),
-
-            username: user.username,
-
-            roleId: user.roleId.toString(),
-
-            roleName: user.role.name,
-
-            storeId: user.storeId.toString()
-
-        });
+        const refreshToken = await this.issueRefreshToken(user.id);
 
         return {
 
-            token,
+            accessToken,
 
-            user: {
+            refreshToken,
 
-                id: user.id.toString(),
-
-                username: user.username,
-
-                firstName: user.firstName,
-
-                lastName: user.lastName,
-
-                roleId: user.roleId.toString(),
-
-                roleName: user.role.name,
-
-                storeId: user.storeId.toString()
-
-            }
+            user: authUser
 
         };
+
+    }
+
+    async refresh(
+
+        rawRefreshToken: string
+
+    ) {
+
+        const tokenHash = hashRefreshToken(rawRefreshToken);
+
+        const stored = await this.refreshTokenRepository.findValidByHash(
+            tokenHash
+        );
+
+        if (!stored || !stored.user.isActive) {
+
+            throw new UnauthorizedError(
+                "Sesión expirada. Inicia sesión nuevamente."
+            );
+
+        }
+
+        await this.refreshTokenRepository.revoke(stored.id);
+
+        const { accessToken, user: authUser } = this.buildAuthPayload(
+            stored.user
+        );
+
+        const refreshToken = await this.issueRefreshToken(stored.user.id);
+
+        return {
+
+            accessToken,
+
+            refreshToken,
+
+            user: authUser
+
+        };
+
+    }
+
+    async logout(
+
+        rawRefreshToken: string
+
+    ): Promise<void> {
+
+        const tokenHash = hashRefreshToken(rawRefreshToken);
+
+        await this.refreshTokenRepository.revokeByHash(tokenHash);
 
     }
 

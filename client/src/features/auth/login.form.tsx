@@ -41,7 +41,9 @@ export function LoginForm() {
 
             setAuth(
 
-                response.data.token,
+                response.data.accessToken,
+
+                response.data.refreshToken,
 
                 response.data.user
 
