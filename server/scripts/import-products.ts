@@ -12,6 +12,8 @@ import { InventoryMovementService } from "../src/modules/inventory-movement/inve
 import { ProductPriceEntryService } from "../src/modules/product-price-entries/product-price-entry.service.js";
 
 // Hoja "Productos": catálogo + stock inicial de la tienda destino (--store=).
+// Los precios vienen como columnas propias en la misma fila: "USD 1", "USD 2"...,
+// "COP 1", "COP 2"... (una columna por cada nivel de PVP del producto).
 interface ProductRow {
     "Código Interno"?: string;
     "Nombre"?: string;
@@ -20,21 +22,15 @@ interface ProductRow {
     "Marca"?: string;
     "Categoría"?: string;
     "Unidad de Medida"?: string;
-    "Costo"?: number;
-    "Stock Mínimo"?: number;
-    "Stock Inicial"?: number;
-}
-
-// Hoja "Precios": una fila por cada nivel de PVP del producto. El orden de las filas
-// define la secuencia (PVP USD 1, PVP USD 2... PVP COP 1...), igual que al agregarlos
-// uno por uno desde el formulario de producto.
-interface PriceRow {
-    "Código Interno"?: string;
-    "Moneda"?: string;
-    "Precio"?: number;
+    "Costo"?: number | string;
+    "Stock Mínimo"?: number | string;
+    "Stock Inicial"?: number | string;
+    [priceColumn: string]: unknown;
 }
 
 type PriceEntry = { currency: "USD" | "COP"; sequence: number; price: number };
+
+const PRICE_COLUMN_PATTERN = /^(USD|COP)\s+(\d+)$/i;
 
 function parseArgs() {
 
@@ -57,37 +53,50 @@ function parseArgs() {
 
 }
 
-function buildPriceEntriesByCode(priceRows: PriceRow[]): Map<string, PriceEntry[]> {
+function isBlank(value: unknown): boolean {
+    return value === undefined || value === null || value === "";
+}
 
-    const priceEntriesByCode = new Map<string, PriceEntry[]>();
-    const sequenceCounters = new Map<string, number>();
+function isNumeric(value: unknown): boolean {
+    return !isBlank(value) && !isNaN(Number(value));
+}
 
-    for (let i = 0; i < priceRows.length; i++) {
+function extractPriceEntries(row: ProductRow): {
+    entries: PriceEntry[];
+    invalidColumns: string[];
+} {
 
-        const row = priceRows[i];
-        const rowNumber = i + 2;
+    const entries: PriceEntry[] = [];
+    const invalidColumns: string[] = [];
 
-        const code = row["Código Interno"]?.toString().trim();
-        const currencyRaw = row["Moneda"]?.toString().trim().toUpperCase();
-        const price = row["Precio"];
+    for (const key of Object.keys(row)) {
 
-        if (!code || (currencyRaw !== "USD" && currencyRaw !== "COP") || price === undefined) {
-            console.error(`❌ Hoja "Precios", fila ${rowNumber}: inválida (revisa Código Interno / Moneda / Precio). Se omite.`);
+        const match = key.match(PRICE_COLUMN_PATTERN);
+
+        if (!match) {
             continue;
         }
 
-        const currency = currencyRaw as "USD" | "COP";
-        const counterKey = `${code}|${currency}`;
-        const sequence = (sequenceCounters.get(counterKey) ?? 0) + 1;
-        sequenceCounters.set(counterKey, sequence);
+        const value = row[key];
 
-        const list = priceEntriesByCode.get(code) ?? [];
-        list.push({ currency, sequence, price: Number(price) });
-        priceEntriesByCode.set(code, list);
+        if (isBlank(value)) {
+            continue;
+        }
+
+        if (!isNumeric(value)) {
+            invalidColumns.push(key);
+            continue;
+        }
+
+        entries.push({
+            currency: match[1].toUpperCase() as "USD" | "COP",
+            sequence: Number(match[2]),
+            price: Number(value)
+        });
 
     }
 
-    return priceEntriesByCode;
+    return { entries, invalidColumns };
 
 }
 
@@ -131,25 +140,17 @@ async function main() {
     const workbook = XLSX.readFile(filePath);
 
     const productSheet = workbook.Sheets["Productos"];
-    const priceSheet = workbook.Sheets["Precios"];
 
     if (!productSheet) {
         throw new Error('El archivo debe tener una hoja llamada "Productos".');
     }
 
-    if (!priceSheet) {
-        throw new Error('El archivo debe tener una hoja llamada "Precios" (un renglón por cada PVP USD/COP del producto).');
-    }
-
     const rows = XLSX.utils.sheet_to_json<ProductRow>(productSheet);
-    const priceRows = XLSX.utils.sheet_to_json<PriceRow>(priceSheet);
-    const priceEntriesByCode = buildPriceEntriesByCode(priceRows);
-    const usedPriceCodes = new Set<string>();
 
-    console.log(`Filas encontradas en "Productos": ${rows.length}`);
-    console.log(`Filas encontradas en "Precios": ${priceRows.length}\n`);
+    console.log(`Filas encontradas en "Productos": ${rows.length}\n`);
 
     const categoryCache = new Map<string, bigint>();
+    const codesSeenInFile = new Map<string, number>();
 
     let created = 0;
     let stockOnly = 0;
@@ -177,16 +178,48 @@ async function main() {
             !brand ||
             !categoryName ||
             !unitOfMeasure ||
-            costPrice === undefined ||
-            minimumStock === undefined
+            isBlank(costPrice) ||
+            isBlank(minimumStock)
         ) {
             console.error(`❌ Fila ${rowNumber}: faltan campos obligatorios. Se omite.`);
             failed++;
             continue;
         }
 
-        if (internalCode) {
-            usedPriceCodes.add(internalCode);
+        if (!isNumeric(costPrice)) {
+            console.error(`❌ Fila ${rowNumber} (${internalCode}): "Costo" no es numérico (${JSON.stringify(costPrice)}, revisa si hay una fórmula rota tipo #REF!). Se omite.`);
+            failed++;
+            continue;
+        }
+
+        if (!isNumeric(minimumStock)) {
+            console.error(`❌ Fila ${rowNumber} (${internalCode}): "Stock Mínimo" no es numérico (${JSON.stringify(minimumStock)}). Se omite.`);
+            failed++;
+            continue;
+        }
+
+        if (!isBlank(initialStock) && !isNumeric(initialStock)) {
+            console.error(`❌ Fila ${rowNumber} (${internalCode}): "Stock Inicial" no es numérico (${JSON.stringify(initialStock)}). Se omite.`);
+            failed++;
+            continue;
+        }
+
+        const seenAt = codesSeenInFile.get(internalCode);
+
+        if (seenAt !== undefined) {
+            console.error(`❌ Fila ${rowNumber}: código "${internalCode}" ya apareció en la fila ${seenAt} de este mismo archivo (con datos distintos). Se omite; corrige el código duplicado en el Excel.`);
+            failed++;
+            continue;
+        }
+
+        codesSeenInFile.set(internalCode, rowNumber);
+
+        const { entries, invalidColumns } = extractPriceEntries(row);
+
+        if (invalidColumns.length > 0) {
+            console.error(`❌ Fila ${rowNumber} (${internalCode}): columnas de precio no numéricas: ${invalidColumns.join(", ")}. Se omite.`);
+            failed++;
+            continue;
         }
 
         try {
@@ -203,12 +236,11 @@ async function main() {
 
             } else {
 
-                const entries = priceEntriesByCode.get(internalCode) ?? [];
                 const firstUsd = entries.find(entry => entry.currency === "USD" && entry.sequence === 1);
                 const firstCop = entries.find(entry => entry.currency === "COP" && entry.sequence === 1);
 
                 if (!firstUsd) {
-                    console.error(`❌ Fila ${rowNumber}: "${internalCode}" no tiene ningún precio USD en la hoja "Precios" (se necesita al menos uno). Se omite.`);
+                    console.error(`❌ Fila ${rowNumber}: "${internalCode}" no tiene la columna "USD 1" llena (se necesita al menos ese precio base). Se omite.`);
                     failed++;
                     continue;
                 }
@@ -267,7 +299,7 @@ async function main() {
 
             }
 
-            if (initialStock !== undefined && Number(initialStock) > 0) {
+            if (!isBlank(initialStock) && Number(initialStock) > 0) {
 
                 if (dryRun) {
                     console.log(`   ↳ (simulación) se cargarían ${initialStock} unidades en ${store.name}`);
@@ -300,15 +332,10 @@ async function main() {
 
     }
 
-    const orphanPriceCodes = [...priceEntriesByCode.keys()].filter(code => !usedPriceCodes.has(code));
-
     console.log("\n====================================");
     console.log(`Productos nuevos: ${created}`);
     console.log(`Solo se agregó stock (ya existían): ${stockOnly}`);
     console.log(`Con error: ${failed}`);
-    if (orphanPriceCodes.length > 0) {
-        console.log(`⚠️  Códigos en "Precios" sin fila correspondiente en "Productos": ${orphanPriceCodes.join(", ")}`);
-    }
     console.log("====================================");
 
 }

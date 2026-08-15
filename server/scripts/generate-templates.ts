@@ -9,10 +9,13 @@ const headers = [
     "Categoría",
     "Unidad de Medida",
     "Costo",
-    "PVP (USD)",
-    "PVP (COP)",
     "Stock Mínimo",
-    "Stock Inicial"
+    "Stock Inicial",
+    "USD 1",
+    "USD 2",
+    "USD 3",
+    "USD 4",
+    "COP 1"
 ];
 
 const exampleRow = {
@@ -24,10 +27,13 @@ const exampleRow = {
     "Categoría": "Categoría Ejemplo",
     "Unidad de Medida": "Unidad",
     "Costo": 10,
-    "PVP (USD)": 20,
-    "PVP (COP)": 80000,
     "Stock Mínimo": 5,
-    "Stock Inicial": 0
+    "Stock Inicial": 0,
+    "USD 1": 20,
+    "USD 2": 18,
+    "USD 3": 16,
+    "USD 4": 15,
+    "COP 1": 80000
 };
 
 const templates = [
