@@ -10,5 +10,6 @@ export interface CreateRawMaterialMovementDto {
     movementDate: Date;
     observations?: string;
     cuttingOrderId?: string;
+    isAdjustment?: boolean;
     details: CreateRawMaterialMovementDetailDto[];
 }

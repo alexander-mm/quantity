@@ -4,6 +4,8 @@ export * from "./dashboard";
 export * from "./products";
 export * from "./inventory-movements";
 export * from "./inventory-adjustments";
+export * from "./part-adjustments";
+export * from "./raw-material-adjustments";
 export * from "./inventory-stock";
 export * from "./kardex";
 export * from "./selectors";

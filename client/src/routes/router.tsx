@@ -27,10 +27,12 @@ import { TransferIssuesPage } from "@/pages/transfer-issues";
 import { ClientsPage } from "@/pages/clients";
 import { PartsPage } from "@/pages/parts";
 import { PartMovementsPage } from "@/pages/part-movements";
+import { PartAdjustmentsPage } from "@/pages/part-adjustments";
 import { AssemblyPage } from "@/pages/assembly";
 import { WholesalersPage, WholesalerDetailPage } from "@/pages/wholesalers";
 import { RawMaterialsPage } from "@/pages/raw-materials";
 import { RawMaterialMovementsPage } from "@/pages/raw-material-movements";
+import { RawMaterialAdjustmentsPage } from "@/pages/raw-material-adjustments";
 import { PartRecipesPage } from "@/pages/part-recipes";
 import { EquipmentPartsPage } from "@/pages/equipment-parts";
 import { PartCuttingOrdersPage } from "@/pages/part-cutting-orders";
@@ -306,6 +308,17 @@ const router = createBrowserRouter([
     },
 
     {
+        path: "/part-adjustments",
+        element: (
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.PRODUCTION]}>
+                <DashboardLayout>
+                    <PartAdjustmentsPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
+
+    {
         path: "/assembly",
         element: (
             <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.PRODUCTION]}>
@@ -333,6 +346,17 @@ const router = createBrowserRouter([
             <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.PRODUCTION]}>
                 <DashboardLayout>
                     <RawMaterialMovementsPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
+
+    {
+        path: "/raw-material-adjustments",
+        element: (
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.PRODUCTION]}>
+                <DashboardLayout>
+                    <RawMaterialAdjustmentsPage />
                 </DashboardLayout>
             </ProtectedRoute>
         )

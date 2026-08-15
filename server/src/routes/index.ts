@@ -21,11 +21,13 @@ import inventoryAdjustmentRoutes from "../modules/inventory-adjustment/inventory
 import stockTransferRoutes from "../modules/stock-transfer/stock-transfer.routes.js";
 import partRoutes from "../modules/part/part.routes.js";
 import partMovementRoutes from "../modules/part-movement/part-movement.routes.js";
+import partAdjustmentRoutes from "../modules/part-adjustment/part-adjustment.routes.js";
 import productComponentRoutes from "../modules/product-component/product-component.routes.js";
 import productAssemblyRoutes from "../modules/product-assembly/product-assembly.routes.js";
 import accountReceivableRoutes from "../modules/account-receivable/account-receivable.routes.js";
 import rawMaterialRoutes from "../modules/raw-material/raw-material.routes.js";
 import rawMaterialMovementRoutes from "../modules/raw-material-movement/raw-material-movement.routes.js";
+import rawMaterialAdjustmentRoutes from "../modules/raw-material-adjustment/raw-material-adjustment.routes.js";
 import partRecipeRoutes from "../modules/part-recipe/part-recipe.routes.js";
 import equipmentPartRoutes from "../modules/equipment-part/equipment-part.routes.js";
 import partCuttingOrderRoutes from "../modules/part-cutting-order/part-cutting-order.routes.js";
@@ -85,6 +87,7 @@ router.use("/stock-transfers", stockTransferRoutes);
 router.use("/parts", partRoutes);
 
 router.use("/part-movements", partMovementRoutes);
+router.use("/part-adjustments", partAdjustmentRoutes);
 
 router.use("/product-components", productComponentRoutes);
 
@@ -101,6 +104,7 @@ router.use("/accounts-receivable", accountReceivableRoutes);
 router.use("/raw-materials", rawMaterialRoutes);
 
 router.use("/raw-material-movements", rawMaterialMovementRoutes);
+router.use("/raw-material-adjustments", rawMaterialAdjustmentRoutes);
 
 router.use("/part-recipes", partRecipeRoutes);
 

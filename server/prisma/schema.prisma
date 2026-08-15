@@ -679,6 +679,7 @@ model PartMovement {
   cuttingOrderId BigInt?          @unique
   movementDate   DateTime         @default(now())
   observations   String?
+  isAdjustment   Boolean          @default(false)
   createdAt      DateTime         @default(now())
 
   user         User                 @relation(fields: [userId], references: [id])
@@ -851,6 +852,7 @@ model RawMaterialMovement {
   cuttingOrderId BigInt?                 @unique
   movementDate   DateTime                @default(now())
   observations   String?
+  isAdjustment   Boolean                 @default(false)
   createdAt      DateTime                @default(now())
 
   user         User                        @relation(fields: [userId], references: [id])

@@ -95,6 +95,7 @@ export class PartMovementRepository extends BaseRepository {
                 cuttingOrderId: data.cuttingOrderId ? BigInt(data.cuttingOrderId) : undefined,
                 movementDate: data.movementDate,
                 observations: data.observations,
+                isAdjustment: data.isAdjustment ?? false,
                 details: {
                     create: data.details.map(item => ({
                         partId: BigInt(item.partId),

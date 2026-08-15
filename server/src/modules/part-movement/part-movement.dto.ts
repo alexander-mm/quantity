@@ -10,5 +10,6 @@ export interface CreatePartMovementDto {
     cuttingOrderId?: string;
     movementDate: Date;
     observations?: string;
+    isAdjustment?: boolean;
     details: CreatePartMovementDetailDto[];
 }

@@ -7,6 +7,8 @@ export * from "./units-of-measure";
 export * from "./margin-profiles";
 export * from "./inventory-movements";
 export * from "./inventory-adjustments";
+export * from "./part-adjustments";
+export * from "./raw-material-adjustments";
 export * from "./stores";
 export * from "./movement-types";
 export * from "./users";
