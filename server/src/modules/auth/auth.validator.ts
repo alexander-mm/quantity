@@ -12,3 +12,11 @@ export const loginSchema = z.object({
         .min(1, "La contraseña es obligatoria.")
 
 });
+
+export const refreshTokenSchema = z.object({
+
+    refreshToken: z
+        .string()
+        .min(1, "El refresh token es obligatorio.")
+
+});

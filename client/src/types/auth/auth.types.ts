@@ -32,7 +32,27 @@ export interface LoginResponse {
 
     data: {
 
-        token: string;
+        accessToken: string;
+
+        refreshToken: string;
+
+        user: AuthUser;
+
+    };
+
+}
+
+export interface RefreshResponse {
+
+    success: boolean;
+
+    message: string;
+
+    data: {
+
+        accessToken: string;
+
+        refreshToken: string;
 
         user: AuthUser;
 

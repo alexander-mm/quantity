@@ -2,7 +2,9 @@ import { useAuthStore } from "@/store";
 
 export function useAuth() {
 
-    const token = useAuthStore((state) => state.token);
+    const accessToken = useAuthStore((state) => state.accessToken);
+
+    const refreshToken = useAuthStore((state) => state.refreshToken);
 
     const user = useAuthStore((state) => state.user);
 
@@ -15,6 +17,12 @@ export function useAuth() {
     const setAuth = useAuthStore(
 
         (state) => state.setAuth
+
+    );
+
+    const setTokens = useAuthStore(
+
+        (state) => state.setTokens
 
     );
 
@@ -38,13 +46,17 @@ export function useAuth() {
 
     return {
 
-        token,
+        accessToken,
+
+        refreshToken,
 
         user,
 
         isAuthenticated,
 
         setAuth,
+
+        setTokens,
 
         logout,
 

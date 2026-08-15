@@ -6,6 +6,10 @@ export const env = {
 
     jwtExpiresIn: process.env.JWT_EXPIRES_IN as string,
 
+    refreshTokenExpiresDays: process.env.REFRESH_TOKEN_EXPIRES_DAYS
+        ? Number(process.env.REFRESH_TOKEN_EXPIRES_DAYS)
+        : 60,
+
     telegramBotToken: process.env.TELEGRAM_BOT_TOKEN,
 
     telegramChatId: process.env.TELEGRAM_CHAT_ID,
