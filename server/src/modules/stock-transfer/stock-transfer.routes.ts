@@ -6,6 +6,7 @@ import { ROLES } from "../../shared/constants/roles.js";
 import { StockTransferController } from "./stock-transfer.controller.js";
 import {
     createStockTransferSchema,
+    updateStockTransferSchema,
     reportIssueSchema,
     resolveStockTransferSchema
 } from "./stock-transfer.validator.js";
@@ -23,6 +24,16 @@ router.post(
     validate(createStockTransferSchema),
     controller.create.bind(controller)
 );
+
+router.put(
+    "/:id",
+    authenticate,
+    blockRoles(ROLES.PRODUCTION),
+    validate(updateStockTransferSchema),
+    controller.update.bind(controller)
+);
+
+router.post("/:id/dispatch", authenticate, blockRoles(ROLES.PRODUCTION), controller.dispatch.bind(controller));
 
 router.post("/:id/confirm", authenticate, blockRoles(ROLES.PRODUCTION), controller.confirm.bind(controller));
 

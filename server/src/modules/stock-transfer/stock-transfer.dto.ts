@@ -15,6 +15,17 @@ export interface CreateStockTransferDto {
     details: CreateStockTransferDetailDto[];
 }
 
+export interface UpdateStockTransferDto {
+    number: string;
+    originStoreId: string;
+    destType: "STORE" | "TECHNICIAN";
+    destStoreId?: string;
+    destUserId?: string;
+    dispatchDate: Date;
+    observations?: string;
+    details: CreateStockTransferDetailDto[];
+}
+
 export interface ReportIssueDetailDto {
     productId: string;
     quantityReceived: number;

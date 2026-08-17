@@ -1,11 +1,15 @@
-import { Eye } from "lucide-react";
+import { Eye, Pencil } from "lucide-react";
 import { EntityTable } from "@/components/ui";
 import { StockTransferStatusBadge } from "./stock-transfer-status-badge";
 import type { StockTransfer } from "@/types";
 
-type Props = { transfers: StockTransfer[]; onView: (transfer: StockTransfer) => void; };
+type Props = {
+    transfers: StockTransfer[];
+    onView: (transfer: StockTransfer) => void;
+    onEdit?: (transfer: StockTransfer) => void;
+};
 
-export function StockTransfersTable({ transfers, onView }: Props) {
+export function StockTransfersTable({ transfers, onView, onEdit }: Props) {
     return (
         <EntityTable headers={["Número", "Fecha", "Origen", "Destino", "Estado", "Acciones"]}>
             {transfers.map(transfer => (
@@ -20,7 +24,19 @@ export function StockTransfersTable({ transfers, onView }: Props) {
                     </td>
                     <td className="px-6 py-4"><StockTransferStatusBadge status={transfer.status} /></td>
                     <td className="px-6 py-4">
-                        <Eye size={18} className="cursor-pointer text-slate-500 hover:text-primary" onClick={() => onView(transfer)} />
+                        {transfer.status === "DRAFT" && onEdit ? (
+                            <Pencil
+                                size={18}
+                                className="cursor-pointer text-slate-500 hover:text-primary"
+                                onClick={() => onEdit(transfer)}
+                            />
+                        ) : (
+                            <Eye
+                                size={18}
+                                className="cursor-pointer text-slate-500 hover:text-primary"
+                                onClick={() => onView(transfer)}
+                            />
+                        )}
                     </td>
                 </tr>
             ))}

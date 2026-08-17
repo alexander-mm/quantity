@@ -567,7 +567,7 @@ model StockTransfer {
   destStoreId   BigInt?
   destUserId    BigInt?
   userId        BigInt
-  status        TransferStatus          @default(PENDING)
+  status        TransferStatus          @default(DRAFT)
   dispatchDate  DateTime
   receivedAt    DateTime?
   receivedBy    BigInt?
@@ -642,6 +642,7 @@ enum DocumentStatus {
 }
 
 enum TransferStatus {
+  DRAFT
   PENDING
   RECEIVED
   WITH_ISSUES

@@ -4,6 +4,8 @@ type Props = { status: string; };
 
 export function StockTransferStatusBadge({ status }: Props) {
     switch (status) {
+        case "DRAFT":
+            return <Badge variant="outline">Borrador</Badge>;
         case "PENDING":
             return <Badge variant="secondary">Pendiente</Badge>;
         case "RECEIVED":

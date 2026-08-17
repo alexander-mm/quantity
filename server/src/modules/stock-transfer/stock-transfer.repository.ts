@@ -1,7 +1,7 @@
 import { Prisma, PrismaClient, StockTransfer } from "@prisma/client";
 import { BaseRepository } from "../../repositories/base/BaseRepository.js";
 import { safeUserSelect } from "../../shared/constants/safe-user-select.js";
-import { CreateStockTransferDto } from "./stock-transfer.dto.js";
+import { CreateStockTransferDto, UpdateStockTransferDto } from "./stock-transfer.dto.js";
 
 const includeRelations = {
     originStore: true,
@@ -76,6 +76,37 @@ export class StockTransferRepository extends BaseRepository {
                     }))
                 }
             },
+            include: includeRelations
+        });
+    }
+
+    async update(id: bigint, data: UpdateStockTransferDto): Promise<StockTransferWithRelations> {
+        return this.prisma.stockTransfer.update({
+            where: { id },
+            data: {
+                number: data.number,
+                originStoreId: BigInt(data.originStoreId),
+                destType: data.destType,
+                destStoreId: data.destStoreId ? BigInt(data.destStoreId) : null,
+                destUserId: data.destUserId ? BigInt(data.destUserId) : null,
+                dispatchDate: data.dispatchDate,
+                observations: data.observations,
+                details: {
+                    deleteMany: {},
+                    create: data.details.map(item => ({
+                        productId: BigInt(item.productId),
+                        quantitySent: item.quantitySent
+                    }))
+                }
+            },
+            include: includeRelations
+        });
+    }
+
+    async markDispatched(id: bigint): Promise<StockTransferWithRelations> {
+        return this.prisma.stockTransfer.update({
+            where: { id },
+            data: { status: "PENDING" },
             include: includeRelations
         });
     }
