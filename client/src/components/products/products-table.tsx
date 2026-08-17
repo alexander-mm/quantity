@@ -4,7 +4,7 @@ import { EntityTable } from "@/components/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatCurrency } from "@/lib/format-currency";
 import type { Product } from "@/types";
-import { useAuth } from "@/hooks";
+import { useAuth, useProductPriceEntryLabels } from "@/hooks";
 import { ROLES } from "@/constants/roles";
 
 type Props = {
@@ -26,7 +26,11 @@ export function ProductsTable({
     const { user } = useAuth();
     const isAdmin = user?.roleName === ROLES.ADMIN;
     const showStock = !!stockByProductId;
-    const [pvpCurrency, setPvpCurrency] = useState<"USD" | "COP">("USD");
+    const { data: priceEntryLabelsData } = useProductPriceEntryLabels();
+    const priceEntryLabels = priceEntryLabelsData?.data ?? [];
+    const [priceEntryKey, setPriceEntryKey] = useState("USD-1");
+    const [selectedCurrency, selectedSequenceRaw] = priceEntryKey.split("-");
+    const selectedSequence = Number(selectedSequenceRaw);
 
     return (
         <EntityTable
@@ -35,16 +39,19 @@ export function ProductsTable({
                 "Producto",
                 "Marca",
                 <Select
-                    key="pvp-currency"
-                    value={pvpCurrency}
-                    onValueChange={(value) => setPvpCurrency(value as "USD" | "COP")}
+                    key="price-entry"
+                    value={priceEntryKey}
+                    onValueChange={(value) => value && setPriceEntryKey(value)}
                 >
                     <SelectTrigger className="h-8 w-28 border-none bg-transparent p-0 text-sm font-semibold shadow-none focus-visible:ring-0">
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="USD">PVP (USD)</SelectItem>
-                        <SelectItem value="COP">PVP (COP)</SelectItem>
+                        {priceEntryLabels.map(entry => (
+                            <SelectItem key={`${entry.currency}-${entry.sequence}`} value={`${entry.currency}-${entry.sequence}`}>
+                                {entry.label}
+                            </SelectItem>
+                        ))}
                     </SelectContent>
                 </Select>,
                 ...(showStock ? ["Existencias"] : []),
@@ -69,8 +76,10 @@ export function ProductsTable({
                         <td className="px-6 py-4">
                             {
                                 (() => {
-                                    const value = pvpCurrency === "COP" ? product.pvpCop : product.pvp;
-                                    return value ? formatCurrency(value, pvpCurrency) : "-";
+                                    const entry = product.priceEntries.find(
+                                        item => item.currency === selectedCurrency && item.sequence === selectedSequence
+                                    );
+                                    return entry ? formatCurrency(entry.price, entry.currency) : "-";
                                 })()
                             }
                         </td>
