@@ -155,6 +155,7 @@ async function main() {
     let created = 0;
     let stockOnly = 0;
     let failed = 0;
+    let stockLoadFailed = 0;
 
     for (let i = 0; i < rows.length; i++) {
 
@@ -172,28 +173,8 @@ async function main() {
         const minimumStock = row["Stock Mínimo"];
         const initialStock = row["Stock Inicial"];
 
-        if (
-            !internalCode ||
-            !name ||
-            !brand ||
-            !categoryName ||
-            !unitOfMeasure ||
-            isBlank(costPrice) ||
-            isBlank(minimumStock)
-        ) {
-            console.error(`❌ Fila ${rowNumber}: faltan campos obligatorios. Se omite.`);
-            failed++;
-            continue;
-        }
-
-        if (!isNumeric(costPrice)) {
-            console.error(`❌ Fila ${rowNumber} (${internalCode}): "Costo" no es numérico (${JSON.stringify(costPrice)}, revisa si hay una fórmula rota tipo #REF!). Se omite.`);
-            failed++;
-            continue;
-        }
-
-        if (!isNumeric(minimumStock)) {
-            console.error(`❌ Fila ${rowNumber} (${internalCode}): "Stock Mínimo" no es numérico (${JSON.stringify(minimumStock)}). Se omite.`);
+        if (!internalCode) {
+            console.error(`❌ Fila ${rowNumber}: falta "Código Interno". Se omite.`);
             failed++;
             continue;
         }
@@ -230,11 +211,39 @@ async function main() {
 
             if (existing) {
 
+                // Producto ya creado (normalmente por el archivo de la Bodega Principal):
+                // solo nos interesa sumarle stock en esta tienda, no volvemos a exigir
+                // Marca/Categoría/Unidad/Precios que probablemente ni vengan en este archivo.
                 productId = existing.id;
                 console.log(`↷  Fila ${rowNumber}: "${internalCode}" ya existe, no se vuelve a crear ni se tocan sus precios.`);
                 stockOnly++;
 
             } else {
+
+                if (
+                    !name ||
+                    !brand ||
+                    !categoryName ||
+                    !unitOfMeasure ||
+                    isBlank(costPrice) ||
+                    isBlank(minimumStock)
+                ) {
+                    console.error(`❌ Fila ${rowNumber} (${internalCode}): es un producto nuevo (no existe aún) y le faltan campos obligatorios (Nombre/Marca/Categoría/Unidad de Medida/Costo/Stock Mínimo). Se omite.`);
+                    failed++;
+                    continue;
+                }
+
+                if (!isNumeric(costPrice)) {
+                    console.error(`❌ Fila ${rowNumber} (${internalCode}): "Costo" no es numérico (${JSON.stringify(costPrice)}, revisa si hay una fórmula rota tipo #REF!). Se omite.`);
+                    failed++;
+                    continue;
+                }
+
+                if (!isNumeric(minimumStock)) {
+                    console.error(`❌ Fila ${rowNumber} (${internalCode}): "Stock Mínimo" no es numérico (${JSON.stringify(minimumStock)}). Se omite.`);
+                    failed++;
+                    continue;
+                }
 
                 const firstUsd = entries.find(entry => entry.currency === "USD" && entry.sequence === 1);
                 const firstCop = entries.find(entry => entry.currency === "COP" && entry.sequence === 1);
@@ -268,41 +277,52 @@ async function main() {
                 }
 
                 if (dryRun) {
+
                     console.log(`✅ Fila ${rowNumber}: (simulación) se crearía "${internalCode}" - ${name} con ${entries.length} precio(s) (USD 1 = ${firstUsd.price})`);
                     created++;
-                    continue;
+                    productId = -1n; // solo se usa en dry-run, nunca se persiste
+
+                } else {
+
+                    const product = await productService.create({
+                        internalCode,
+                        barcode: barcode || null,
+                        name,
+                        description: description || undefined,
+                        brand,
+                        categoryId,
+                        unitOfMeasure,
+                        costPrice: Number(costPrice),
+                        pvp: firstUsd.price,
+                        pvpCop: firstCop?.price,
+                        minimumStock: Number(minimumStock)
+                    });
+
+                    productId = product.id;
+
+                    await productPriceEntryService.replaceForProduct(
+                        productId.toString(),
+                        { entries }
+                    );
+
+                    console.log(`✅ Fila ${rowNumber}: creado "${internalCode}" - ${name} con ${entries.length} precio(s)`);
+                    created++;
+
                 }
-
-                const product = await productService.create({
-                    internalCode,
-                    barcode: barcode || null,
-                    name,
-                    description: description || undefined,
-                    brand,
-                    categoryId,
-                    unitOfMeasure,
-                    costPrice: Number(costPrice),
-                    pvp: firstUsd.price,
-                    pvpCop: firstCop?.price,
-                    minimumStock: Number(minimumStock)
-                });
-
-                productId = product.id;
-
-                await productPriceEntryService.replaceForProduct(
-                    productId.toString(),
-                    { entries }
-                );
-
-                console.log(`✅ Fila ${rowNumber}: creado "${internalCode}" - ${name} con ${entries.length} precio(s)`);
-                created++;
 
             }
 
             if (!isBlank(initialStock) && Number(initialStock) > 0) {
 
-                if (dryRun) {
+                if (isBlank(costPrice) || !isNumeric(costPrice)) {
+
+                    console.error(`❌ Fila ${rowNumber} (${internalCode}): tiene "Stock Inicial" pero "Costo" no es válido (${JSON.stringify(costPrice)}), no se puede registrar el movimiento de stock. Se omite solo la carga de stock.`);
+                    stockLoadFailed++;
+
+                } else if (dryRun) {
+
                     console.log(`   ↳ (simulación) se cargarían ${initialStock} unidades en ${store.name}`);
+
                 } else {
 
                     await inventoryMovementService.create({
@@ -336,6 +356,9 @@ async function main() {
     console.log(`Productos nuevos: ${created}`);
     console.log(`Solo se agregó stock (ya existían): ${stockOnly}`);
     console.log(`Con error: ${failed}`);
+    if (stockLoadFailed > 0) {
+        console.log(`⚠️  Con stock sin cargar por costo inválido: ${stockLoadFailed}`);
+    }
     console.log("====================================");
 
 }
