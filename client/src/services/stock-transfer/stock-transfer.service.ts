@@ -29,6 +29,21 @@ export async function createStockTransfer(
     return data;
 }
 
+export type UpdateStockTransferRequest = CreateStockTransferRequest;
+
+export async function updateStockTransfer(
+    id: string,
+    payload: UpdateStockTransferRequest
+): Promise<ApiResponse<StockTransfer>> {
+    const { data } = await api.put<ApiResponse<StockTransfer>>(`/stock-transfers/${id}`, payload);
+    return data;
+}
+
+export async function dispatchStockTransfer(id: string): Promise<ApiResponse<StockTransfer>> {
+    const { data } = await api.post<ApiResponse<StockTransfer>>(`/stock-transfers/${id}/dispatch`);
+    return data;
+}
+
 export async function confirmStockTransfer(id: string): Promise<ApiResponse<StockTransfer>> {
     const { data } = await api.post<ApiResponse<StockTransfer>>(`/stock-transfers/${id}/confirm`);
     return data;

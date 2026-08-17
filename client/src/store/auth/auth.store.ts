@@ -3,6 +3,8 @@ import { persist } from "zustand/middleware";
 
 import { authStorage } from "./auth.persist";
 
+const AUTH_STORAGE_KEY = "ordeplus-auth";
+
 interface AuthUser {
     id: string;
     username: string;
@@ -114,7 +116,7 @@ export const useAuthStore = create<AuthState>()(
 
         {
 
-            name: "ordeplus-auth",
+            name: AUTH_STORAGE_KEY,
 
             storage: authStorage
 
@@ -123,3 +125,23 @@ export const useAuthStore = create<AuthState>()(
     )
 
 );
+
+// Si otra pestaña del mismo navegador rota el access/refresh token (por ejemplo
+// al renovar la sesion), esta pestana solo se entera leyendo localStorage de nuevo:
+// el estado en memoria de zustand no se re-sincroniza solo entre pestanas. Sin esto,
+// una pestana con el token viejo en memoria puede intentar refrescar con un token ya
+// rotado por otra pestana, fallar, y cerrar la sesion de todas (porque logout() borra
+// el localStorage compartido).
+if (typeof window !== "undefined") {
+
+    window.addEventListener("storage", (event) => {
+
+        if (event.key === AUTH_STORAGE_KEY) {
+
+            void useAuthStore.persist.rehydrate();
+
+        }
+
+    });
+
+}

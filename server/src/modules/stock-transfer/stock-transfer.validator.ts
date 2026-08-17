@@ -56,6 +56,8 @@ export const createStockTransferSchema = z.object({
 
 });
 
+export const updateStockTransferSchema = createStockTransferSchema;
+
 export const reportIssueSchema = z.object({
 
     observations: z.string().trim().min(1, "Debe indicar la novedad."),

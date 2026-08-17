@@ -15,6 +15,7 @@ export function StockTransfersPage() {
     const { data, isLoading, isError } = useStockTransfers();
     const transfers = data?.data ?? [];
     const [open, setOpen] = useState(false);
+    const [transferToEdit, setTransferToEdit] = useState<StockTransfer | null>(null);
     const [transferToView, setTransferToView] = useState<StockTransfer | null>(null);
 
     return (
@@ -31,11 +32,26 @@ export function StockTransfersPage() {
                 {!isLoading && !isError && (
                     transfers.length === 0
                         ? <p className="text-muted-foreground">No existen envíos registrados.</p>
-                        : <StockTransfersTable transfers={transfers} onView={setTransferToView} />
+                        : (
+                            <StockTransfersTable
+                                transfers={transfers}
+                                onView={setTransferToView}
+                                onEdit={setTransferToEdit}
+                            />
+                        )
                 )}
             </div>
 
-            <StockTransferModal open={open} onOpenChange={setOpen} />
+            <StockTransferModal
+                open={open}
+                onOpenChange={setOpen}
+            />
+
+            <StockTransferModal
+                open={!!transferToEdit}
+                transfer={transferToEdit}
+                onOpenChange={() => setTransferToEdit(null)}
+            />
 
             <ReceiveTransferModal
                 open={!!transferToView}

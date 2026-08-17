@@ -1,4 +1,4 @@
-export type TransferStatus = "PENDING" | "RECEIVED" | "WITH_ISSUES" | "CANCELLED";
+export type TransferStatus = "DRAFT" | "PENDING" | "RECEIVED" | "WITH_ISSUES" | "CANCELLED";
 export type TransferDestinationType = "STORE" | "TECHNICIAN";
 
 export interface StockTransferDetail {

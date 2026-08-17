@@ -5,7 +5,7 @@ import { StockTransferRepository } from "./stock-transfer.repository.js";
 import { StoreRepository } from "../store/store.repository.js";
 import { InventoryMovementService } from "../inventory-movement/inventory-movement.service.js";
 import { MovementTypeRepository } from "../movement-type/movement-type.repository.js";
-import { CreateStockTransferDto, ReportIssueStockTransferDto, ResolveStockTransferDto } from "./stock-transfer.dto.js";
+import { CreateStockTransferDto, ReportIssueStockTransferDto, ResolveStockTransferDto, UpdateStockTransferDto } from "./stock-transfer.dto.js";
 import { UserRepository } from "../user/user.repository.js";
 import { ROLES } from "../../shared/constants/roles.js";
 
@@ -36,20 +36,14 @@ export class StockTransferService {
         return transfer;
     }
 
-    async create(data: CreateStockTransferDto): Promise<StockTransfer> {
-
-        const existing = await this.repository.findByNumber(data.number);
-        if (existing) {
-            throw new ConflictError("Ya existe un envío con ese número.");
-        }
+    private async validateDestination(
+        data: CreateStockTransferDto | UpdateStockTransferDto
+    ): Promise<void> {
 
         const originStore = await this.storeRepository.findById(BigInt(data.originStoreId));
         if (!originStore) {
             throw new NotFoundError("El origen no existe.");
         }
-
-        let destStore = null;
-        let destUser = null;
 
         if (data.destType === "STORE") {
 
@@ -61,7 +55,7 @@ export class StockTransferService {
                 throw new ValidationError("El origen y el destino no pueden ser el mismo.");
             }
 
-            destStore = await this.storeRepository.findById(BigInt(data.destStoreId));
+            const destStore = await this.storeRepository.findById(BigInt(data.destStoreId));
             if (!destStore) {
                 throw new NotFoundError("La tienda/bodega destino no existe.");
             }
@@ -72,7 +66,7 @@ export class StockTransferService {
                 throw new ValidationError("Seleccione el técnico destino.");
             }
 
-            destUser = await this.userRepository.findById(BigInt(data.destUserId));
+            const destUser = await this.userRepository.findById(BigInt(data.destUserId));
             if (!destUser) {
                 throw new NotFoundError("El técnico no existe.");
             }
@@ -87,12 +81,64 @@ export class StockTransferService {
             throw new ValidationError("El envío no tiene productos.");
         }
 
+    }
+
+    async create(data: CreateStockTransferDto): Promise<StockTransfer> {
+
+        const existing = await this.repository.findByNumber(data.number);
+        if (existing) {
+            throw new ConflictError("Ya existe un envío con ese número.");
+        }
+
+        await this.validateDestination(data);
+
+        return this.repository.create(data);
+
+    }
+
+    async update(id: string, data: UpdateStockTransferDto): Promise<StockTransfer> {
+
+        const transfer = await this.repository.findById(BigInt(id));
+
+        if (!transfer) {
+            throw new NotFoundError("Envío no encontrado.");
+        }
+
+        if (transfer.status !== "DRAFT") {
+            throw new ValidationError("Solo se pueden editar envíos en borrador.");
+        }
+
+        const existingNumber = await this.repository.findByNumber(data.number);
+        if (existingNumber && existingNumber.id !== transfer.id) {
+            throw new ConflictError("Ya existe un envío con ese número.");
+        }
+
+        await this.validateDestination(data);
+
+        return this.repository.update(BigInt(id), data);
+
+    }
+
+    async dispatch(id: string): Promise<StockTransfer> {
+
         return prisma.$transaction(async (tx) => {
 
             const repository = this.repository.withTransaction(tx);
-            const transfer = await repository.create(data);
+            const transfer = await repository.findById(BigInt(id));
 
-            const movementTypeCode = data.destType === "TECHNICIAN" ? "STAFF_DELIVERY" : "TRANSFER_OUT";
+            if (!transfer) {
+                throw new NotFoundError("Envío no encontrado.");
+            }
+
+            if (transfer.status !== "DRAFT") {
+                throw new ValidationError("Este envío ya fue despachado.");
+            }
+
+            if (transfer.details.length === 0) {
+                throw new ValidationError("El envío no tiene productos.");
+            }
+
+            const movementTypeCode = transfer.destType === "TECHNICIAN" ? "STAFF_DELIVERY" : "TRANSFER_OUT";
 
             const movementType = await this.movementTypeRepository.findByCode(movementTypeCode);
             if (!movementType) {
@@ -101,9 +147,9 @@ export class StockTransferService {
 
             const movementService = this.inventoryMovementService.withTransaction(tx);
 
-            const destLabel = data.destType === "TECHNICIAN"
-                ? `${destUser!.firstName} ${destUser!.lastName}`
-                : destStore!.name;
+            const destLabel = transfer.destType === "TECHNICIAN"
+                ? `${transfer.destUser!.firstName} ${transfer.destUser!.lastName}`
+                : transfer.destStore!.name;
 
             for (const detail of transfer.details) {
 
@@ -120,7 +166,7 @@ export class StockTransferService {
 
             }
 
-            return transfer;
+            return repository.markDispatched(transfer.id);
 
         });
 

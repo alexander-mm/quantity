@@ -47,12 +47,60 @@ export class StockTransferController {
 
             const body = { ...req.body, userId: req.user!.userId };
             const transfer = await this.service.create(body);
-            res.status(201).json(ApiResponse.success("Envío despachado correctamente.", transfer));
+            res.status(201).json(ApiResponse.success("Envío guardado como borrador.", transfer));
         } catch (error) {
             next(error);
         }
     }
 
+
+    async update(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { id } = req.params;
+            if (!id || Array.isArray(id)) {
+                res.status(400).json(ApiResponse.error("Id inválido."));
+                return;
+            }
+
+            if (
+                req.user?.roleName !== ROLES.ADMIN &&
+                req.body.originStoreId !== req.user?.storeId
+            ) {
+                res.status(403).json(ApiResponse.error("Solo puedes editar envíos de tu propia tienda."));
+                return;
+            }
+
+            const transfer = await this.service.update(id, req.body);
+            res.status(200).json(ApiResponse.success("Envío actualizado correctamente.", transfer));
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async dispatch(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { id } = req.params;
+            if (!id || Array.isArray(id)) {
+                res.status(400).json(ApiResponse.error("Id inválido."));
+                return;
+            }
+
+            const transfer = await this.service.findById(id);
+
+            if (
+                req.user?.roleName !== ROLES.ADMIN &&
+                transfer.originStoreId.toString() !== req.user?.storeId
+            ) {
+                res.status(403).json(ApiResponse.error("Solo puedes despachar desde tu propia tienda."));
+                return;
+            }
+
+            const dispatched = await this.service.dispatch(id);
+            res.status(200).json(ApiResponse.success("Envío despachado correctamente.", dispatched));
+        } catch (error) {
+            next(error);
+        }
+    }
 
     async confirm(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
         try {
