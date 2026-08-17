@@ -24,10 +24,4 @@ export const createPurchaseSchema=z.object({
     })).min(1,"Debe agregar al menos un producto.")
 });
 
-export const updatePurchaseSchema=createPurchaseSchema.extend({
-    status:z.enum([
-        "DRAFT",
-        "CONFIRMED",
-        "CANCELLED"
-    ])
-});
+export const updatePurchaseSchema=createPurchaseSchema;

@@ -26,14 +26,4 @@ export interface CreatePurchaseDto {
     details: CreatePurchaseDetailDto[];
 }
 
-export interface UpdatePurchaseDto {
-    number: string;
-    supplierId: string;
-    storeId: string;
-    userId: string;
-    purchaseDate: Date;
-    reference?: string;
-    observations?: string;
-    status: "DRAFT" | "CONFIRMED" | "CANCELLED";
-    details: CreatePurchaseDetailDto[];
-}
+export type UpdatePurchaseDto = CreatePurchaseDto;

@@ -1,4 +1,4 @@
-import { Eye, Check, Trash2 } from "lucide-react";
+import { Eye, Pencil, Check, Trash2 } from "lucide-react";
 import { EntityTable } from "@/components/ui";
 import { PurchaseStatusBadge } from "./purchase-status-badge";
 import type { Purchase } from "@/types";
@@ -12,11 +12,13 @@ import { formatDateOnly } from "@/lib/format-date";
 type Props = {
     purchases: Purchase[];
     onView: (purchase: Purchase) => void;
+    onEdit: (purchase: Purchase) => void;
 };
 
 export function PurchasesTable({
     purchases,
-    onView
+    onView,
+    onEdit
 }: Props) {
 
     const confirmMutation =
@@ -89,6 +91,17 @@ export function PurchasesTable({
                                             onView(purchase)
                                         }
                                     />
+                                    {
+                                        purchase.status === "DRAFT" && (
+                                            <Pencil
+                                                size={18}
+                                                className="cursor-pointer text-slate-500 hover:text-primary"
+                                                onClick={() =>
+                                                    onEdit(purchase)
+                                                }
+                                            />
+                                        )
+                                    }
                                     {
                                         purchase.status === "DRAFT" && (
                                             <Check

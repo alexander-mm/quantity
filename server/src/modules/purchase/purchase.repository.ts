@@ -131,12 +131,69 @@ export class PurchaseRepository extends BaseRepository {
     }
 
     async update(
-        _id: bigint,
-        _data: UpdatePurchaseDto
+        id: bigint,
+        data: UpdatePurchaseDto
     ): Promise<Purchase> {
-        throw new Error(
-            "Pendiente de implementar."
+
+        const subtotal = data.details.reduce(
+            (sum, item) => sum + (item.quantity * item.unitCost),
+            0
         );
+
+        const discount = data.details.reduce(
+            (sum, item) => sum + (item.discount ?? 0),
+            0
+        );
+
+        const tax = data.details.reduce(
+            (sum, item) => sum + (item.tax ?? 0),
+            0
+        );
+
+        const total = subtotal - discount + tax;
+
+        return this.prisma.purchase.update({
+            where: { id },
+            data: {
+                number: data.number,
+                supplierId: BigInt(data.supplierId),
+                storeId: BigInt(data.storeId),
+                purchaseDate: data.purchaseDate,
+                reference: data.reference,
+                observations: data.observations,
+                subtotal,
+                discount,
+                tax,
+                total,
+                details: {
+                    deleteMany: {},
+                    create: data.details.map(item => ({
+                        productId: BigInt(item.productId),
+                        quantity: item.quantity,
+                        unitCost: item.unitCost,
+                        pvp: item.pvp,
+                        pvpCop: item.pvpCop,
+                        discount: item.discount ?? 0,
+                        tax: item.tax ?? 0,
+                        lineTotal:
+                            (item.quantity * item.unitCost)
+                            - (item.discount ?? 0)
+                            + (item.tax ?? 0),
+                        priceEntries: item.priceEntries && item.priceEntries.length > 0
+                            ? {
+                                create: item.priceEntries.map(entry => ({
+                                    currency: entry.currency,
+                                    sequence: entry.sequence,
+                                    price: entry.price
+                                }))
+                            }
+                            : undefined
+                    }))
+                }
+            },
+            include: this.include
+        });
+
     }
 
     async delete(

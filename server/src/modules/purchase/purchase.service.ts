@@ -78,6 +78,12 @@ export class PurchaseService {
             );
         }
 
+        if (purchase.status !== "DRAFT") {
+            throw new ValidationError(
+                "Solo se pueden editar compras en borrador."
+            );
+        }
+
         const existing = await this.repository.findByNumber(
             data.number
         );

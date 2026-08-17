@@ -71,6 +71,24 @@ export async function createPurchase(
 
 }
 
+export type UpdatePurchaseRequest = CreatePurchaseRequest;
+
+export async function updatePurchase(
+    id:string,
+    payload:UpdatePurchaseRequest
+):Promise<ApiResponse<Purchase>>{
+
+    const {data}=await api.put<
+        ApiResponse<Purchase>
+    >(
+        `/purchases/${id}`,
+        payload
+    );
+
+    return data;
+
+}
+
 export async function confirmPurchase(
     id:string
 ):Promise<ApiResponse<Purchase>>{
