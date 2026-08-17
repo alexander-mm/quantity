@@ -14,6 +14,11 @@ export interface Product {
     category: {
         name: string;
     };
+    priceEntries: {
+        currency: "USD" | "COP";
+        sequence: number;
+        price: string;
+    }[];
 }
 
 export interface ProductPrice {

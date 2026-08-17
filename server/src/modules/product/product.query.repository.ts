@@ -38,6 +38,17 @@ export class ProductQueryRepository extends BaseRepository {
                     select: {
                         price: true
                     }
+                },
+                priceEntries: {
+                    orderBy: [
+                        { currency: "asc" },
+                        { sequence: "asc" }
+                    ],
+                    select: {
+                        currency: true,
+                        sequence: true,
+                        price: true
+                    }
                 }
             },
             orderBy: {
