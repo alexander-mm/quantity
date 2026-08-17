@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/format-currency";
+import { formatDateOnly } from "@/lib/format-date";
 import { AccountReceivableStatusBadge } from "./account-receivable-status-badge";
 import type { AccountReceivable } from "@/types";
 
@@ -34,7 +35,7 @@ export function AccountReceivableView({ accountReceivable, onClose }: Props) {
                 </div>
                 <div>
                     <p className="text-sm text-muted-foreground">Fecha de venta</p>
-                    <p>{new Date(accountReceivable.sale.saleDate).toLocaleDateString()}</p>
+                    <p>{formatDateOnly(accountReceivable.sale.saleDate)}</p>
                 </div>
                 {accountReceivable.paidAt && (
                     <div>

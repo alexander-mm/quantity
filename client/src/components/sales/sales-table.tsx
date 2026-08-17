@@ -9,6 +9,7 @@ import { ConfirmSaleDialog } from "./confirm-sale-dialog";
 import { CancelSaleDialog } from "./cancel-sale-dialog";
 import { getClientLabel } from "@/lib/client-label";
 import { formatCurrency } from "@/lib/format-currency";
+import { formatDateOnly } from "@/lib/format-date";
 
 type Props = {
     sales: Sale[];
@@ -62,9 +63,7 @@ export function SalesTable({
                                 {sale.number}
                             </td>
                             <td className="px-6 py-4">
-                                {new Date(
-                                    sale.saleDate
-                                ).toLocaleDateString()}
+                                {formatDateOnly(sale.saleDate)}
                             </td>
                             <td className="px-6 py-4">
                                 {getClientLabel(sale.client)}
