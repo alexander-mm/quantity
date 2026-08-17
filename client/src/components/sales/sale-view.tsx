@@ -2,6 +2,7 @@ import type { Sale } from "@/types";
 import { Button } from "@/components/ui/button";
 import { SaleStatusBadge } from "./sale-status-badge";
 import { formatCurrency } from "@/lib/format-currency";
+import { formatDateOnly } from "@/lib/format-date";
 
 type Props = {
     sale: Sale;
@@ -73,9 +74,7 @@ export function SaleView({
                         Fecha
                     </p>
                     <p>
-                        {new Date(
-                            sale.saleDate
-                        ).toLocaleDateString()}
+                        {formatDateOnly(sale.saleDate)}
                     </p>
                 </div>
 

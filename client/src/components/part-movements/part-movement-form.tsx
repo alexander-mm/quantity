@@ -7,7 +7,7 @@ import { toast } from "react-hot-toast";
 import axios from "axios";
 import { partMovementSchema } from "@/validators";
 import type { PartMovementFormData } from "@/validators";
-import { getNextSequentialCode } from "@/lib";
+import { getNextSequentialCode, todayLocalDateString } from "@/lib";
 
 import { useCreatePartMovement, usePartMovements } from "@/hooks";
 import { PartMovementHeader } from "./part-movement-header";
@@ -24,7 +24,7 @@ export function PartMovementForm({ onSuccess }: Props) {
         defaultValues: {
             number: "",
             type: "IN",
-            movementDate: new Date().toISOString().split("T")[0],
+            movementDate: todayLocalDateString(),
             observations: "",
             details: []
         }

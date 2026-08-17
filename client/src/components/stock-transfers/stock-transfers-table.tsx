@@ -1,6 +1,7 @@
 import { Eye, Pencil } from "lucide-react";
 import { EntityTable } from "@/components/ui";
 import { StockTransferStatusBadge } from "./stock-transfer-status-badge";
+import { formatDateOnly } from "@/lib/format-date";
 import type { StockTransfer } from "@/types";
 
 type Props = {
@@ -15,7 +16,7 @@ export function StockTransfersTable({ transfers, onView, onEdit }: Props) {
             {transfers.map(transfer => (
                 <tr key={transfer.id} className="border-b transition hover:bg-muted/40">
                     <td className="px-6 py-4">{transfer.number}</td>
-                    <td className="px-6 py-4">{new Date(transfer.dispatchDate).toLocaleDateString()}</td>
+                    <td className="px-6 py-4">{formatDateOnly(transfer.dispatchDate)}</td>
                     <td className="px-6 py-4">{transfer.originStore.name}</td>
                     <td className="px-6 py-4">
                         {transfer.destType === "TECHNICIAN"

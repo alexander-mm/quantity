@@ -1,6 +1,7 @@
 import type { Purchase } from "@/types";
 import { Button } from "@/components/ui/button";
 import { PurchaseStatusBadge } from "./purchase-status-badge";
+import { formatDateOnly } from "@/lib/format-date";
 
 type Props = {
     purchase: Purchase;
@@ -57,9 +58,7 @@ export function PurchaseView({
                         Fecha
                     </p>
                     <p>
-                        {new Date(
-                            purchase.purchaseDate
-                        ).toLocaleDateString()}
+                        {formatDateOnly(purchase.purchaseDate)}
                     </p>
                 </div>
 

@@ -8,7 +8,7 @@ import axios from "axios";
 import { saleSchema } from "@/validators";
 import type { SaleFormData } from "@/validators";
 import { useCreateSale, useUsers, useAuth, useSales } from "@/hooks";
-import { generateOfflineId, getNextSequentialCode } from "@/lib";
+import { generateOfflineId, getNextSequentialCode, todayLocalDateString } from "@/lib";
 import { SaleHeader } from "./sale-header";
 import { SaleDetailsTable } from "./sale-details-table";
 import { SaleTotals } from "./sale-totals";
@@ -33,10 +33,7 @@ export function SaleForm({
                 clientId: "",
                 storeId: "",
                 currency: "USD",
-                saleDate:
-                    new Date()
-                        .toISOString()
-                        .split("T")[0],
+                saleDate: todayLocalDateString(),
                 reference: "",
                 observations: "",
                 accountReceivableNumber: "",

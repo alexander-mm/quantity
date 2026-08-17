@@ -7,7 +7,7 @@ import { toast } from "react-hot-toast";
 import axios from "axios";
 import { rawMaterialMovementSchema } from "@/validators";
 import type { RawMaterialMovementFormData } from "@/validators";
-import { getNextSequentialCode } from "@/lib";
+import { getNextSequentialCode, todayLocalDateString } from "@/lib";
 
 import { useCreateRawMaterialMovement, useRawMaterialMovements } from "@/hooks";
 import { RawMaterialMovementHeader } from "./raw-material-movement-header";
@@ -24,7 +24,7 @@ export function RawMaterialMovementForm({ onSuccess }: Props) {
         defaultValues: {
             number: "",
             type: "IN",
-            movementDate: new Date().toISOString().split("T")[0],
+            movementDate: todayLocalDateString(),
             observations: "",
             details: []
         }
