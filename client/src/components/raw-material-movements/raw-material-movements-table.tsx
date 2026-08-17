@@ -1,6 +1,7 @@
 import { Eye } from "lucide-react";
 import { EntityTable } from "@/components/ui";
 import { RawMaterialMovementTypeBadge } from "./raw-material-movement-type-badge";
+import { formatDateOnly } from "@/lib/format-date";
 import type { RawMaterialMovement } from "@/types";
 
 type Props = {
@@ -18,7 +19,7 @@ export function RawMaterialMovementsTable({ movements, onView }: Props) {
                         <RawMaterialMovementTypeBadge type={movement.type} />
                     </td>
                     <td className="px-6 py-4">
-                        {new Date(movement.movementDate).toLocaleDateString()}
+                        {formatDateOnly(movement.movementDate)}
                     </td>
                     <td className="px-6 py-4">
                         {movement.user.firstName} {movement.user.lastName}

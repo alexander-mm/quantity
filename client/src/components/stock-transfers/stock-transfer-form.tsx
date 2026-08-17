@@ -14,7 +14,7 @@ import {
     useAuth,
     useStockTransfers
 } from "@/hooks";
-import { getNextSequentialCode } from "@/lib";
+import { getNextSequentialCode, todayLocalDateString } from "@/lib";
 import { StockTransferHeader } from "./stock-transfer-header";
 import { StockTransferDetailsTable } from "./stock-transfer-details-table";
 import { ROLES } from "@/constants/roles";
@@ -53,7 +53,7 @@ export function StockTransferForm({ transfer, onSuccess }: Props) {
             destType: "STORE",
             destStoreId: "",
             destUserId: "",
-            dispatchDate: new Date().toISOString().split("T")[0],
+            dispatchDate: todayLocalDateString(),
             observations: "",
             details: []
         }

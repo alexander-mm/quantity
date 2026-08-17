@@ -2,6 +2,7 @@ import { Eye } from "lucide-react";
 import { EntityTable } from "@/components/ui";
 import { ReturnStatusBadge } from "./return-status-badge";
 import { RETURN_REASON_LABELS } from "./return-reason-labels";
+import { formatDateOnly } from "@/lib/format-date";
 import type { Return } from "@/types";
 
 type Props = {
@@ -29,7 +30,7 @@ export function ReturnsTable({ returns, onView }: Props) {
             {returns.map(item => (
                 <tr key={item.id} className="border-b transition hover:bg-muted/40">
                     <td className="px-6 py-4 font-medium">{item.number}</td>
-                    <td className="px-6 py-4">{new Date(item.returnDate).toLocaleDateString()}</td>
+                    <td className="px-6 py-4">{formatDateOnly(item.returnDate)}</td>
                     <td className="px-6 py-4">{item.product.internalCode} - {item.product.name}</td>
                     <td className="px-6 py-4">{Number(item.quantity)}</td>
                     <td className="px-6 py-4">{RETURN_REASON_LABELS[item.reason]}</td>

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { RawMaterialMovementTypeBadge } from "./raw-material-movement-type-badge";
+import { formatDateOnly } from "@/lib/format-date";
 import type { RawMaterialMovement } from "@/types";
 
 type Props = {
@@ -21,7 +22,7 @@ export function RawMaterialMovementView({ movement, onClose }: Props) {
                 </div>
                 <div>
                     <p className="text-sm text-muted-foreground">Fecha</p>
-                    <p>{new Date(movement.movementDate).toLocaleDateString()}</p>
+                    <p>{formatDateOnly(movement.movementDate)}</p>
                 </div>
                 <div>
                     <p className="text-sm text-muted-foreground">Registrado por</p>

@@ -7,6 +7,7 @@ import { toast } from "react-hot-toast";
 import { useState } from "react";
 import { ConfirmPurchaseDialog } from "./confirm-purchase-dialog";
 import { CancelPurchaseDialog } from "./cancel-purchase-dialog";
+import { formatDateOnly } from "@/lib/format-date";
 
 type Props = {
     purchases: Purchase[];
@@ -60,9 +61,7 @@ export function PurchasesTable({
                                 {purchase.number}
                             </td>
                             <td className="px-6 py-4">
-                                {new Date(
-                                    purchase.purchaseDate
-                                ).toLocaleDateString()}
+                                {formatDateOnly(purchase.purchaseDate)}
                             </td>
                             <td className="px-6 py-4">
                                 {purchase.supplier.companyName}

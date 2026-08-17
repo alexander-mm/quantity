@@ -7,7 +7,7 @@ import { toast } from "react-hot-toast";
 import { purchaseSchema } from "@/validators";
 import type { PurchaseFormData } from "@/validators";
 import { useCreatePurchase, useUsers, usePurchases } from "@/hooks";
-import { getNextSequentialCode } from "@/lib";
+import { getNextSequentialCode, todayLocalDateString } from "@/lib";
 import { PurchaseHeader } from "./purchase-header";
 import { PurchaseDetailsTable } from "./purchase-details-table";
 import { PurchaseTotals } from "./purchase-totals";
@@ -31,10 +31,7 @@ export function PurchaseForm({
                 number: "",
                 supplierId: "",
                 storeId: "",
-                purchaseDate:
-                    new Date()
-                        .toISOString()
-                        .split("T")[0],
+                purchaseDate: todayLocalDateString(),
                 reference: "",
                 observations: "",
                 details: []

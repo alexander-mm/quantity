@@ -12,7 +12,7 @@ import { Combobox, ComboboxInput, ComboboxContent, ComboboxItem, ComboboxEmpty }
 import { returnSchema } from "@/validators";
 import type { ReturnFormData } from "@/validators";
 import { useSales, useProducts, useStores, useCreateReturn, useOfflineCollection } from "@/hooks";
-import { generateOfflineId, offlineDb } from "@/lib";
+import { generateOfflineId, offlineDb, todayLocalDateString } from "@/lib";
 import { RETURN_REASON_LABELS } from "./return-reason-labels";
 import type { ReturnDisposition } from "@/types";
 
@@ -41,7 +41,7 @@ export function ReturnForm({ onSuccess }: Props) {
             quantity: undefined,
             reason: undefined,
             notes: "",
-            returnDate: new Date().toISOString().split("T")[0],
+            returnDate: todayLocalDateString(),
             disposition: undefined
         }
     });
