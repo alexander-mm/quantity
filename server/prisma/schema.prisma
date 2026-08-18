@@ -408,6 +408,8 @@ model Sale {
   tax          Decimal @default(0) @db.Decimal(12, 2)
   hasShipping  Boolean @default(false)
   shippingCost Decimal @default(0) @db.Decimal(12, 2)
+  hasLabor     Boolean @default(false)
+  laborCost    Decimal @default(0) @db.Decimal(12, 2)
   total        Decimal @default(0) @db.Decimal(12, 2)
 }
 

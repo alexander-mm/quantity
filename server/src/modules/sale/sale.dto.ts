@@ -22,6 +22,8 @@ export interface CreateSaleDto {
 
     hasShipping?: boolean;
     shippingCost?: number;
+    hasLabor?: boolean;
+    laborCost?: number;
 
     paymentMethod: PaymentMethodDto;
 
@@ -50,6 +52,8 @@ export interface UpdateSaleDto {
 
     hasShipping?: boolean;
     shippingCost?: number;
+    hasLabor?: boolean;
+    laborCost?: number;
 
     paymentMethod: PaymentMethodDto;
     transferVouchers?: string[];

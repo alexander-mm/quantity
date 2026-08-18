@@ -213,6 +213,18 @@ export function SaleView({
                     </div>
                 )}
 
+                {sale.hasLabor && (
+                    <div className="flex justify-between">
+                        <span>
+                            Mano de obra
+                        </span>
+
+                        <strong>
+                            {formatCurrency(sale.laborCost, sale.currency)}
+                        </strong>
+                    </div>
+                )}
+
                 <div className="flex justify-between border-t pt-2 text-lg font-semibold">
                     <span>
                         Total

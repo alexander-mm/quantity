@@ -36,6 +36,8 @@ export interface Sale{
     tax:string;
     hasShipping:boolean;
     shippingCost:string;
+    hasLabor:boolean;
+    laborCost:string;
     total:string;
 
     client: Client;
