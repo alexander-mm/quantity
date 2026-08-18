@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { ApiResponse } from "../../shared/responses/index.js";
 import { ProductService } from "./product.service.js";
 import { ProductQueryService } from "./product.query.service.js";
+import { ProductKitAvailabilityService } from "./product-kit-availability.service.js";
 import { AuthenticatedRequest } from "../../middleware/authenticate.js";
 import { ROLES } from "../../shared/constants/roles.js";
 
@@ -17,6 +18,40 @@ export class ProductController {
 
     private readonly service = new ProductService();
     private readonly queryService = new ProductQueryService();
+    private readonly kitAvailabilityService = new ProductKitAvailabilityService();
+
+    async kitAvailability(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+
+        try {
+
+            const { storeId } = req.query;
+
+            if (!storeId || typeof storeId !== "string") {
+                res.status(400).json(
+                    ApiResponse.error("Debe indicar la tienda (storeId).")
+                );
+                return;
+            }
+
+            const availability =
+                await this.kitAvailabilityService.getForStore(storeId);
+
+            res.status(200).json(
+                ApiResponse.success(
+                    "Disponibilidad de kits obtenida correctamente.",
+                    availability
+                )
+            );
+
+        } catch (error) {
+            next(error);
+        }
+
+    }
 
     async findAll(
         _req: Request,

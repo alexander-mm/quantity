@@ -1,4 +1,5 @@
 export * from "./use-products";
+export * from "./use-kit-availability";
 export * from "./use-product";
 export * from "./use-create-product";
 export * from "./use-update-product";
