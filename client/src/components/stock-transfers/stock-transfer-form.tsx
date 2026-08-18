@@ -10,7 +10,6 @@ import type { StockTransferFormData } from "@/validators";
 import {
     useCreateStockTransfer,
     useUpdateStockTransfer,
-    useDispatchStockTransfer,
     useAuth,
     useStockTransfers
 } from "@/hooks";
@@ -62,7 +61,6 @@ export function StockTransferForm({ transfer, onSuccess }: Props) {
 
     const createMutation = useCreateStockTransfer();
     const updateMutation = useUpdateStockTransfer();
-    const dispatchMutation = useDispatchStockTransfer();
     const { data: transfersData } = useStockTransfers();
 
     useEffect(() => {
@@ -124,64 +122,17 @@ export function StockTransferForm({ transfer, onSuccess }: Props) {
 
     };
 
-    const handleDispatch = (data: StockTransferFormData) => {
-
-        if (!transfer) return;
-
-        // Guarda cualquier cambio pendiente en el formulario antes de despachar,
-        // para no despachar una version vieja si el usuario edito y no le dio
-        // "Guardar cambios" primero.
-        updateMutation.mutate({ id: transfer.id, data }, {
-            onSuccess: () => {
-
-                dispatchMutation.mutate(transfer.id, {
-                    onSuccess: () => {
-                        toast.success("Envío despachado correctamente.");
-                        onSuccess?.();
-                    },
-                    onError: (error) => {
-                        const message =
-                            axios.isAxiosError<{ message?: string }>(error) && error.response?.data?.message
-                                ? error.response.data.message
-                                : "No se pudo despachar el envío.";
-                        toast.error(message);
-                    }
-                });
-
-            },
-            onError: (error) => {
-                const message =
-                    axios.isAxiosError<{ message?: string }>(error) && error.response?.data?.message
-                        ? error.response.data.message
-                        : "No se pudo guardar el envío antes de despacharlo.";
-                toast.error(message);
-            }
-        });
-
-    };
-
     return (
         <FormProvider {...methods}>
             <form onSubmit={methods.handleSubmit(onSubmit, onFormError)} className="space-y-6 min-w-0">
                 <StockTransferHeader />
                 <StockTransferDetailsTable />
                 <div className="flex justify-end gap-3">
-                    <Button type="submit" variant={isEditing ? "outline" : "default"} disabled={isSaving}>
+                    <Button type="submit" disabled={isSaving}>
                         {isSaving
                             ? "Guardando..."
                             : isEditing ? "Guardar cambios" : "Guardar borrador"}
                     </Button>
-                    {isEditing && (
-                        <Button
-                            type="button"
-                            onClick={methods.handleSubmit(handleDispatch, onFormError)}
-                            disabled={updateMutation.isPending || dispatchMutation.isPending}
-                        >
-                            {updateMutation.isPending || dispatchMutation.isPending
-                                ? "Despachando..."
-                                : "Confirmar despacho"}
-                        </Button>
-                    )}
                 </div>
             </form>
         </FormProvider>

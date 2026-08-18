@@ -32,6 +32,11 @@ export function PurchasesPage() {
         setPurchaseToView
     ] = useState<Purchase | null>(null);
 
+    const [
+        purchaseToEdit,
+        setPurchaseToEdit
+    ] = useState<Purchase | null>(null);
+
     if (isLoading) {
 
         return (
@@ -121,6 +126,13 @@ export function PurchasesPage() {
                                         );
 
                                     }}
+                                    onEdit={(purchase) => {
+
+                                        setPurchaseToEdit(
+                                            purchase
+                                        );
+
+                                    }}
                                 />
 
                                 <p className="mt-4 text-sm text-muted-foreground">
@@ -135,6 +147,12 @@ export function PurchasesPage() {
             <PurchaseModal
                 open={open}
                 onOpenChange={setOpen}
+            />
+
+            <PurchaseModal
+                open={!!purchaseToEdit}
+                purchase={purchaseToEdit}
+                onOpenChange={() => setPurchaseToEdit(null)}
             />
 
             <PurchaseViewModal

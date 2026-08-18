@@ -1,13 +1,16 @@
 import { useState } from "react";
+import { toast } from "react-hot-toast";
+import axios from "axios";
 import {
     PageContainer,
     PageHeader,
     StockTransfersToolbar,
     StockTransfersTable,
     StockTransferModal,
-    ReceiveTransferModal
+    ReceiveTransferModal,
+    DispatchTransferDialog
 } from "@/components";
-import { useStockTransfers } from "@/hooks";
+import { useStockTransfers, useDispatchStockTransfer } from "@/hooks";
 import type { StockTransfer } from "@/types";
 
 export function StockTransfersPage() {
@@ -17,6 +20,9 @@ export function StockTransfersPage() {
     const [open, setOpen] = useState(false);
     const [transferToEdit, setTransferToEdit] = useState<StockTransfer | null>(null);
     const [transferToView, setTransferToView] = useState<StockTransfer | null>(null);
+    const [transferToDispatch, setTransferToDispatch] = useState<StockTransfer | null>(null);
+
+    const dispatchMutation = useDispatchStockTransfer();
 
     return (
         <PageContainer>
@@ -37,6 +43,7 @@ export function StockTransfersPage() {
                                 transfers={transfers}
                                 onView={setTransferToView}
                                 onEdit={setTransferToEdit}
+                                onDispatch={setTransferToDispatch}
                             />
                         )
                 )}
@@ -57,6 +64,31 @@ export function StockTransfersPage() {
                 open={!!transferToView}
                 transfer={transferToView}
                 onOpenChange={() => setTransferToView(null)}
+            />
+
+            <DispatchTransferDialog
+                open={!!transferToDispatch}
+                loading={dispatchMutation.isPending}
+                onOpenChange={() => setTransferToDispatch(null)}
+                onConfirm={() => {
+
+                    if (!transferToDispatch) return;
+
+                    dispatchMutation.mutate(transferToDispatch.id, {
+                        onSuccess: () => {
+                            toast.success("Envío despachado correctamente.");
+                            setTransferToDispatch(null);
+                        },
+                        onError: (error) => {
+                            const message =
+                                axios.isAxiosError<{ message?: string }>(error) && error.response?.data?.message
+                                    ? error.response.data.message
+                                    : "No se pudo despachar el envío.";
+                            toast.error(message);
+                        }
+                    });
+
+                }}
             />
 
         </PageContainer>
