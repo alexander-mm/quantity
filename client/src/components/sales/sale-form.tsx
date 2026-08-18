@@ -29,6 +29,8 @@ function toFormData(sale: Sale): SaleFormData {
         saleDate: sale.saleDate.split("T")[0],
         reference: sale.reference ?? "",
         observations: sale.observations ?? "",
+        hasShipping: sale.hasShipping,
+        shippingCost: sale.hasShipping ? Number(sale.shippingCost) : undefined,
         paymentMethod: sale.paymentMethod,
         transferVouchers: sale.transferVouchers.map(v => v.number),
         accountReceivableNumber: sale.accountReceivable?.number ?? "",
@@ -70,6 +72,8 @@ export function SaleForm({
                 saleDate: todayLocalDateString(),
                 reference: "",
                 observations: "",
+                hasShipping: false,
+                shippingCost: undefined,
                 paymentMethod: "CASH",
                 transferVouchers: [],
                 accountReceivableNumber: "",
@@ -96,6 +100,20 @@ const currency =
         control: methods.control,
         name: "currency"
     });
+
+const hasShipping =
+    useWatch({
+        control: methods.control,
+        name: "hasShipping"
+    });
+
+const shippingCostValue =
+    useWatch({
+        control: methods.control,
+        name: "shippingCost"
+    });
+
+const shippingCost = hasShipping ? Number(shippingCostValue || 0) : 0;
 
    const items = details ?? [];
 
@@ -129,7 +147,8 @@ const tax =
 const total =
     subtotal -
     discount +
-    tax;
+    tax +
+    shippingCost;
 
     const {
         data: usersData

@@ -104,7 +104,9 @@ export class SaleRepository extends BaseRepository {
             0
         );
 
-        const total = subtotal - discount + tax;
+        const shippingCost = data.hasShipping ? (data.shippingCost ?? 0) : 0;
+
+        const total = subtotal - discount + tax + shippingCost;
 
         return this.prisma.sale.create({
             data: {
@@ -121,6 +123,8 @@ export class SaleRepository extends BaseRepository {
                 subtotal,
                 discount,
                 tax,
+                hasShipping: data.hasShipping ?? false,
+                shippingCost,
                 total,
                 details: {
                     create: data.details.map(item => ({
@@ -166,7 +170,9 @@ export class SaleRepository extends BaseRepository {
             0
         );
 
-        const total = subtotal - discount + tax;
+        const shippingCost = data.hasShipping ? (data.shippingCost ?? 0) : 0;
+
+        const total = subtotal - discount + tax + shippingCost;
 
         return this.prisma.sale.update({
             where: { id },
@@ -182,6 +188,8 @@ export class SaleRepository extends BaseRepository {
                 subtotal,
                 discount,
                 tax,
+                hasShipping: data.hasShipping ?? false,
+                shippingCost,
                 total,
                 details: {
                     deleteMany: {},

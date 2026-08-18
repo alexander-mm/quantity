@@ -41,6 +41,9 @@ export type CreateSaleRequest={
     reference?:string;
     observations?:string;
 
+    hasShipping?:boolean;
+    shippingCost?:number;
+
     paymentMethod:"CASH"|"TRANSFER"|"CREDIT";
     transferVouchers?:string[];
 

@@ -18,6 +18,9 @@ const baseSaleSchema=z.object({
         tax:z.coerce.number().min(0).optional().default(0)
     })).min(1,"Debe agregar al menos un producto."),
 
+    hasShipping:z.boolean().optional(),
+    shippingCost:z.coerce.number().min(0).optional(),
+
     paymentMethod:z.enum(["CASH","TRANSFER","CREDIT"]).optional(),
 
     transferVouchers:z.array(z.string().trim().min(1)).optional(),
@@ -37,12 +40,22 @@ function applyPaymentMethodRules<
         downPayment?: number;
         downPaymentMethod?: "CASH" | "TRANSFER";
         downPaymentVouchers?: string[];
+        hasShipping?: boolean;
+        shippingCost?: number;
     }>
 >(
     schema: T
 ) {
 
     return schema.superRefine((data, ctx) => {
+
+        if (data.hasShipping && !(data.shippingCost && data.shippingCost > 0)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Indique el costo de envío.",
+                path: ["shippingCost"]
+            });
+        }
 
         if (!data.paymentMethod) {
             ctx.addIssue({

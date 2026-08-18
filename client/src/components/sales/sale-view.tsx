@@ -201,6 +201,18 @@ export function SaleView({
                     </strong>
                 </div>
 
+                {sale.hasShipping && (
+                    <div className="flex justify-between">
+                        <span>
+                            Costo de envío
+                        </span>
+
+                        <strong>
+                            {formatCurrency(sale.shippingCost, sale.currency)}
+                        </strong>
+                    </div>
+                )}
+
                 <div className="flex justify-between border-t pt-2 text-lg font-semibold">
                     <span>
                         Total

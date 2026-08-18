@@ -29,6 +29,15 @@ export const saleSchema=z.object({
         .string()
         .optional(),
 
+    hasShipping:z
+        .boolean()
+        .optional(),
+
+    shippingCost:z
+        .number()
+        .min(0)
+        .optional(),
+
     paymentMethod:z
         .enum(["CASH","TRANSFER","CREDIT"],{error:"Seleccione la forma de pago."}),
 
@@ -107,6 +116,14 @@ export const saleSchema=z.object({
         )
 
 }).superRefine((data, ctx) => {
+
+    if (data.hasShipping && !(data.shippingCost && data.shippingCost > 0)) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Indique el costo de envío.",
+            path: ["shippingCost"]
+        });
+    }
 
     if (data.paymentMethod === "TRANSFER" && (!data.transferVouchers || data.transferVouchers.length === 0)) {
         ctx.addIssue({

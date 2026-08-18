@@ -34,6 +34,8 @@ export interface Sale{
     subtotal:string;
     discount:string;
     tax:string;
+    hasShipping:boolean;
+    shippingCost:string;
     total:string;
 
     client: Client;
