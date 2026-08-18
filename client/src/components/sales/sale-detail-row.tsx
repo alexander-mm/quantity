@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useProducts, useProductPriceEntries, useClients, useMarginProfiles, useOfflineCollection } from "@/hooks";
+import { useProducts, useProductPriceEntries, useClients, useMarginProfiles, useOfflineCollection, useKitAvailability } from "@/hooks";
 import { resolveProductPriceEntries, getCachedProductPriceEntries, offlineDb } from "@/lib";
 import { formatCurrency } from "@/lib/format-currency";
 
@@ -65,6 +65,15 @@ export function SaleDetailRow({
         allProducts.filter(
             product=>(!isCop||!!product.pvpCop)&&!selectedProductIds.has(product.id)
         );
+
+    const storeId=
+        watch("storeId");
+
+    const { data: kitAvailabilityData } = useKitAvailability(storeId || undefined);
+
+    const kitAvailabilityByProductId = new Map(
+        (kitAvailabilityData?.data ?? []).map(item => [item.productId, item.quantity])
+    );
 
     const productId=
         watch(`details.${index}.productId`);
@@ -193,10 +202,20 @@ export function SaleDetailRow({
                     name={`details.${index}.productId`}
                     render={({field})=>{
 
-                        const items=products.map(product=>({
-                            value:product.id,
-                            label:`${product.internalCode} - ${product.name}`
-                        }));
+                        const items=products.map(product=>{
+
+                            const kitAvailability = kitAvailabilityByProductId.get(product.id);
+
+                            const label = kitAvailability !== undefined
+                                ? `${product.internalCode} - ${product.name} (disponible: ${kitAvailability})`
+                                : `${product.internalCode} - ${product.name}`;
+
+                            return {
+                                value:product.id,
+                                label
+                            };
+
+                        });
 
                         const selected=
                             items.find(item=>item.value===field.value)

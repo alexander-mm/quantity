@@ -11,7 +11,7 @@ import {
     ProductViewModal
 } from "@/components";
 import { useMemo, useState } from "react";
-import { useProducts, useDeleteProduct, useStores, useInventoryStock } from "@/hooks";
+import { useProducts, useDeleteProduct, useStores, useInventoryStock, useKitAvailability } from "@/hooks";
 import type { Product } from "@/types";
 
 export function ProductsPage() {
@@ -29,6 +29,7 @@ export function ProductsPage() {
     const stores = storesData?.data ?? [];
 
     const { data: stockData } = useInventoryStock();
+    const { data: kitAvailabilityData } = useKitAvailability(storeId || undefined);
 
     const stockByProductId = useMemo(() => {
 
@@ -44,9 +45,13 @@ export function ProductsPage() {
                 map[item.product.id] = item.quantity;
             });
 
+        (kitAvailabilityData?.data ?? []).forEach(item => {
+            map[item.productId] = `${item.quantity} (kit)`;
+        });
+
         return map;
 
-    }, [stockData, storeId]);
+    }, [stockData, kitAvailabilityData, storeId]);
 
     const filteredProducts = useMemo(() => {
 

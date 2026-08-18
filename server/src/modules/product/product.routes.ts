@@ -17,6 +17,12 @@ router.get(
 );
 
 router.get(
+    "/kit-availability",
+    authenticate,
+    controller.kitAvailability.bind(controller)
+);
+
+router.get(
     "/:id",
     authenticate,
     controller.findById.bind(controller)

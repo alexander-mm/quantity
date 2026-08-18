@@ -7,6 +7,24 @@ export async function getProducts(): Promise<ApiResponse<Product[]>> {
     return data;
 }
 
+export type KitAvailability = {
+    productId: string;
+    quantity: number;
+};
+
+export async function getKitAvailability(
+    storeId: string
+): Promise<ApiResponse<KitAvailability[]>> {
+
+    const { data } = await api.get<ApiResponse<KitAvailability[]>>(
+        "/products/kit-availability",
+        { params: { storeId } }
+    );
+
+    return data;
+
+}
+
 export async function getProductById(
     id: string
 ): Promise<ApiResponse<ProductFormData>> {
@@ -32,6 +50,7 @@ export type CreateProductRequest = {
     pvp: number;
     pvpCop?: number;
     minimumStock: number;
+    assembleOnSale?: boolean;
 };
 
 export async function createProduct(
@@ -64,6 +83,7 @@ export type UpdateProductRequest = {
     pvp: number;
     pvpCop?: number;
     minimumStock: number;
+    assembleOnSale?: boolean;
 };
 
 export async function updateProduct(
