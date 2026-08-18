@@ -165,6 +165,10 @@ model Product {
   pvp                  Decimal?                    @db.Decimal(12, 2)
   pvpCop               Decimal?                    @db.Decimal(14, 2)
   minimumStock         Decimal                     @db.Decimal(12, 2)
+  // Kits: se arman al momento de la venta combinando sus componentes/piezas
+  // en vez de llevar stock propio (a diferencia de los Equipos, que se
+  // ensamblan por lotes en taller via el modulo de Ensamblaje).
+  assembleOnSale       Boolean                     @default(false)
   isActive             Boolean                     @default(true)
   createdAt            DateTime                    @default(now())
   updatedAt            DateTime                    @updatedAt

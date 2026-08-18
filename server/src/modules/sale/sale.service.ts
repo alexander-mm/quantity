@@ -1,4 +1,4 @@
-import { Sale } from "@prisma/client";
+import { Prisma, Sale } from "@prisma/client";
 import { SaleRepository } from "./sale.repository.js";
 import { CreateSaleDto, UpdateSaleDto } from "./sale.dto.js";
 import { ConflictError, NotFoundError, ValidationError } from "../../shared/errors/index.js";
@@ -9,6 +9,10 @@ import { ClientRepository } from "../client/client.repository.js";
 import { AccountReceivableRepository } from "../account-receivable/account-receivable.repository.js";
 import { ProductRepository } from "../product/product.repository.js";
 import { InventoryStockService } from "../inventory-stock/inventory-stock.service.js";
+import { ProductComponentRepository } from "../product-component/product-component.repository.js";
+import { EquipmentPartRepository } from "../equipment-part/equipment-part.repository.js";
+import { PartRepository } from "../part/part.repository.js";
+import { PartMovementRepository } from "../part-movement/part-movement.repository.js";
 import { TelegramService, escapeTelegramHtml } from "../../integrations/telegram/telegram.service.js";
 import type { SaleWithRelations } from "./sale.repository.js";
 
@@ -33,8 +37,48 @@ export class SaleService {
     private readonly inventoryStockService =
         new InventoryStockService();
 
+    private readonly productComponentRepository =
+        new ProductComponentRepository();
+
+    private readonly equipmentPartRepository =
+        new EquipmentPartRepository();
+
+    private readonly partRepository =
+        new PartRepository();
+
+    private readonly partMovementRepository =
+        new PartMovementRepository();
+
     private readonly telegramService =
         new TelegramService();
+
+    // Kits (Product.assembleOnSale = true) no llevan stock propio: se arman al
+    // momento de la venta combinando sus componentes/piezas segun la receta
+    // (ProductComponent / EquipmentPart), escalada por la cantidad vendida.
+    private async getRecipeRequirements(
+        productId: bigint,
+        quantity: number
+    ) {
+
+        const [components, parts] = await Promise.all([
+            this.productComponentRepository.findByProduct(productId),
+            this.equipmentPartRepository.findByProduct(productId)
+        ]);
+
+        return {
+            components: components.map(item => ({
+                componentProductId: item.componentProductId,
+                componentProduct: item.componentProduct,
+                quantity: new Prisma.Decimal(item.quantity).times(quantity)
+            })),
+            parts: parts.map(item => ({
+                partId: item.partId,
+                part: item.part,
+                quantity: new Prisma.Decimal(item.quantity).times(quantity)
+            }))
+        };
+
+    }
 
     async findAll(): Promise<Sale[]> {
         return this.repository.findAll();
@@ -127,6 +171,52 @@ export class SaleService {
                 throw new NotFoundError(
                     "Uno de los productos seleccionados no existe."
                 );
+            }
+
+            if (product.assembleOnSale) {
+
+                const { components, parts } = await this.getRecipeRequirements(
+                    product.id,
+                    detail.quantity
+                );
+
+                if (components.length === 0 && parts.length === 0) {
+                    throw new ValidationError(
+                        `"${product.name}" está marcado como kit (se arma al vender), pero no tiene una receta de componentes ni de piezas definida.`
+                    );
+                }
+
+                for (const item of components) {
+
+                    const stock = await this.inventoryStockService.findByProductAndStore(
+                        item.componentProductId.toString(),
+                        data.storeId
+                    );
+
+                    const available = stock ? Number(stock.quantity) : 0;
+
+                    if (available < Number(item.quantity)) {
+                        throw new ValidationError(
+                            `Stock insuficiente de "${item.componentProduct.name}" (componente de "${product.name}"): disponible ${available}, requerido ${Number(item.quantity)}.`
+                        );
+                    }
+
+                }
+
+                for (const item of parts) {
+
+                    const available = Number(item.part.quantity);
+
+                    if (available < Number(item.quantity)) {
+                        throw new ValidationError(
+                            `Stock insuficiente de la pieza "${item.part.name}" (componente de "${product.name}"): disponible ${available}, requerido ${Number(item.quantity)}.`
+                        );
+                    }
+
+                }
+
+                continue;
+
             }
 
             const stock = await this.inventoryStockService.findByProductAndStore(
@@ -287,7 +377,70 @@ export class SaleService {
                     tx
                 );
 
+            const partRepository =
+                this.partRepository.withTransaction(tx);
+
+            const partMovementRepository =
+                this.partMovementRepository.withTransaction(tx);
+
+            // Piezas requeridas por todos los kits vendidos en esta venta,
+            // agregadas por pieza (una sola pieza puede repetirse en varios
+            // kits distintos de la misma venta).
+            const aggregatedPartRequirements = new Map<string, {
+                partId: bigint;
+                partName: string;
+                quantity: Prisma.Decimal;
+            }>();
+
             for (const detail of sale.details) {
+
+                if (detail.product.assembleOnSale) {
+
+                    const { components, parts } = await this.getRecipeRequirements(
+                        detail.productId,
+                        Number(detail.quantity)
+                    );
+
+                    if (components.length === 0 && parts.length === 0) {
+                        throw new ValidationError(
+                            `"${detail.product.name}" está marcado como kit, pero ya no tiene una receta de componentes ni de piezas definida.`
+                        );
+                    }
+
+                    for (const item of components) {
+
+                        await movementService.createWithTransaction({
+                            movementTypeId: movementType.id,
+                            productId: item.componentProductId,
+                            storeId: sale.storeId,
+                            userId: sale.userId,
+                            clientId: sale.clientId,
+                            quantity: item.quantity,
+                            unitCost: item.componentProduct.costPrice,
+                            observations: `Venta ${sale.number}: consumo de "${item.componentProduct.name}" (componente de "${detail.product.name}")`,
+                            movementDate: sale.saleDate
+                        });
+
+                    }
+
+                    for (const item of parts) {
+
+                        const key = item.partId.toString();
+                        const existing = aggregatedPartRequirements.get(key);
+
+                        aggregatedPartRequirements.set(key, {
+                            partId: item.partId,
+                            partName: item.part.name,
+                            quantity: existing
+                                ? existing.quantity.plus(item.quantity)
+                                : item.quantity
+                        });
+
+                    }
+
+                    continue;
+
+                }
 
                 await movementService.createWithTransaction({
 
@@ -310,6 +463,44 @@ export class SaleService {
                     movementDate: sale.saleDate
 
                 });
+
+            }
+
+            if (aggregatedPartRequirements.size > 0) {
+
+                const partRequirements = [...aggregatedPartRequirements.values()];
+
+                for (const item of partRequirements) {
+
+                    const part = await partRepository.findById(item.partId);
+                    const available = part ? Number(part.quantity) : 0;
+
+                    if (available < Number(item.quantity)) {
+                        throw new ValidationError(
+                            `Stock insuficiente de la pieza "${item.partName}": disponible ${available}, requerido ${Number(item.quantity)}.`
+                        );
+                    }
+
+                }
+
+                await partMovementRepository.create({
+                    number: `VENTA-${sale.number}`,
+                    type: "OUT",
+                    userId: sale.userId.toString(),
+                    movementDate: sale.saleDate,
+                    observations: `Venta ${sale.number}: consumo de piezas para kits vendidos`,
+                    details: partRequirements.map(item => ({
+                        partId: item.partId.toString(),
+                        quantity: Number(item.quantity)
+                    }))
+                });
+
+                for (const item of partRequirements) {
+                    await partRepository.decrementQuantity(
+                        item.partId,
+                        item.quantity
+                    );
+                }
 
             }
 

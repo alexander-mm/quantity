@@ -64,5 +64,9 @@ export const createProductSchema = z.object({
         .number({
             error: "El stock mínimo es obligatorio."
         })
-        .nonnegative("El stock mínimo no puede ser negativo.")
+        .nonnegative("El stock mínimo no puede ser negativo."),
+
+    assembleOnSale: z
+        .boolean()
+        .optional()
 });

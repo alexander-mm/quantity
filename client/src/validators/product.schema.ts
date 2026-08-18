@@ -26,6 +26,8 @@ export const productSchema = z.object({
         .number({ error: "El stock mínimo es obligatorio." })
         .min(0, "El stock mínimo no puede ser negativo."),
 
+    assembleOnSale: z.boolean().optional(),
+
     components: z.array(z.object({
         type: z.enum(["PRODUCT", "PART"]),
         refId: z.string().min(1, "Seleccione un elemento."),

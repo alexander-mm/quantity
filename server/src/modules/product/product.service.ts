@@ -176,6 +176,7 @@ export class ProductService {
             pvp: number;
             pvpCop?: number;
             minimumStock: number;
+            assembleOnSale?: boolean;
         }
     ): Promise<Product> {
 
@@ -282,7 +283,8 @@ export class ProductService {
                         costPrice: data.costPrice,
                         pvp: data.pvp,
                         pvpCop: data.pvpCop,
-                        minimumStock: data.minimumStock
+                        minimumStock: data.minimumStock,
+                        assembleOnSale: data.assembleOnSale
                     }
                 );
 
@@ -312,6 +314,7 @@ export class ProductService {
         pvp: number;
         pvpCop?: number;
         minimumStock: number;
+        assembleOnSale?: boolean;
     }): Promise<Product> {
 
         const productRepository = this.repository;
@@ -393,7 +396,8 @@ export class ProductService {
             costPrice: data.costPrice,
             pvp: data.pvp,
             pvpCop: data.pvpCop,
-            minimumStock: data.minimumStock
+            minimumStock: data.minimumStock,
+            assembleOnSale: data.assembleOnSale
         });
 
         await this.recalculatePrices(

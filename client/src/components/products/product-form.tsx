@@ -70,6 +70,7 @@ export function ProductForm({
             pvp: 0,
             pvpCop: 0,
             minimumStock: undefined,
+            assembleOnSale: false,
             components: [],
             priceEntries: []
         }
@@ -168,6 +169,7 @@ export function ProductForm({
             pvp: Number(productData.data.pvp),
             pvpCop: productData.data.pvpCop ? Number(productData.data.pvpCop) : 0,
             minimumStock: Number(productData.data.minimumStock),
+            assembleOnSale: productData.data.assembleOnSale ?? false,
             components: [
                 ...(componentsData?.data ?? []).map(item => ({
                     type: "PRODUCT" as const,
@@ -494,6 +496,26 @@ export function ProductForm({
                         inventario de piezas.
                     </p>
                 </div>
+
+                {fields.length > 0 && (
+                    <div className="flex items-start gap-2 rounded-md border p-2">
+                        <input
+                            type="checkbox"
+                            id="assembleOnSale"
+                            className="mt-1"
+                            {...register("assembleOnSale")}
+                        />
+                        <label htmlFor="assembleOnSale" className="cursor-pointer">
+                            <span className="block text-sm font-medium">Es un kit: se arma al momento de vender</span>
+                            <span className="block text-xs text-muted-foreground">
+                                Al confirmar una venta de este producto, se descuentan directamente sus componentes/piezas
+                                (no este producto). Déjalo desmarcado si es un Equipo que se ensambla por lotes en taller
+                                antes de venderse — en ese caso la venta descuenta el stock ya armado del equipo, y se
+                                bloquea si no queda stock armado.
+                            </span>
+                        </label>
+                    </div>
+                )}
 
                 {fields.map((field, index) => {
 
