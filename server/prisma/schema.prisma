@@ -403,10 +403,12 @@ model Sale {
   returns           Return[]
   transferVouchers  SaleTransferVoucher[]
 
-  subtotal Decimal @default(0) @db.Decimal(12, 2)
-  discount Decimal @default(0) @db.Decimal(12, 2)
-  tax      Decimal @default(0) @db.Decimal(12, 2)
-  total    Decimal @default(0) @db.Decimal(12, 2)
+  subtotal     Decimal @default(0) @db.Decimal(12, 2)
+  discount     Decimal @default(0) @db.Decimal(12, 2)
+  tax          Decimal @default(0) @db.Decimal(12, 2)
+  hasShipping  Boolean @default(false)
+  shippingCost Decimal @default(0) @db.Decimal(12, 2)
+  total        Decimal @default(0) @db.Decimal(12, 2)
 }
 
 enum PaymentMethod {

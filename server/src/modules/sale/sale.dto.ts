@@ -20,6 +20,9 @@ export interface CreateSaleDto {
     observations?: string;
     details: CreateSaleDetailDto[];
 
+    hasShipping?: boolean;
+    shippingCost?: number;
+
     paymentMethod: PaymentMethodDto;
 
     // paymentMethod === "TRANSFER"
@@ -44,6 +47,9 @@ export interface UpdateSaleDto {
     observations?: string;
     status: "DRAFT" | "CONFIRMED" | "CANCELLED";
     details: CreateSaleDetailDto[];
+
+    hasShipping?: boolean;
+    shippingCost?: number;
 
     paymentMethod: PaymentMethodDto;
     transferVouchers?: string[];
