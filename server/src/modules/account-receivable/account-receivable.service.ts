@@ -15,6 +15,14 @@ export class AccountReceivableService {
         return this.repository.findByClient(BigInt(clientId));
     }
 
+    async findPendingWithDueDate() {
+        return this.repository.findPendingWithDueDate();
+    }
+
+    async markReminderSent(id: bigint) {
+        return this.repository.updateLastReminderAt(id, new Date());
+    }
+
     async findById(id: string) {
 
         const accountReceivable = await this.repository.findById(BigInt(id));
@@ -73,7 +81,7 @@ export class AccountReceivableService {
 
     }
 
-    async getWholesalerSummary() {
+    async getSummary() {
 
         const all = await this.repository.findAll();
 

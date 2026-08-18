@@ -1,6 +1,7 @@
 import { Check, DollarSign, Eye, Pencil } from "lucide-react";
 import { EntityTable } from "@/components/ui";
 import { formatCurrency } from "@/lib/format-currency";
+import { formatDateOnly } from "@/lib/format-date";
 import { AccountReceivableStatusBadge } from "./account-receivable-status-badge";
 import type { AccountReceivable } from "@/types";
 
@@ -20,7 +21,7 @@ export function AccountsReceivableTable({
     onMarkPaid
 }: Props) {
     return (
-        <EntityTable headers={["N° cuenta de cobro", "Venta", "Monto", "Estado", "Fecha", "Acciones"]}>
+        <EntityTable headers={["N° cuenta de cobro", "Venta", "Saldo pendiente", "Estado", "Fecha", "Vence", "Acciones"]}>
             {accountsReceivable.map(item => {
 
                 const isDraft = item.sale.status === "DRAFT";
@@ -36,6 +37,9 @@ export function AccountsReceivableTable({
                         </td>
                         <td className="px-6 py-4">
                             {new Date(item.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4">
+                            {item.dueDate ? formatDateOnly(item.dueDate) : "-"}
                         </td>
                         <td className="px-6 py-4">
                             <div className="flex items-center gap-3">

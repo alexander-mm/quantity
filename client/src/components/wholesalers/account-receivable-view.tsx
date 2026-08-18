@@ -30,13 +30,38 @@ export function AccountReceivableView({ accountReceivable, onClose }: Props) {
                     <p>{accountReceivable.sale.store.name}</p>
                 </div>
                 <div>
-                    <p className="text-sm text-muted-foreground">Monto</p>
+                    <p className="text-sm text-muted-foreground">Total de la venta</p>
+                    <p>{formatCurrency(accountReceivable.originalAmount, accountReceivable.currency)}</p>
+                </div>
+                <div>
+                    <p className="text-sm text-muted-foreground">Saldo pendiente</p>
                     <p className="font-medium">{formatCurrency(accountReceivable.amount, accountReceivable.currency)}</p>
                 </div>
                 <div>
                     <p className="text-sm text-muted-foreground">Fecha de venta</p>
                     <p>{formatDateOnly(accountReceivable.sale.saleDate)}</p>
                 </div>
+                <div>
+                    <p className="text-sm text-muted-foreground">Plazo</p>
+                    <p>
+                        {accountReceivable.termDays
+                            ? `${accountReceivable.termDays} días${accountReceivable.dueDate ? ` (vence ${formatDateOnly(accountReceivable.dueDate)})` : ""}`
+                            : "Sin plazo"}
+                    </p>
+                </div>
+                {Number(accountReceivable.downPayment) > 0 && (
+                    <div>
+                        <p className="text-sm text-muted-foreground">Abono</p>
+                        <p>
+                            {formatCurrency(accountReceivable.downPayment, accountReceivable.currency)}
+                            {accountReceivable.downPaymentMethod === "TRANSFER" ? " (transferencia" : " (efectivo"}
+                            {accountReceivable.downPaymentMethod === "TRANSFER" && accountReceivable.downPaymentVouchers.length > 0
+                                ? `: ${accountReceivable.downPaymentVouchers.map(v => v.number).join(", ")}`
+                                : ""}
+                            )
+                        </p>
+                    </div>
+                )}
                 {accountReceivable.paidAt && (
                     <div>
                         <p className="text-sm text-muted-foreground">Fecha de pago</p>

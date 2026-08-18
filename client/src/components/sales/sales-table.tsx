@@ -16,6 +16,15 @@ type Props = {
     onView: (sale: Sale) => void;
 };
 
+function getPaymentMethodLabel(paymentMethod: Sale["paymentMethod"]) {
+    switch (paymentMethod) {
+        case "CASH": return "Efectivo";
+        case "TRANSFER": return "Transferencia";
+        case "CREDIT": return "Crédito";
+        default: return paymentMethod;
+    }
+}
+
 export function SalesTable({
     sales,
     onView
@@ -48,6 +57,7 @@ export function SalesTable({
                     "Fecha",
                     "Cliente",
                     "Bodega",
+                    "Forma de pago",
                     "Estado",
                     "Total",
                     "Acciones"
@@ -70,6 +80,9 @@ export function SalesTable({
                             </td>
                             <td className="px-6 py-4">
                                 {sale.store.name}
+                            </td>
+                            <td className="px-6 py-4">
+                                {getPaymentMethodLabel(sale.paymentMethod)}
                             </td>
                             <td className="px-6 py-4">
                                 <SaleStatusBadge

@@ -96,7 +96,7 @@ export class AccountReceivableController {
 
         try {
 
-            const summary = await this.service.getWholesalerSummary();
+            const summary = await this.service.getSummary();
 
             res.status(200).json(
                 ApiResponse.success("Resumen obtenido correctamente.", summary)

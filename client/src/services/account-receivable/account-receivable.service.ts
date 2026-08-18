@@ -1,5 +1,5 @@
 import { api } from "@/services/api";
-import type { ApiResponse, AccountReceivable, WholesalerCreditSummary } from "@/types";
+import type { ApiResponse, AccountReceivable, AccountReceivableSummary } from "@/types";
 
 export async function getAccountsReceivable(): Promise<ApiResponse<AccountReceivable[]>> {
     const { data } = await api.get<ApiResponse<AccountReceivable[]>>("/accounts-receivable");
@@ -20,8 +20,8 @@ export async function getAccountReceivableById(id: string): Promise<ApiResponse<
     return data;
 }
 
-export async function getWholesalerCreditSummary(): Promise<ApiResponse<WholesalerCreditSummary[]>> {
-    const { data } = await api.get<ApiResponse<WholesalerCreditSummary[]>>("/accounts-receivable/summary");
+export async function getAccountReceivableSummary(): Promise<ApiResponse<AccountReceivableSummary[]>> {
+    const { data } = await api.get<ApiResponse<AccountReceivableSummary[]>>("/accounts-receivable/summary");
     return data;
 }
 

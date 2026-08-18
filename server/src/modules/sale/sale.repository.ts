@@ -14,8 +14,31 @@ export type SaleWithRelations =
                     product: true;
                 };
             };
+            transferVouchers: true;
+            accountReceivable: {
+                include: {
+                    downPaymentVouchers: true;
+                };
+            };
         };
     }>;
+
+const saleIncludeRelations = {
+    client: true,
+    store: true,
+    user: { select: safeUserSelect },
+    details: {
+        include: {
+            product: true
+        }
+    },
+    transferVouchers: true,
+    accountReceivable: {
+        include: {
+            downPaymentVouchers: true
+        }
+    }
+} as const;
 
 export class SaleRepository extends BaseRepository {
 
@@ -30,16 +53,7 @@ export class SaleRepository extends BaseRepository {
             orderBy: {
                 saleDate: "desc"
             },
-            include: {
-                client: true,
-                store: true,
-                user: { select: safeUserSelect },
-                details: {
-                    include: {
-                        product: true
-                    }
-                }
-            }
+            include: saleIncludeRelations
         });
     }
 
@@ -48,16 +62,7 @@ export class SaleRepository extends BaseRepository {
     ): Promise<SaleWithRelations | null> {
         return this.prisma.sale.findUnique({
             where: { id },
-            include: {
-                client: true,
-                store: true,
-                user: { select: safeUserSelect },
-                details: {
-                    include: {
-                        product: true
-                    }
-                }
-            }
+            include: saleIncludeRelations
         });
     }
 
@@ -76,16 +81,7 @@ export class SaleRepository extends BaseRepository {
     ): Promise<SaleWithRelations | null> {
         return this.prisma.sale.findUnique({
             where: { clientUuid },
-            include: {
-                client: true,
-                store: true,
-                user: { select: safeUserSelect },
-                details: {
-                    include: {
-                        product: true
-                    }
-                }
-            }
+            include: saleIncludeRelations
         });
     }
 
@@ -118,6 +114,7 @@ export class SaleRepository extends BaseRepository {
                 storeId: BigInt(data.storeId),
                 userId: BigInt(data.userId),
                 currency: data.currency,
+                paymentMethod: data.paymentMethod,
                 saleDate: data.saleDate,
                 reference: data.reference,
                 observations: data.observations,
@@ -137,18 +134,14 @@ export class SaleRepository extends BaseRepository {
                             - (item.discount ?? 0)
                             + (item.tax ?? 0)
                     }))
-                }
-            },
-            include: {
-                client: true,
-                store: true,
-                user: { select: safeUserSelect },
-                details: {
-                    include: {
-                        product: true
+                },
+                transferVouchers: data.paymentMethod === "TRANSFER" && data.transferVouchers
+                    ? {
+                        create: data.transferVouchers.map(number => ({ number }))
                     }
-                }
-            }
+                    : undefined
+            },
+            include: saleIncludeRelations
         });
 
     }

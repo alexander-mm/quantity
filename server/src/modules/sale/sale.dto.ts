@@ -6,6 +6,8 @@ export interface CreateSaleDetailDto {
     tax?: number;
 }
 
+export type PaymentMethodDto = "CASH" | "TRANSFER" | "CREDIT";
+
 export interface CreateSaleDto {
     clientUuid?: string;
     number: string;
@@ -16,8 +18,19 @@ export interface CreateSaleDto {
     saleDate: Date;
     reference?: string;
     observations?: string;
-    accountReceivableNumber?: string;
     details: CreateSaleDetailDto[];
+
+    paymentMethod: PaymentMethodDto;
+
+    // paymentMethod === "TRANSFER"
+    transferVouchers?: string[];
+
+    // paymentMethod === "CREDIT"
+    accountReceivableNumber?: string;
+    downPayment?: number;
+    downPaymentMethod?: "CASH" | "TRANSFER";
+    downPaymentVouchers?: string[];
+    termDays?: number;
 }
 
 export interface UpdateSaleDto {

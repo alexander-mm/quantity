@@ -15,6 +15,15 @@ function getClientLabel(client: Sale["client"]) {
             || client.document);
 }
 
+function getPaymentMethodLabel(paymentMethod: Sale["paymentMethod"]) {
+    switch (paymentMethod) {
+        case "CASH": return "Efectivo";
+        case "TRANSFER": return "Transferencia";
+        case "CREDIT": return "Crédito";
+        default: return paymentMethod;
+    }
+}
+
 export function SaleView({
     sale,
     onClose
@@ -75,6 +84,18 @@ export function SaleView({
                     </p>
                     <p>
                         {formatDateOnly(sale.saleDate)}
+                    </p>
+                </div>
+
+                <div>
+                    <p className="text-sm text-muted-foreground">
+                        Forma de pago
+                    </p>
+                    <p>
+                        {getPaymentMethodLabel(sale.paymentMethod)}
+                        {sale.paymentMethod === "TRANSFER" && sale.transferVouchers.length > 0
+                            ? ` (comprobante${sale.transferVouchers.length > 1 ? "s" : ""}: ${sale.transferVouchers.map(v => v.number).join(", ")})`
+                            : ""}
                     </p>
                 </div>
 

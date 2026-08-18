@@ -60,7 +60,6 @@ export function SaleHeader() {
 
     const clientId = watch("clientId");
     const selectedClient = clients.find(client => client.id === clientId);
-    const requiresAccountReceivable = !!selectedClient?.isWholesaler && !!selectedClient?.usesCredit;
     const currencyLocked = !!selectedClient?.isWholesaler && !!selectedClient?.currency;
     const clientCurrency = currencyLocked ? selectedClient!.currency : null;
     const clientDiscountPercentage = Number(selectedClient?.discountPercentage ?? 0);
@@ -245,10 +244,6 @@ export function SaleHeader() {
                                     setValue("priceEntryKey", "");
                                 }
 
-                                if (!(selected?.isWholesaler && selected?.usesCredit)) {
-                                    setValue("accountReceivableNumber", "");
-                                }
-
                             }}
                         />
 
@@ -418,26 +413,6 @@ export function SaleHeader() {
                 </p>
 
             </div>
-
-            {requiresAccountReceivable && (
-                <div>
-
-                    <Label>Número de cuenta de cobro</Label>
-
-                    <Input
-                        {...register("accountReceivableNumber")}
-                    />
-
-                    <p className="mt-1 text-xs text-muted-foreground">
-                        Este cliente mayorista maneja crédito — la venta pasará a Mayoristas con esta cuenta de cobro pendiente de pago.
-                    </p>
-
-                    <p className="text-sm text-red-500">
-                        {errors.accountReceivableNumber?.message as string}
-                    </p>
-
-                </div>
-            )}
 
             <div>
                 <Label className="mb-1">Referencia</Label>

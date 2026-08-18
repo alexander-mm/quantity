@@ -1,11 +1,19 @@
 import type { Client } from "@/types"
 
+export type PaymentMethod = "CASH" | "TRANSFER" | "CREDIT";
+
+export interface SaleTransferVoucher {
+    id: string;
+    number: string;
+}
+
 export interface Sale{
 
     id:string;
     number:string;
     status:string;
     currency:"USD"|"COP";
+    paymentMethod: PaymentMethod;
     saleDate:string;
     reference:string|null;
     observations:string|null;
@@ -30,6 +38,8 @@ export interface Sale{
     };
 
     details:SaleDetail[];
+
+    transferVouchers: SaleTransferVoucher[];
 
 }
 

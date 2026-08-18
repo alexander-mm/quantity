@@ -376,22 +376,23 @@ model PurchaseDetailPriceEntry {
 }
 
 model Sale {
-  id           BigInt         @id @default(autoincrement())
-  uuid         String         @unique @default(uuid())
-  clientUuid   String?        @unique
-  number       String         @unique
-  reference    String?
-  clientId     BigInt
-  storeId      BigInt
-  userId       BigInt
-  status       DocumentStatus @default(DRAFT)
-  currency     Currency       @default(USD)
-  saleDate     DateTime
-  observations String?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  createdBy    BigInt?
-  updatedBy    BigInt?
+  id            BigInt         @id @default(autoincrement())
+  uuid          String         @unique @default(uuid())
+  clientUuid    String?        @unique
+  number        String         @unique
+  reference     String?
+  clientId      BigInt
+  storeId       BigInt
+  userId        BigInt
+  status        DocumentStatus @default(DRAFT)
+  currency      Currency       @default(USD)
+  paymentMethod PaymentMethod  @default(CASH)
+  saleDate      DateTime
+  observations  String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  createdBy     BigInt?
+  updatedBy     BigInt?
 
   client Client @relation(fields: [clientId], references: [id])
   store  Store  @relation(fields: [storeId], references: [id])
@@ -400,11 +401,31 @@ model Sale {
   details           SaleDetail[]
   accountReceivable AccountReceivable?
   returns           Return[]
+  transferVouchers  SaleTransferVoucher[]
 
   subtotal Decimal @default(0) @db.Decimal(12, 2)
   discount Decimal @default(0) @db.Decimal(12, 2)
   tax      Decimal @default(0) @db.Decimal(12, 2)
   total    Decimal @default(0) @db.Decimal(12, 2)
+}
+
+enum PaymentMethod {
+  CASH
+  TRANSFER
+  CREDIT
+}
+
+// Comprobantes de la transferencia con la que se pagó la venta (Sale.paymentMethod = TRANSFER).
+model SaleTransferVoucher {
+  id        BigInt   @id @default(autoincrement())
+  uuid      String   @unique @default(uuid())
+  saleId    BigInt
+  number    String
+  createdAt DateTime @default(now())
+
+  sale Sale @relation(fields: [saleId], references: [id])
+
+  @@index([saleId])
 }
 
 model SaleDetail {
@@ -784,13 +805,25 @@ model ProductAssemblyPartDetail {
 }
 
 model AccountReceivable {
-  id           BigInt    @id @default(autoincrement())
-  uuid         String    @unique @default(uuid())
-  number       String    @unique
-  clientId     BigInt
-  saleId       BigInt    @unique
-  amount       Decimal   @db.Decimal(12, 2)
-  currency     Currency
+  id     BigInt @id @default(autoincrement())
+  uuid   String @unique @default(uuid())
+  number String @unique
+
+  clientId BigInt
+  saleId   BigInt @unique
+
+  // originalAmount: total de la venta. amount: saldo pendiente (originalAmount - downPayment).
+  originalAmount    Decimal        @db.Decimal(12, 2)
+  amount            Decimal        @db.Decimal(12, 2)
+  currency          Currency
+  downPayment       Decimal        @default(0) @db.Decimal(12, 2)
+  downPaymentMethod PaymentMethod?
+
+  // Plazo de pago en dias (15/30/45/60) y su fecha limite calculada desde la fecha de venta.
+  termDays       Int?
+  dueDate        DateTime?
+  lastReminderAt DateTime?
+
   isPaid       Boolean   @default(false)
   paidAt       DateTime?
   observations String?
@@ -800,8 +833,24 @@ model AccountReceivable {
   client Client @relation(fields: [clientId], references: [id])
   sale   Sale   @relation(fields: [saleId], references: [id])
 
+  downPaymentVouchers AccountReceivableDownPaymentVoucher[]
+
   @@index([clientId])
   @@index([isPaid])
+  @@index([dueDate])
+}
+
+// Comprobantes del abono (downPayment), solo si se pago por transferencia.
+model AccountReceivableDownPaymentVoucher {
+  id                  BigInt   @id @default(autoincrement())
+  uuid                String   @unique @default(uuid())
+  accountReceivableId BigInt
+  number              String
+  createdAt           DateTime @default(now())
+
+  accountReceivable AccountReceivable @relation(fields: [accountReceivableId], references: [id])
+
+  @@index([accountReceivableId])
 }
 
 model ProductAssemblyDetail {
