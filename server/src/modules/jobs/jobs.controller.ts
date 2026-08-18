@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { env } from "../../config/env.js";
 import { runLowStockAlert, runMediumStockAlert } from "../../jobs/stock-alerts.job.js";
 import { runWeeklyReport } from "../../jobs/weekly-report.job.js";
+import { runAccountReceivableAlerts } from "../../jobs/account-receivable-alerts.job.js";
 
 const BUSINESS_TIMEZONE = "America/Bogota";
 const WEEKDAY_MAP: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
@@ -86,6 +87,23 @@ export class JobsController {
         }
 
         await runWeeklyReport();
+        res.status(200).json({ ok: true });
+
+    }
+
+    async accountReceivableAlerts(req: Request, res: Response): Promise<void> {
+
+        if (!this.isAuthorized(req)) {
+            res.status(404).json({ ok: false });
+            return;
+        }
+
+        if (!isBusinessHours()) {
+            res.status(200).json({ ok: true, skipped: "outside business hours" });
+            return;
+        }
+
+        await runAccountReceivableAlerts();
         res.status(200).json({ ok: true });
 
     }

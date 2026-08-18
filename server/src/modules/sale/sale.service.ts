@@ -138,14 +138,26 @@ export class SaleService {
             );
         }
 
+        if (!data.paymentMethod) {
+            throw new ValidationError(
+                "Seleccione la forma de pago."
+            );
+        }
+
         const requiresAccountReceivable =
-            client.isWholesaler && client.usesCredit;
+            data.paymentMethod === "CREDIT";
+
+        if (data.paymentMethod === "TRANSFER" && (!data.transferVouchers || data.transferVouchers.length === 0)) {
+            throw new ValidationError(
+                "Debe indicar al menos un número de comprobante de la transferencia."
+            );
+        }
 
         if (requiresAccountReceivable) {
 
             if (!data.accountReceivableNumber) {
                 throw new ValidationError(
-                    "Debe indicar el número de cuenta de cobro para este cliente mayorista."
+                    "Debe indicar el número de cuenta de cobro."
                 );
             }
 
@@ -157,6 +169,16 @@ export class SaleService {
                 throw new ConflictError(
                     "Ya existe una cuenta de cobro con ese número."
                 );
+            }
+
+            if (data.downPayment && data.downPayment > 0 && data.downPaymentMethod === "TRANSFER") {
+
+                if (!data.downPaymentVouchers || data.downPaymentVouchers.length === 0) {
+                    throw new ValidationError(
+                        "Debe indicar al menos un número de comprobante del abono."
+                    );
+                }
+
             }
 
         }
@@ -248,6 +270,20 @@ export class SaleService {
 
             if (requiresAccountReceivable) {
 
+                const downPayment = data.downPayment ?? 0;
+                const originalAmount = Number(sale.total);
+                const amount = originalAmount - downPayment;
+
+                if (downPayment > originalAmount) {
+                    throw new ValidationError(
+                        `El abono (${downPayment}) no puede ser mayor que el total de la venta (${originalAmount}).`
+                    );
+                }
+
+                const dueDate = data.termDays
+                    ? new Date(sale.saleDate.getTime() + data.termDays * 24 * 60 * 60 * 1000)
+                    : undefined;
+
                 const accountReceivableRepository =
                     this.accountReceivableRepository.withTransaction(tx);
 
@@ -255,8 +291,14 @@ export class SaleService {
                     number: data.accountReceivableNumber!,
                     clientId: sale.clientId,
                     saleId: sale.id,
-                    amount: Number(sale.total),
-                    currency: sale.currency
+                    originalAmount,
+                    amount,
+                    currency: sale.currency,
+                    downPayment,
+                    downPaymentMethod: downPayment > 0 ? data.downPaymentMethod : undefined,
+                    downPaymentVouchers: downPayment > 0 ? data.downPaymentVouchers : undefined,
+                    termDays: data.termDays,
+                    dueDate
                 });
 
             }

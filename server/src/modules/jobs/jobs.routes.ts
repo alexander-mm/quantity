@@ -14,5 +14,6 @@ const controller = new JobsController();
 router.all("/low-stock", controller.lowStock.bind(controller));
 router.all("/medium-stock", controller.mediumStock.bind(controller));
 router.all("/weekly-report", controller.weeklyReport.bind(controller));
+router.all("/account-receivable-alerts", controller.accountReceivableAlerts.bind(controller));
 
 export default router;

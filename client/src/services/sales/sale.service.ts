@@ -40,7 +40,15 @@ export type CreateSaleRequest={
 
     reference?:string;
     observations?:string;
+
+    paymentMethod:"CASH"|"TRANSFER"|"CREDIT";
+    transferVouchers?:string[];
+
     accountReceivableNumber?:string;
+    downPayment?:number;
+    downPaymentMethod?:"CASH"|"TRANSFER";
+    downPaymentVouchers?:string[];
+    termDays?:number;
 
     details:{
         productId:string;

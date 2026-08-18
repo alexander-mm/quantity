@@ -1,4 +1,5 @@
 export * from "./sale-header";
+export * from "./sale-payment-section";
 export * from "./sale-details-table";
 export * from "./sale-detail-row";
 export * from "./sale-totals";

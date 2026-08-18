@@ -10,6 +10,7 @@ import type { SaleFormData } from "@/validators";
 import { useCreateSale, useUsers, useAuth, useSales } from "@/hooks";
 import { generateOfflineId, getNextSequentialCode, todayLocalDateString } from "@/lib";
 import { SaleHeader } from "./sale-header";
+import { SalePaymentSection } from "./sale-payment-section";
 import { SaleDetailsTable } from "./sale-details-table";
 import { SaleTotals } from "./sale-totals";
 
@@ -36,7 +37,13 @@ export function SaleForm({
                 saleDate: todayLocalDateString(),
                 reference: "",
                 observations: "",
+                paymentMethod: "CASH",
+                transferVouchers: [],
                 accountReceivableNumber: "",
+                downPayment: undefined,
+                downPaymentMethod: undefined,
+                downPaymentVouchers: [],
+                termDays: undefined,
                 // Solo controla qué precio (PVP USD N / PVP COP N) se aplica a todas las líneas de esta venta.
                 priceEntryKey: "",
                 // Solo controla el % de descuento que se reparte entre las líneas de esta venta.
@@ -176,6 +183,7 @@ const total =
                 className="space-y-6 min-w-0"
             >
                 <SaleHeader />
+                <SalePaymentSection />
                 <SaleDetailsTable />
                 <SaleTotals
                     subtotal={subtotal}

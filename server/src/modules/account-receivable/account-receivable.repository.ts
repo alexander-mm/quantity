@@ -17,6 +17,7 @@ type AccountReceivableWithRelations =
                     };
                 };
             };
+            downPaymentVouchers: true;
         };
     }>;
 
@@ -31,7 +32,8 @@ const includeRelations = {
                 }
             }
         }
-    }
+    },
+    downPaymentVouchers: true
 } as const;
 
 export class AccountReceivableRepository extends BaseRepository {
@@ -92,6 +94,40 @@ export class AccountReceivableRepository extends BaseRepository {
 
     }
 
+    async findPendingWithDueDate(): Promise<AccountReceivableWithRelations[]> {
+
+        return this.prisma.accountReceivable.findMany({
+
+            where: {
+                isPaid: false,
+                dueDate: { not: null }
+            },
+
+            include: includeRelations
+
+        });
+
+    }
+
+    async updateLastReminderAt(
+        id: bigint,
+        lastReminderAt: Date
+    ): Promise<void> {
+
+        await this.prisma.accountReceivable.update({
+
+            where: {
+                id
+            },
+
+            data: {
+                lastReminderAt
+            }
+
+        });
+
+    }
+
     async findByNumber(
         number: string
     ): Promise<AccountReceivable | null> {
@@ -116,8 +152,18 @@ export class AccountReceivableRepository extends BaseRepository {
                 number: data.number,
                 clientId: data.clientId,
                 saleId: data.saleId,
+                originalAmount: data.originalAmount,
                 amount: data.amount,
-                currency: data.currency
+                currency: data.currency,
+                downPayment: data.downPayment ?? 0,
+                downPaymentMethod: data.downPaymentMethod,
+                termDays: data.termDays,
+                dueDate: data.dueDate,
+                downPaymentVouchers: data.downPaymentVouchers && data.downPaymentVouchers.length > 0
+                    ? {
+                        create: data.downPaymentVouchers.map(number => ({ number }))
+                    }
+                    : undefined
             },
 
             include: includeRelations

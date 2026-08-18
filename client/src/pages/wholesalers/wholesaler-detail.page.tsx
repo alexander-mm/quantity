@@ -70,7 +70,7 @@ export function WholesalerDetailPage() {
 
             <Button variant="ghost" className="mb-4 border-2 border-gray-400" onClick={() => navigate("/wholesalers")}>
                 <ArrowLeft size={18} />
-                Volver al Admin. de Mayoristas
+                Volver a Cuentas de Cobro
             </Button>
 
             <PageHeader

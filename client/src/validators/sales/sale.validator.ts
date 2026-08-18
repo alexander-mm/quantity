@@ -29,8 +29,34 @@ export const saleSchema=z.object({
         .string()
         .optional(),
 
+    paymentMethod:z
+        .enum(["CASH","TRANSFER","CREDIT"],{error:"Seleccione la forma de pago."}),
+
+    transferVouchers:z
+        .array(z.string().min(1,"Ingrese el número de comprobante."))
+        .optional(),
+
     accountReceivableNumber:z
         .string()
+        .optional(),
+
+    downPayment:z
+        .number()
+        .min(0)
+        .optional(),
+
+    downPaymentMethod:z
+        .enum(["CASH","TRANSFER"])
+        .optional(),
+
+    downPaymentVouchers:z
+        .array(z.string().min(1,"Ingrese el número de comprobante."))
+        .optional(),
+
+    termDays:z
+        .number()
+        .int()
+        .positive()
         .optional(),
 
     // No se persiste: solo controla qué precio (PVP USD N / PVP COP N) se aplica a las líneas de la venta.
@@ -79,6 +105,51 @@ export const saleSchema=z.object({
             1,
             "Debe agregar al menos un producto."
         )
+
+}).superRefine((data, ctx) => {
+
+    if (data.paymentMethod === "TRANSFER" && (!data.transferVouchers || data.transferVouchers.length === 0)) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Debe indicar al menos un número de comprobante.",
+            path: ["transferVouchers"]
+        });
+    }
+
+    if (data.paymentMethod === "CREDIT") {
+
+        if (!data.accountReceivableNumber) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Debe indicar el número de cuenta de cobro.",
+                path: ["accountReceivableNumber"]
+            });
+        }
+
+        if (data.downPayment && data.downPayment > 0) {
+
+            if (!data.downPaymentMethod) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "Indique cómo se pagó el abono.",
+                    path: ["downPaymentMethod"]
+                });
+            }
+
+            if (
+                data.downPaymentMethod === "TRANSFER" &&
+                (!data.downPaymentVouchers || data.downPaymentVouchers.length === 0)
+            ) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "Debe indicar al menos un número de comprobante del abono.",
+                    path: ["downPaymentVouchers"]
+                });
+            }
+
+        }
+
+    }
 
 });
 
