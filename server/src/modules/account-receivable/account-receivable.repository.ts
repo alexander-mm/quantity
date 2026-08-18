@@ -194,6 +194,92 @@ export class AccountReceivableRepository extends BaseRepository {
 
     }
 
+    async findBySaleId(
+        saleId: bigint
+    ): Promise<AccountReceivableWithRelations | null> {
+
+        return this.prisma.accountReceivable.findUnique({
+
+            where: {
+                saleId
+            },
+
+            include: includeRelations
+
+        });
+
+    }
+
+    async upsertForSale(
+        saleId: bigint,
+        data: CreateAccountReceivableDto
+    ): Promise<AccountReceivableWithRelations> {
+
+        const sharedData = {
+            number: data.number,
+            originalAmount: data.originalAmount,
+            amount: data.amount,
+            currency: data.currency,
+            downPayment: data.downPayment ?? 0,
+            downPaymentMethod: data.downPaymentMethod ?? null,
+            termDays: data.termDays ?? null,
+            dueDate: data.dueDate ?? null
+        };
+
+        return this.prisma.accountReceivable.upsert({
+
+            where: {
+                saleId
+            },
+
+            create: {
+                ...sharedData,
+                clientId: data.clientId,
+                saleId: data.saleId,
+                downPaymentVouchers: data.downPaymentVouchers && data.downPaymentVouchers.length > 0
+                    ? { create: data.downPaymentVouchers.map(number => ({ number })) }
+                    : undefined
+            },
+
+            update: {
+                ...sharedData,
+                clientId: data.clientId,
+                downPaymentVouchers: {
+                    deleteMany: {},
+                    create: data.downPaymentVouchers && data.downPaymentVouchers.length > 0
+                        ? data.downPaymentVouchers.map(number => ({ number }))
+                        : []
+                }
+            },
+
+            include: includeRelations
+
+        });
+
+    }
+
+    async deleteBySaleId(
+        saleId: bigint
+    ): Promise<void> {
+
+        const existing = await this.prisma.accountReceivable.findUnique({
+            where: { saleId }
+        });
+
+        if (!existing) {
+            return;
+        }
+
+        await this.prisma.accountReceivableDownPaymentVoucher.deleteMany({
+            where: { accountReceivableId: existing.id }
+        });
+
+        await this.prisma.accountReceivable.delete({
+            where: { id: existing.id }
+        });
+
+    }
+
     async markPaid(
         id: bigint
     ): Promise<AccountReceivableWithRelations> {

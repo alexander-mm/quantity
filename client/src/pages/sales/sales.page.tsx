@@ -40,6 +40,11 @@ export function SalesPage() {
         setSaleToView
     ] = useState<Sale | null>(null);
 
+    const [
+        saleToEdit,
+        setSaleToEdit
+    ] = useState<Sale | null>(null);
+
     return (
 
         <PageContainer>
@@ -99,6 +104,13 @@ export function SalesPage() {
                                         );
 
                                     }}
+                                    onEdit={(sale) => {
+
+                                        setSaleToEdit(
+                                            sale
+                                        );
+
+                                    }}
                                 />
 
                                 <p className="mt-4 text-sm text-muted-foreground">
@@ -114,6 +126,12 @@ export function SalesPage() {
             <SaleModal
                 open={open}
                 onOpenChange={setOpen}
+            />
+
+            <SaleModal
+                open={!!saleToEdit}
+                sale={saleToEdit}
+                onOpenChange={() => setSaleToEdit(null)}
             />
 
             <SaleViewModal

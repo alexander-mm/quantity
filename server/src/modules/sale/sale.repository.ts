@@ -147,12 +147,66 @@ export class SaleRepository extends BaseRepository {
     }
 
     async update(
-        _id: bigint,
-        _data: UpdateSaleDto
-    ): Promise<Sale> {
-        throw new Error(
-            "Pendiente de implementar."
+        id: bigint,
+        data: UpdateSaleDto
+    ): Promise<SaleWithRelations> {
+
+        const subtotal = data.details.reduce(
+            (sum, item) => sum + (item.quantity * item.unitPrice),
+            0
         );
+
+        const discount = data.details.reduce(
+            (sum, item) => sum + (item.discount ?? 0),
+            0
+        );
+
+        const tax = data.details.reduce(
+            (sum, item) => sum + (item.tax ?? 0),
+            0
+        );
+
+        const total = subtotal - discount + tax;
+
+        return this.prisma.sale.update({
+            where: { id },
+            data: {
+                number: data.number,
+                clientId: BigInt(data.clientId),
+                storeId: BigInt(data.storeId),
+                currency: data.currency,
+                paymentMethod: data.paymentMethod,
+                saleDate: data.saleDate,
+                reference: data.reference,
+                observations: data.observations,
+                subtotal,
+                discount,
+                tax,
+                total,
+                details: {
+                    deleteMany: {},
+                    create: data.details.map(item => ({
+                        productId: BigInt(item.productId),
+                        quantity: item.quantity,
+                        unitPrice: item.unitPrice,
+                        discount: item.discount ?? 0,
+                        tax: item.tax ?? 0,
+                        lineTotal:
+                            (item.quantity * item.unitPrice)
+                            - (item.discount ?? 0)
+                            + (item.tax ?? 0)
+                    }))
+                },
+                transferVouchers: {
+                    deleteMany: {},
+                    create: data.paymentMethod === "TRANSFER" && data.transferVouchers
+                        ? data.transferVouchers.map(number => ({ number }))
+                        : []
+                }
+            },
+            include: saleIncludeRelations
+        });
+
     }
 
     async delete(

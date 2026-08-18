@@ -7,20 +7,53 @@ import { toast } from "react-hot-toast";
 import axios from "axios";
 import { saleSchema } from "@/validators";
 import type { SaleFormData } from "@/validators";
-import { useCreateSale, useUsers, useAuth, useSales } from "@/hooks";
+import { useCreateSale, useUpdateSale, useUsers, useAuth, useSales } from "@/hooks";
 import { generateOfflineId, getNextSequentialCode, todayLocalDateString } from "@/lib";
 import { SaleHeader } from "./sale-header";
 import { SalePaymentSection } from "./sale-payment-section";
 import { SaleDetailsTable } from "./sale-details-table";
 import { SaleTotals } from "./sale-totals";
+import type { Sale } from "@/types";
 
 type Props = {
+    sale?: Sale | null;
     onSuccess?: () => void;
 };
 
+function toFormData(sale: Sale): SaleFormData {
+    return {
+        number: sale.number,
+        clientId: sale.client.id,
+        storeId: sale.store.id,
+        currency: sale.currency,
+        saleDate: sale.saleDate.split("T")[0],
+        reference: sale.reference ?? "",
+        observations: sale.observations ?? "",
+        paymentMethod: sale.paymentMethod,
+        transferVouchers: sale.transferVouchers.map(v => v.number),
+        accountReceivableNumber: sale.accountReceivable?.number ?? "",
+        downPayment: sale.accountReceivable ? Number(sale.accountReceivable.downPayment) : undefined,
+        downPaymentMethod: sale.accountReceivable?.downPaymentMethod ?? undefined,
+        downPaymentVouchers: sale.accountReceivable?.downPaymentVouchers.map(v => v.number) ?? [],
+        termDays: sale.accountReceivable?.termDays ?? undefined,
+        priceEntryKey: "",
+        totalDiscountPercentage: undefined,
+        details: sale.details.map(d => ({
+            productId: d.product.id,
+            quantity: Number(d.quantity),
+            unitPrice: Number(d.unitPrice),
+            discount: Number(d.discount),
+            tax: Number(d.tax)
+        }))
+    };
+}
+
 export function SaleForm({
+    sale,
     onSuccess
 }: Props) {
+
+    const isEditing = !!sale;
 
     const methods =
         useForm<SaleFormData>({
@@ -29,7 +62,7 @@ export function SaleForm({
                 saleSchema
             ),
 
-            defaultValues: {
+            defaultValues: sale ? toFormData(sale) : {
                 number: "",
                 clientId: "",
                 storeId: "",
@@ -110,14 +143,17 @@ const total =
     const createMutation =
         useCreateSale();
 
+    const updateMutation =
+        useUpdateSale();
+
     const { data: salesData } = useSales();
 
     const loading =
-        createMutation.isPending;
+        createMutation.isPending || updateMutation.isPending;
 
     useEffect(() => {
 
-        if (!salesData?.data || methods.getValues("number")) {
+        if (isEditing || !salesData?.data || methods.getValues("number")) {
             return;
         }
 
@@ -131,11 +167,39 @@ const total =
             methods.setValue("number", nextNumber);
         }
 
-    }, [salesData, methods]);
+    }, [salesData, methods, isEditing]);
 
     const onSubmit = (
         data: SaleFormData
     ) => {
+
+        if (isEditing) {
+
+            updateMutation.mutate({
+                id: sale.id,
+                data: {
+                    ...data,
+                    userId: sale.user.id,
+                    status: sale.status as "DRAFT" | "CONFIRMED" | "CANCELLED",
+                    saleDate: new Date(data.saleDate)
+                }
+            }, {
+                onSuccess: () => {
+                    toast.success("Venta actualizada.");
+                    onSuccess?.();
+                },
+                onError: (error) => {
+                    const message =
+                        axios.isAxiosError<{ message?: string }>(error) && error.response?.data?.message
+                            ? error.response.data.message
+                            : "No se pudo actualizar la venta.";
+                    toast.error(message);
+                }
+            });
+
+            return;
+
+        }
 
         const userId = currentUser?.id ?? users[0]?.id;
 
@@ -201,7 +265,7 @@ const total =
                         {
                             loading
                                 ? "Guardando..."
-                                : "Guardar venta"
+                                : isEditing ? "Guardar cambios" : "Guardar venta"
                         }
                     </Button>
                 </div>

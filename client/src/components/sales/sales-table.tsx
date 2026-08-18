@@ -1,4 +1,4 @@
-import { Eye, Check, Trash2 } from "lucide-react";
+import { Eye, Pencil, Check, Trash2 } from "lucide-react";
 import { EntityTable } from "@/components/ui";
 import { SaleStatusBadge } from "./sale-status-badge";
 import type { Sale } from "@/types";
@@ -14,6 +14,7 @@ import { formatDateOnly } from "@/lib/format-date";
 type Props = {
     sales: Sale[];
     onView: (sale: Sale) => void;
+    onEdit: (sale: Sale) => void;
 };
 
 function getPaymentMethodLabel(paymentMethod: Sale["paymentMethod"]) {
@@ -27,7 +28,8 @@ function getPaymentMethodLabel(paymentMethod: Sale["paymentMethod"]) {
 
 export function SalesTable({
     sales,
-    onView
+    onView,
+    onEdit
 }: Props) {
 
     const confirmMutation =
@@ -101,6 +103,17 @@ export function SalesTable({
                                             onView(sale)
                                         }
                                     />
+                                    {
+                                        sale.status === "DRAFT" && (
+                                            <Pencil
+                                                size={18}
+                                                className="cursor-pointer text-slate-500 hover:text-primary"
+                                                onClick={() =>
+                                                    onEdit(sale)
+                                                }
+                                            />
+                                        )
+                                    }
                                     {
                                         sale.status === "DRAFT" && (
                                             <Check

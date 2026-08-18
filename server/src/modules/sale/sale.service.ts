@@ -102,6 +102,147 @@ export class SaleService {
 
     }
 
+    private async validatePaymentMethod(
+        data: {
+            paymentMethod?: string;
+            transferVouchers?: string[];
+            accountReceivableNumber?: string;
+            downPayment?: number;
+            downPaymentMethod?: string;
+            downPaymentVouchers?: string[];
+        },
+        excludeAccountReceivableId?: bigint
+    ): Promise<boolean> {
+
+        if (!data.paymentMethod) {
+            throw new ValidationError(
+                "Seleccione la forma de pago."
+            );
+        }
+
+        const requiresAccountReceivable =
+            data.paymentMethod === "CREDIT";
+
+        if (data.paymentMethod === "TRANSFER" && (!data.transferVouchers || data.transferVouchers.length === 0)) {
+            throw new ValidationError(
+                "Debe indicar al menos un número de comprobante de la transferencia."
+            );
+        }
+
+        if (requiresAccountReceivable) {
+
+            if (!data.accountReceivableNumber) {
+                throw new ValidationError(
+                    "Debe indicar el número de cuenta de cobro."
+                );
+            }
+
+            const existingReceivable = await this.accountReceivableRepository.findByNumber(
+                data.accountReceivableNumber
+            );
+
+            if (existingReceivable && existingReceivable.id !== excludeAccountReceivableId) {
+                throw new ConflictError(
+                    "Ya existe una cuenta de cobro con ese número."
+                );
+            }
+
+            if (data.downPayment && data.downPayment > 0 && data.downPaymentMethod === "TRANSFER") {
+
+                if (!data.downPaymentVouchers || data.downPaymentVouchers.length === 0) {
+                    throw new ValidationError(
+                        "Debe indicar al menos un número de comprobante del abono."
+                    );
+                }
+
+            }
+
+        }
+
+        return requiresAccountReceivable;
+
+    }
+
+    private async validateDetailsStock(
+        details: { productId: string; quantity: number }[],
+        storeId: string
+    ): Promise<void> {
+
+        for (const detail of details) {
+
+            const product = await this.productRepository.findById(
+                BigInt(detail.productId)
+            );
+
+            if (!product) {
+                throw new NotFoundError(
+                    "Uno de los productos seleccionados no existe."
+                );
+            }
+
+            if (product.assembleOnSale) {
+
+                const { components, parts } = await this.getRecipeRequirements(
+                    product.id,
+                    detail.quantity
+                );
+
+                if (components.length === 0 && parts.length === 0) {
+                    throw new ValidationError(
+                        `"${product.name}" está marcado como kit (se arma al vender), pero no tiene una receta de componentes ni de piezas definida.`
+                    );
+                }
+
+                for (const item of components) {
+
+                    const stock = await this.inventoryStockService.findByProductAndStore(
+                        item.componentProductId.toString(),
+                        storeId
+                    );
+
+                    const available = stock ? Number(stock.quantity) : 0;
+
+                    if (available < Number(item.quantity)) {
+                        throw new ValidationError(
+                            `Stock insuficiente de "${item.componentProduct.name}" (componente de "${product.name}"): disponible ${available}, requerido ${Number(item.quantity)}.`
+                        );
+                    }
+
+                }
+
+                for (const item of parts) {
+
+                    const available = Number(item.part.quantity);
+
+                    if (available < Number(item.quantity)) {
+                        throw new ValidationError(
+                            `Stock insuficiente de la pieza "${item.part.name}" (componente de "${product.name}"): disponible ${available}, requerido ${Number(item.quantity)}.`
+                        );
+                    }
+
+                }
+
+                continue;
+
+            }
+
+            const stock = await this.inventoryStockService.findByProductAndStore(
+                detail.productId,
+                storeId
+            );
+
+            const available = stock ? Number(stock.quantity) : 0;
+
+            if (available < detail.quantity) {
+                throw new ValidationError(
+                    `Stock insuficiente de "${product.name}": disponible ${available}, solicitado ${detail.quantity}.`
+                );
+            }
+
+        }
+
+    }
+
     async create(
         data: CreateSaleDto
     ): Promise<Sale> {
@@ -138,123 +279,9 @@ export class SaleService {
             );
         }
 
-        if (!data.paymentMethod) {
-            throw new ValidationError(
-                "Seleccione la forma de pago."
-            );
-        }
+        const requiresAccountReceivable = await this.validatePaymentMethod(data);
 
-        const requiresAccountReceivable =
-            data.paymentMethod === "CREDIT";
-
-        if (data.paymentMethod === "TRANSFER" && (!data.transferVouchers || data.transferVouchers.length === 0)) {
-            throw new ValidationError(
-                "Debe indicar al menos un número de comprobante de la transferencia."
-            );
-        }
-
-        if (requiresAccountReceivable) {
-
-            if (!data.accountReceivableNumber) {
-                throw new ValidationError(
-                    "Debe indicar el número de cuenta de cobro."
-                );
-            }
-
-            const existingReceivable = await this.accountReceivableRepository.findByNumber(
-                data.accountReceivableNumber
-            );
-
-            if (existingReceivable) {
-                throw new ConflictError(
-                    "Ya existe una cuenta de cobro con ese número."
-                );
-            }
-
-            if (data.downPayment && data.downPayment > 0 && data.downPaymentMethod === "TRANSFER") {
-
-                if (!data.downPaymentVouchers || data.downPaymentVouchers.length === 0) {
-                    throw new ValidationError(
-                        "Debe indicar al menos un número de comprobante del abono."
-                    );
-                }
-
-            }
-
-        }
-
-        for (const detail of data.details) {
-
-            const product = await this.productRepository.findById(
-                BigInt(detail.productId)
-            );
-
-            if (!product) {
-                throw new NotFoundError(
-                    "Uno de los productos seleccionados no existe."
-                );
-            }
-
-            if (product.assembleOnSale) {
-
-                const { components, parts } = await this.getRecipeRequirements(
-                    product.id,
-                    detail.quantity
-                );
-
-                if (components.length === 0 && parts.length === 0) {
-                    throw new ValidationError(
-                        `"${product.name}" está marcado como kit (se arma al vender), pero no tiene una receta de componentes ni de piezas definida.`
-                    );
-                }
-
-                for (const item of components) {
-
-                    const stock = await this.inventoryStockService.findByProductAndStore(
-                        item.componentProductId.toString(),
-                        data.storeId
-                    );
-
-                    const available = stock ? Number(stock.quantity) : 0;
-
-                    if (available < Number(item.quantity)) {
-                        throw new ValidationError(
-                            `Stock insuficiente de "${item.componentProduct.name}" (componente de "${product.name}"): disponible ${available}, requerido ${Number(item.quantity)}.`
-                        );
-                    }
-
-                }
-
-                for (const item of parts) {
-
-                    const available = Number(item.part.quantity);
-
-                    if (available < Number(item.quantity)) {
-                        throw new ValidationError(
-                            `Stock insuficiente de la pieza "${item.part.name}" (componente de "${product.name}"): disponible ${available}, requerido ${Number(item.quantity)}.`
-                        );
-                    }
-
-                }
-
-                continue;
-
-            }
-
-            const stock = await this.inventoryStockService.findByProductAndStore(
-                detail.productId,
-                data.storeId
-            );
-
-            const available = stock ? Number(stock.quantity) : 0;
-
-            if (available < detail.quantity) {
-                throw new ValidationError(
-                    `Stock insuficiente de "${product.name}": disponible ${available}, solicitado ${detail.quantity}.`
-                );
-            }
-
-        }
+        await this.validateDetailsStock(data.details, data.storeId);
 
         const saleData: CreateSaleDto = {
             ...data,
@@ -324,6 +351,12 @@ export class SaleService {
             );
         }
 
+        if (sale.status !== "DRAFT") {
+            throw new ValidationError(
+                "Solo se pueden editar ventas en borrador."
+            );
+        }
+
         const existing = await this.repository.findByNumber(
             data.number
         );
@@ -337,10 +370,62 @@ export class SaleService {
             );
         }
 
-        return this.repository.update(
-            BigInt(id),
-            data
+        const requiresAccountReceivable = await this.validatePaymentMethod(
+            data,
+            sale.accountReceivable?.id
         );
+
+        await this.validateDetailsStock(data.details, data.storeId);
+
+        return prisma.$transaction(async (tx) => {
+
+            const saleRepository = this.repository.withTransaction(tx);
+            const accountReceivableRepository = this.accountReceivableRepository.withTransaction(tx);
+
+            const updatedSale = await saleRepository.update(
+                BigInt(id),
+                data
+            );
+
+            if (requiresAccountReceivable) {
+
+                const downPayment = data.downPayment ?? 0;
+                const originalAmount = Number(updatedSale.total);
+                const amount = originalAmount - downPayment;
+
+                if (downPayment > originalAmount) {
+                    throw new ValidationError(
+                        `El abono (${downPayment}) no puede ser mayor que el total de la venta (${originalAmount}).`
+                    );
+                }
+
+                const dueDate = data.termDays
+                    ? new Date(updatedSale.saleDate.getTime() + data.termDays * 24 * 60 * 60 * 1000)
+                    : undefined;
+
+                await accountReceivableRepository.upsertForSale(updatedSale.id, {
+                    number: data.accountReceivableNumber!,
+                    clientId: updatedSale.clientId,
+                    saleId: updatedSale.id,
+                    originalAmount,
+                    amount,
+                    currency: updatedSale.currency,
+                    downPayment,
+                    downPaymentMethod: downPayment > 0 ? data.downPaymentMethod : undefined,
+                    downPaymentVouchers: downPayment > 0 ? data.downPaymentVouchers : undefined,
+                    termDays: data.termDays,
+                    dueDate
+                });
+
+            } else if (sale.accountReceivable) {
+
+                await accountReceivableRepository.deleteBySaleId(updatedSale.id);
+
+            }
+
+            return updatedSale;
+
+        });
 
     }
 
