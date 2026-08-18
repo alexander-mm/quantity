@@ -44,4 +44,13 @@ export interface UpdateSaleDto {
     observations?: string;
     status: "DRAFT" | "CONFIRMED" | "CANCELLED";
     details: CreateSaleDetailDto[];
+
+    paymentMethod: PaymentMethodDto;
+    transferVouchers?: string[];
+
+    accountReceivableNumber?: string;
+    downPayment?: number;
+    downPaymentMethod?: "CASH" | "TRANSFER";
+    downPaymentVouchers?: string[];
+    termDays?: number;
 }

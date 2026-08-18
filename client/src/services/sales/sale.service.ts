@@ -75,6 +75,26 @@ export async function createSale(
 
 }
 
+export type UpdateSaleRequest=Omit<CreateSaleRequest,"clientUuid"> & {
+    status:"DRAFT"|"CONFIRMED"|"CANCELLED";
+};
+
+export async function updateSale(
+    id:string,
+    payload:UpdateSaleRequest
+):Promise<ApiResponse<Sale>>{
+
+    const {data}=await api.put<
+        ApiResponse<Sale>
+    >(
+        `/sales/${id}`,
+        payload
+    );
+
+    return data;
+
+}
+
 export async function confirmSale(
     id:string
 ):Promise<ApiResponse<Sale>>{

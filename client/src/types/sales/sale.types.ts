@@ -7,6 +7,18 @@ export interface SaleTransferVoucher {
     number: string;
 }
 
+export interface SaleAccountReceivable {
+    id: string;
+    number: string;
+    originalAmount: string;
+    amount: string;
+    downPayment: string;
+    downPaymentMethod: "CASH" | "TRANSFER" | null;
+    termDays: number | null;
+    dueDate: string | null;
+    downPaymentVouchers: { id: string; number: string }[];
+}
+
 export interface Sale{
 
     id:string;
@@ -40,6 +52,7 @@ export interface Sale{
     details:SaleDetail[];
 
     transferVouchers: SaleTransferVoucher[];
+    accountReceivable: SaleAccountReceivable | null;
 
 }
 

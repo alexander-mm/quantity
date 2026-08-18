@@ -6,14 +6,17 @@ import {
 } from "@/components/ui/dialog";
 
 import { SaleForm } from "./sale-form";
+import type { Sale } from "@/types";
 
 type Props={
     open:boolean;
+    sale?: Sale | null;
     onOpenChange:(open:boolean)=>void;
 };
 
 export function SaleModal({
     open,
+    sale,
     onOpenChange
 }:Props){
 
@@ -29,12 +32,14 @@ export function SaleModal({
                 <DialogHeader>
 
                     <DialogTitle>
-                        Nueva venta
+                        {sale ? `Editar venta ${sale.number}` : "Nueva venta"}
                     </DialogTitle>
 
                 </DialogHeader>
 
                 <SaleForm
+                    key={sale?.id ?? "new"}
+                    sale={sale}
                     onSuccess={()=>{
                         onOpenChange(false);
                     }}

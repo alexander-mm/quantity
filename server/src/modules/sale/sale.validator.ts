@@ -29,8 +29,17 @@ const baseSaleSchema=z.object({
     termDays:z.coerce.number().int().positive().optional()
 });
 
-function applyPaymentMethodRules(
-    schema: typeof baseSaleSchema
+function applyPaymentMethodRules<
+    T extends z.ZodType<{
+        paymentMethod?: "CASH" | "TRANSFER" | "CREDIT";
+        transferVouchers?: string[];
+        accountReceivableNumber?: string;
+        downPayment?: number;
+        downPaymentMethod?: "CASH" | "TRANSFER";
+        downPaymentVouchers?: string[];
+    }>
+>(
+    schema: T
 ) {
 
     return schema.superRefine((data, ctx) => {
@@ -97,10 +106,10 @@ function applyPaymentMethodRules(
 
 export const createSaleSchema=applyPaymentMethodRules(baseSaleSchema);
 
-export const updateSaleSchema=baseSaleSchema.extend({
+export const updateSaleSchema=applyPaymentMethodRules(baseSaleSchema.extend({
     status:z.enum([
         "DRAFT",
         "CONFIRMED",
         "CANCELLED"
     ])
-});
+}));
