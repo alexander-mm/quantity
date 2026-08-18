@@ -7,6 +7,7 @@ export interface Product {
     pvp: string | null;
     pvpCop: string | null;
     minimumStock: string;
+    assembleOnSale: boolean;
     isActive: boolean;
     brand: {
         name: string;

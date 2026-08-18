@@ -69,6 +69,7 @@ export class ProductRepository extends BaseRepository {
         pvp: number;
         pvpCop?: number;
         minimumStock: number;
+        assembleOnSale?: boolean;
     }): Promise<Product> {
         return this.prisma.product.create({
             data
@@ -107,6 +108,7 @@ export class ProductRepository extends BaseRepository {
             pvp: number;
             pvpCop?: number;
             minimumStock: number;
+            assembleOnSale?: boolean;
         }
     ): Promise<Product> {
 
