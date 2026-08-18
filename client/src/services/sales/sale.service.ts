@@ -43,6 +43,8 @@ export type CreateSaleRequest={
 
     hasShipping?:boolean;
     shippingCost?:number;
+    hasLabor?:boolean;
+    laborCost?:number;
 
     paymentMethod:"CASH"|"TRANSFER"|"CREDIT";
     transferVouchers?:string[];

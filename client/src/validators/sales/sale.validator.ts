@@ -38,6 +38,15 @@ export const saleSchema=z.object({
         .min(0)
         .optional(),
 
+    hasLabor:z
+        .boolean()
+        .optional(),
+
+    laborCost:z
+        .number()
+        .min(0)
+        .optional(),
+
     paymentMethod:z
         .enum(["CASH","TRANSFER","CREDIT"],{error:"Seleccione la forma de pago."}),
 
@@ -122,6 +131,14 @@ export const saleSchema=z.object({
             code: z.ZodIssueCode.custom,
             message: "Indique el costo de envío.",
             path: ["shippingCost"]
+        });
+    }
+
+    if (data.hasLabor && !(data.laborCost && data.laborCost > 0)) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Indique el costo de mano de obra.",
+            path: ["laborCost"]
         });
     }
 

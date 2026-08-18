@@ -31,6 +31,8 @@ function toFormData(sale: Sale): SaleFormData {
         observations: sale.observations ?? "",
         hasShipping: sale.hasShipping,
         shippingCost: sale.hasShipping ? Number(sale.shippingCost) : undefined,
+        hasLabor: sale.hasLabor,
+        laborCost: sale.hasLabor ? Number(sale.laborCost) : undefined,
         paymentMethod: sale.paymentMethod,
         transferVouchers: sale.transferVouchers.map(v => v.number),
         accountReceivableNumber: sale.accountReceivable?.number ?? "",
@@ -74,6 +76,8 @@ export function SaleForm({
                 observations: "",
                 hasShipping: false,
                 shippingCost: undefined,
+                hasLabor: false,
+                laborCost: undefined,
                 paymentMethod: "CASH",
                 transferVouchers: [],
                 accountReceivableNumber: "",
@@ -115,6 +119,20 @@ const shippingCostValue =
 
 const shippingCost = hasShipping ? Number(shippingCostValue || 0) : 0;
 
+const hasLabor =
+    useWatch({
+        control: methods.control,
+        name: "hasLabor"
+    });
+
+const laborCostValue =
+    useWatch({
+        control: methods.control,
+        name: "laborCost"
+    });
+
+const laborCost = hasLabor ? Number(laborCostValue || 0) : 0;
+
    const items = details ?? [];
 
 const subtotal =
@@ -148,7 +166,8 @@ const total =
     subtotal -
     discount +
     tax +
-    shippingCost;
+    shippingCost +
+    laborCost;
 
     const {
         data: usersData
