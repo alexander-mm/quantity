@@ -243,23 +243,6 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
         <form onSubmit={handleSubmit(onSubmit, onFormError)} className="space-y-5">
 
             <div>
-                <Label className="mb-1">Código</Label>
-                <Input {...register("code")} />
-                <p className="text-sm text-red-500">{errors.code?.message}</p>
-            </div>
-
-            <div>
-                <Label className="mb-1">Nombre</Label>
-                <Input {...register("name")} />
-                <p className="text-sm text-red-500">{errors.name?.message}</p>
-            </div>
-
-            <div>
-                <Label className="mb-1">Descripción (opcional)</Label>
-                <Input {...register("description")} />
-            </div>
-
-            <div>
                 <Label className="mb-1">Categoría</Label>
                 <Controller
                     control={control}
@@ -299,6 +282,23 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
                     Al elegir una categoría, el código se sugiere automáticamente en base a la última pieza registrada en esa categoría.
                 </p>
                 <p className="text-sm text-red-500">{errors.categoryId?.message}</p>
+            </div>
+
+            <div>
+                <Label className="mb-1">Código</Label>
+                <Input {...register("code")} />
+                <p className="text-sm text-red-500">{errors.code?.message}</p>
+            </div>
+
+            <div>
+                <Label className="mb-1">Nombre</Label>
+                <Input {...register("name")} />
+                <p className="text-sm text-red-500">{errors.name?.message}</p>
+            </div>
+
+            <div>
+                <Label className="mb-1">Descripción (opcional)</Label>
+                <Input {...register("description")} />
             </div>
 
             <div>
