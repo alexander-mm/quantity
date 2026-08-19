@@ -14,6 +14,7 @@ import type { InventoryAdjustmentFormData } from "@/validators";
 import { MinimumStockField } from "@/components/shared";
 import { useProducts, useStores, useCreateInventoryAdjustment, useUpdateProductMinimumStock } from "@/hooks";
 import { useAuthStore } from "@/store";
+import { matchProductByBarcode } from "@/lib";
 
 type Props = {
     onSuccess?: () => void;
@@ -96,6 +97,12 @@ export function InventoryAdjustmentForm({ onSuccess }: Props) {
                                 items={items}
                                 value={selected}
                                 onValueChange={(item) => field.onChange(item ? item.value : "")}
+                                onInputValueChange={(text) => {
+                                    const match = matchProductByBarcode(products, text);
+                                    if (match) {
+                                        field.onChange(match.id);
+                                    }
+                                }}
                             >
                                 <ComboboxInput placeholder="Buscar producto..." />
                                 <ComboboxContent>

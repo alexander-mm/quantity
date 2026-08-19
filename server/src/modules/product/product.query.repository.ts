@@ -9,6 +9,7 @@ export class ProductQueryRepository extends BaseRepository {
             select: {
                 id: true,
                 internalCode: true,
+                barcode: true,
                 name: true,
                 costPrice: true,
                 pvp: true,

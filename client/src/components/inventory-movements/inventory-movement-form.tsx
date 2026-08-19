@@ -20,11 +20,13 @@ import {
     useProducts,
     useStores,
     useUsers,
+    useAuth,
     useCreateInventoryMovement,
     useUpdateInventoryMovement,
     useUpdateProductMinimumStock
 } from "@/hooks";
 import { toast } from "react-hot-toast";
+import { matchProductByBarcode } from "@/lib";
 import type { InventoryMovement } from "@/types";
 
 type Props = {
@@ -63,6 +65,7 @@ export function InventoryMovementForm({ movement, onSuccess }: Props) {
     const { data: productsData } = useProducts();
     const { data: storesData } = useStores();
     const { data: usersData } = useUsers();
+    const { user: currentUser } = useAuth();
     const createMutation = useCreateInventoryMovement();
     const updateMutation = useUpdateInventoryMovement();
     const updateMinimumStockMutation = useUpdateProductMinimumStock();
@@ -106,14 +109,16 @@ export function InventoryMovementForm({ movement, onSuccess }: Props) {
 
         }
 
-        if (users.length === 0) {
+        const userId = currentUser?.id ?? users[0]?.id;
+
+        if (!userId) {
             toast.error("No existen usuarios registrados.");
             return;
         }
 
         createMutation.mutate({
             ...data,
-            userId: users[0]!.id,
+            userId,
             movementDate: new Date()
         }, {
             onSuccess: () => {
@@ -127,7 +132,7 @@ export function InventoryMovementForm({ movement, onSuccess }: Props) {
     }
 
     return (
-        <form onSubmit={handleSubmit(onSubmit, onFormError)} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit, onFormError)} noValidate className="space-y-5">
 
             <div>
                 <Label className="mb-1">Tipo de movimiento</Label>
@@ -166,24 +171,32 @@ export function InventoryMovementForm({ movement, onSuccess }: Props) {
 
                         const selected = items.find(item => item.value === field.value) ?? null;
 
+                        const handleSelect = (item: { value: string; label: string } | null) => {
+
+                            field.onChange(item ? item.value : "");
+
+                            if (!item) {
+                                return;
+                            }
+
+                            const product = products.find(p => p.id === item.value);
+
+                            if (product?.costPrice !== undefined && product?.costPrice !== null) {
+                                setValue("unitCost", Number(product.costPrice));
+                            }
+
+                        };
+
                         return (
                             <Combobox
                                 items={items}
                                 value={selected}
-                                onValueChange={(item) => {
-
-                                    field.onChange(item ? item.value : "");
-
-                                    if (!item) {
-                                        return;
+                                onValueChange={handleSelect}
+                                onInputValueChange={(text) => {
+                                    const match = matchProductByBarcode(products, text);
+                                    if (match) {
+                                        handleSelect({ value: match.id, label: `${match.internalCode} - ${match.name}` });
                                     }
-
-                                    const product = products.find(p => p.id === item.value);
-
-                                    if (product?.costPrice !== undefined && product?.costPrice !== null) {
-                                        setValue("unitCost", Number(product.costPrice));
-                                    }
-
                                 }}
                             >
                                 <ComboboxInput placeholder="Buscar producto..." />
@@ -263,7 +276,7 @@ export function InventoryMovementForm({ movement, onSuccess }: Props) {
 
             <div>
                 <Label className="mb-1">Costo unitario</Label>
-                <Input type="number" placeholder="0" {...register("unitCost", {
+                <Input type="number" min={0} step="0.01" placeholder="0" {...register("unitCost", {
                     setValueAs: (v) => (v === "" ? undefined : Number(v))
                 })} />
                 <p className="text-xs text-muted-foreground">

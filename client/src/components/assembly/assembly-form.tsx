@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/combobox";
 import { productAssemblySchema } from "@/validators";
 import type { ProductAssemblyFormData } from "@/validators";
-import { getNextSequentialCode } from "@/lib";
+import { getNextSequentialCode, matchProductByBarcode } from "@/lib";
 import {
     useProducts,
     useProductIdsWithRecipe,
@@ -196,6 +196,12 @@ export function AssemblyForm({ onSuccess, mode = "create", assemblyId }: Props) 
                                     items={items}
                                     value={selected}
                                     onValueChange={(item) => field.onChange(item ? item.value : "")}
+                                    onInputValueChange={(text) => {
+                                        const match = matchProductByBarcode(assemblableProducts, text);
+                                        if (match) {
+                                            field.onChange(match.id);
+                                        }
+                                    }}
                                 >
                                     <ComboboxInput placeholder="Buscar producto..." />
                                     <ComboboxContent>

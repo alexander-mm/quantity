@@ -13,6 +13,7 @@ import { PageContainer, PageHeader } from "@/components";
 import { EquipmentPartPreviewPanel } from "@/components/equipment-parts";
 import { useProducts } from "@/hooks";
 import { useEquipmentPartPreview } from "@/hooks";
+import { matchProductByBarcode } from "@/lib";
 
 export function EquipmentPartsPage() {
 
@@ -50,6 +51,12 @@ export function EquipmentPartsPage() {
                     items={items}
                     value={selected}
                     onValueChange={(item) => setProductId(item ? item.value : "")}
+                    onInputValueChange={(text) => {
+                        const match = matchProductByBarcode(products, text);
+                        if (match) {
+                            setProductId(match.id);
+                        }
+                    }}
                 >
                     <ComboboxInput placeholder="Buscar equipo..." />
                     <ComboboxContent>

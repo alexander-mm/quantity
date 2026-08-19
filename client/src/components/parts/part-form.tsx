@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/combobox";
 import { partSchema } from "@/validators";
 import type { PartFormData } from "@/validators";
-import { getNextSequentialCode } from "@/lib";
+import { getNextSequentialCode, matchProductByBarcode } from "@/lib";
 import {
     useCreatePart,
     useUpdatePart,
@@ -362,8 +362,10 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
                             .filter(Boolean)
                     );
 
+                    const availableProducts = products.filter(product => !usedRefIds.has(product.id));
+
                     const options = isProduct
-                        ? products.filter(product => !usedRefIds.has(product.id)).map(product => ({ value: product.id, label: `${product.internalCode} - ${product.name}` }))
+                        ? availableProducts.map(product => ({ value: product.id, label: `${product.internalCode} - ${product.name}` }))
                         : parts.filter(part => !usedRefIds.has(part.id)).map(part => ({ value: part.id, label: `${part.code} - ${part.name}` }));
 
                     return (
@@ -384,6 +386,15 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
                                                 items={options}
                                                 value={selected}
                                                 onValueChange={(item) => controllerField.onChange(item ? item.value : "")}
+                                                onInputValueChange={(text) => {
+                                                    if (!isProduct) {
+                                                        return;
+                                                    }
+                                                    const match = matchProductByBarcode(availableProducts, text);
+                                                    if (match) {
+                                                        controllerField.onChange(match.id);
+                                                    }
+                                                }}
                                             >
                                                 <ComboboxInput placeholder={isProduct ? "Buscar producto..." : "Buscar pieza..."} readOnly={!!selected} />
                                                 <ComboboxContent>

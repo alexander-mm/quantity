@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useProducts } from "@/hooks";
 import { getProductById, getProductPriceEntries } from "@/services";
+import { matchProductByBarcode } from "@/lib";
 
 type Props={
     index:number;
@@ -109,8 +110,10 @@ export function PurchaseDetailRow({
                     name={`details.${index}.productId`}
                     render={({field})=>{
 
-                        const items=products
-                            .filter(product=>!selectedProductIds.has(product.id))
+                        const availableProducts=products
+                            .filter(product=>!selectedProductIds.has(product.id));
+
+                        const items=availableProducts
                             .map(product=>({
                                 value:product.id,
                                 label:`${product.internalCode} - ${product.name}`
@@ -120,46 +123,54 @@ export function PurchaseDetailRow({
                             items.find(item=>item.value===field.value)
                             ??null;
 
+                        const handleSelect=(item:{value:string;label:string}|null)=>{
+
+                            field.onChange(item?item.value:"");
+
+                            if(!item){
+                                return;
+                            }
+
+                            getProductById(item.value).then(response=>{
+
+                                const product=response.data;
+
+                                setValue(
+                                    `details.${index}.unitCost`,
+                                    Number(product.costPrice)
+                                );
+
+                            }).catch(error=>{
+                                console.error(error);
+                            });
+
+                            getProductPriceEntries(item.value).then(response => {
+
+                                replacePriceEntries(
+                                    response.data.map(entry => ({
+                                        currency: entry.currency,
+                                        sequence: entry.sequence,
+                                        price: Number(entry.price)
+                                    }))
+                                );
+
+                            }).catch(error => {
+                                console.error(error);
+                            });
+
+                        };
+
                         return(
 
                             <Combobox
                                 items={items}
                                 value={selected}
-                                onValueChange={(item)=>{
-
-                                    field.onChange(item?item.value:"");
-
-                                    if(!item){
-                                        return;
+                                onValueChange={handleSelect}
+                                onInputValueChange={(text)=>{
+                                    const match=matchProductByBarcode(availableProducts,text);
+                                    if(match){
+                                        handleSelect({value:match.id,label:`${match.internalCode} - ${match.name}`});
                                     }
-
-                                    getProductById(item.value).then(response=>{
-
-                                        const product=response.data;
-
-                                        setValue(
-                                            `details.${index}.unitCost`,
-                                            Number(product.costPrice)
-                                        );
-
-                                    }).catch(error=>{
-                                        console.error(error);
-                                    });
-
-                                    getProductPriceEntries(item.value).then(response => {
-
-                                        replacePriceEntries(
-                                            response.data.map(entry => ({
-                                                currency: entry.currency,
-                                                sequence: entry.sequence,
-                                                price: Number(entry.price)
-                                            }))
-                                        );
-
-                                    }).catch(error => {
-                                        console.error(error);
-                                    });
-
                                 }}
                             >
 

@@ -6,6 +6,7 @@ import {
     ComboboxItem,
     ComboboxEmpty
 } from "@/components/ui/combobox";
+import { matchProductByBarcode } from "@/lib";
 import type { Product } from "@/types";
 
 type Props={
@@ -38,6 +39,12 @@ export function ProductSelector({
                 items={items}
                 value={selected}
                 onValueChange={(item) => onChange(item ? item.value : "")}
+                onInputValueChange={(text) => {
+                    const match = matchProductByBarcode(products, text);
+                    if (match) {
+                        onChange(match.id);
+                    }
+                }}
             >
                 <ComboboxInput placeholder={placeholder} />
                 <ComboboxContent>

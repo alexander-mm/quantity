@@ -1,6 +1,7 @@
 export interface Product {
     id: string;
     internalCode: string;
+    barcode: string | null;
     name: string;
     costPrice: string | null;
     price: string | null;
