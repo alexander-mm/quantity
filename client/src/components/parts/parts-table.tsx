@@ -14,11 +14,12 @@ function isLowStock(part: Part): boolean {
 
 export function PartsTable({ parts, onEdit, onDelete }: Props) {
     return (
-        <EntityTable headers={["Código", "Nombre", "Cantidad", "Acciones"]}>
+        <EntityTable headers={["Código", "Nombre", "Categoría", "Cantidad", "Acciones"]}>
             {parts.map(part => (
                 <tr key={part.id} className={`border-b transition hover:bg-muted/40 ${isLowStock(part) ? "bg-amber-50" : ""}`}>
                     <td className="px-6 py-4 font-medium">{part.code}</td>
                     <td className="px-6 py-4">{part.name}</td>
+                    <td className="px-6 py-4">{part.category?.name ?? "-"}</td>
                     <td className="px-6 py-4">
                         <div className="flex items-center gap-1.5">
                             {Number(part.quantity)}

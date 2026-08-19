@@ -20,6 +20,7 @@ import productPriceRoutes from "../modules/product-prices/product-price.routes.j
 import inventoryAdjustmentRoutes from "../modules/inventory-adjustment/inventory-adjustment.routes.js";
 import stockTransferRoutes from "../modules/stock-transfer/stock-transfer.routes.js";
 import partRoutes from "../modules/part/part.routes.js";
+import partCategoryRoutes from "../modules/part-category/part-category.routes.js";
 import partMovementRoutes from "../modules/part-movement/part-movement.routes.js";
 import partAdjustmentRoutes from "../modules/part-adjustment/part-adjustment.routes.js";
 import productComponentRoutes from "../modules/product-component/product-component.routes.js";
@@ -85,6 +86,8 @@ router.use("/inventory-adjustments", inventoryAdjustmentRoutes);
 router.use("/stock-transfers", stockTransferRoutes);
 
 router.use("/parts", partRoutes);
+
+router.use("/part-categories", partCategoryRoutes);
 
 router.use("/part-movements", partMovementRoutes);
 router.use("/part-adjustments", partAdjustmentRoutes);

@@ -3,6 +3,13 @@ import { Part, PrismaClient, Prisma } from "@prisma/client";
 import { BaseRepository } from "../../repositories/base/BaseRepository.js";
 import { PART_STOCK_MULTIPLIER } from "../../shared/constants/stock-multipliers.js";
 
+export type PartWithCategory =
+    Prisma.PartGetPayload<{
+        include: {
+            category: true;
+        };
+    }>;
+
 export class PartRepository extends BaseRepository {
 
     constructor(
@@ -11,12 +18,16 @@ export class PartRepository extends BaseRepository {
         super(prismaClient);
     }
 
-    async findAll(): Promise<Part[]> {
+    async findAll(): Promise<PartWithCategory[]> {
 
         return this.prisma.part.findMany({
 
             where: {
                 isActive: true
+            },
+
+            include: {
+                category: true
             },
 
             orderBy: {
@@ -29,12 +40,16 @@ export class PartRepository extends BaseRepository {
 
     async findById(
         id: bigint
-    ): Promise<Part | null> {
+    ): Promise<PartWithCategory | null> {
 
         return this.prisma.part.findUnique({
 
             where: {
                 id
+            },
+
+            include: {
+                category: true
             }
 
         });

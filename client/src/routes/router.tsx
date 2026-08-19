@@ -26,6 +26,7 @@ import { PendingReceptionsPage } from "@/pages/pending-receptions";
 import { TransferIssuesPage } from "@/pages/transfer-issues";
 import { ClientsPage } from "@/pages/clients";
 import { PartsPage } from "@/pages/parts";
+import { PartCategoriesPage } from "@/pages/part-categories";
 import { PartMovementsPage } from "@/pages/part-movements";
 import { PartAdjustmentsPage } from "@/pages/part-adjustments";
 import { AssemblyPage } from "@/pages/assembly";
@@ -57,7 +58,7 @@ const router = createBrowserRouter([
     {
         path: "/products",
         element: (
-            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+            <ProtectedRoute blockedRoles={[ROLES.PRODUCTION]}>
                 <DashboardLayout>
                     <ProductsPage />
                 </DashboardLayout>
@@ -291,6 +292,17 @@ const router = createBrowserRouter([
             <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.PRODUCTION]}>
                 <DashboardLayout>
                     <PartsPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
+
+    {
+        path: "/part-categories",
+        element: (
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.PRODUCTION]}>
+                <DashboardLayout>
+                    <PartCategoriesPage />
                 </DashboardLayout>
             </ProtectedRoute>
         )

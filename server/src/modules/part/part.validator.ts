@@ -20,6 +20,12 @@ export const createPartSchema = z.object({
         .max(500, "La descripción no puede superar los 500 caracteres.")
         .optional(),
 
+    categoryId: z
+        .string()
+        .trim()
+        .min(1, "Seleccione una categoría.")
+        .optional(),
+
     minimumStock: z
         .coerce
         .number()

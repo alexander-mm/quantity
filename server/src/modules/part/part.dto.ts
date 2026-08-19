@@ -2,6 +2,7 @@ export interface CreatePartDto {
     code: string;
     name: string;
     description?: string;
+    categoryId?: string;
     minimumStock?: number;
     cost: number;
     initialQuantity?: number;
@@ -12,6 +13,7 @@ export interface UpdatePartDto {
     code: string;
     name: string;
     description?: string;
+    categoryId?: string;
     minimumStock?: number;
     cost: number;
 }

@@ -14,6 +14,7 @@ export * from "./purchases";
 export * from "./sales";
 export * from "./users";
 export * from "./brands";
+export * from "./part-categories";
 export * from "./units-of-measure";
 export * from "./categories";
 export * from "./margin-profiles";

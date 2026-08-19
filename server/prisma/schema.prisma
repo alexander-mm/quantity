@@ -688,12 +688,28 @@ enum Currency {
   COP
 }
 
+model PartCategory {
+  id          BigInt   @id @default(autoincrement())
+  uuid        String   @unique @default(uuid())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   BigInt?
+  updatedBy   BigInt?
+  parts       Part[]
+
+  @@index([isActive])
+}
+
 model Part {
   id           BigInt   @id @default(autoincrement())
   uuid         String   @unique @default(uuid())
   code         String   @unique
   name         String
   description  String?
+  categoryId   BigInt?
   quantity     Decimal  @default(0) @db.Decimal(12, 2)
   minimumStock Decimal  @default(0) @db.Decimal(12, 2)
   cost         Decimal  @default(0) @db.Decimal(12, 2)
@@ -703,6 +719,7 @@ model Part {
   createdBy    BigInt?
   updatedBy    BigInt?
 
+  category          PartCategory?                @relation(fields: [categoryId], references: [id])
   movementDetails   PartMovementDetail[]
   recipe            PartRecipe?
   equipmentUsage    EquipmentPart[]
@@ -715,6 +732,7 @@ model Part {
   usedInAssemblies  PartAssemblyDetail[]        @relation("PartAssemblyComponentUsage")
 
   @@index([isActive])
+  @@index([categoryId])
 }
 
 model PartMovement {
