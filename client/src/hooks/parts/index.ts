@@ -5,3 +5,6 @@ export * from "./use-create-part";
 export * from "./use-update-part";
 export * from "./use-update-part-minimum-stock";
 export * from "./use-delete-part";
+export * from "./use-part-categories";
+export * from "./use-create-part-category";
+export * from "./use-delete-part-category";

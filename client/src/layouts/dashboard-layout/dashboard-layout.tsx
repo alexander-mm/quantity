@@ -117,7 +117,7 @@ export function DashboardLayout({
             label: "Catálogo",
             icon: Tags,
             items: [
-                { to: "/products", label: "Admin. de Productos", visibility: "adminOnly" },
+                { to: "/products", label: "Admin. de Productos", visibility: "nonProduction" },
                 { to: "/brands", label: "Marcas", visibility: "adminOnly" },
                 { to: "/categories", label: "Categorías", visibility: "adminOnly" },
                 { to: "/units-of-measure", label: "Unidades de Medida", visibility: "adminOnly" },
@@ -161,6 +161,7 @@ export function DashboardLayout({
             icon: Factory,
             items: [
                 { to: "/parts", label: "Admin. de Piezas", visibility: "adminOrProduction" },
+                { to: "/part-categories", label: "Categorías de Piezas", visibility: "adminOrProduction" },
                 { to: "/part-movements", label: "Movimientos de Piezas", visibility: "adminOrProduction" },
                 { to: "/raw-materials", label: "Admin. de M. Prima", visibility: "adminOrProduction" },
                 { to: "/raw-material-movements", label: "Movimientos de M. Prima", visibility: "adminOrProduction" },

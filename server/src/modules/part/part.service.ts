@@ -4,7 +4,7 @@ import { prisma } from "../../database/index.js";
 import { ConflictError, NotFoundError, ValidationError } from "../../shared/errors/index.js";
 import { PartMovementRepository } from "../part-movement/part-movement.repository.js";
 
-import { PartRepository } from "./part.repository.js";
+import { PartRepository, PartWithCategory } from "./part.repository.js";
 import { CreatePartDto, UpdatePartDto } from "./part.dto.js";
 
 export class PartService {
@@ -12,7 +12,7 @@ export class PartService {
     private readonly repository = new PartRepository();
     private readonly movementRepository = new PartMovementRepository();
 
-    async findAll(): Promise<Part[]> {
+    async findAll(): Promise<PartWithCategory[]> {
 
         return this.repository.findAll();
 
@@ -40,7 +40,7 @@ export class PartService {
 
     async findById(
         id: string
-    ): Promise<Part> {
+    ): Promise<PartWithCategory> {
 
         const part = await this.repository.findById(
             BigInt(id)
@@ -85,7 +85,10 @@ export class PartService {
                 code: data.code,
                 name: data.name,
                 description: data.description,
-                minimumStock: data.minimumStock ?? 0
+                minimumStock: data.minimumStock ?? 0,
+                category: data.categoryId
+                    ? { connect: { id: BigInt(data.categoryId) } }
+                    : undefined
             });
 
         }
@@ -99,7 +102,10 @@ export class PartService {
                 code: data.code,
                 name: data.name,
                 description: data.description,
-                minimumStock: data.minimumStock ?? 0
+                minimumStock: data.minimumStock ?? 0,
+                category: data.categoryId
+                    ? { connect: { id: BigInt(data.categoryId) } }
+                    : undefined
             });
 
             await movementRepository.create({
@@ -144,7 +150,10 @@ export class PartService {
             code: data.code,
             name: data.name,
             description: data.description,
-            minimumStock: data.minimumStock ?? 0
+            minimumStock: data.minimumStock ?? 0,
+            category: data.categoryId
+                ? { connect: { id: BigInt(data.categoryId) } }
+                : { disconnect: true }
         });
 
     }

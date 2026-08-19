@@ -1,9 +1,19 @@
+export interface PartCategory {
+    id: string;
+    uuid: string;
+    name: string;
+    description: string | null;
+    isActive: boolean;
+}
+
 export interface Part {
     id: string;
     uuid: string;
     code: string;
     name: string;
     description: string | null;
+    categoryId: string | null;
+    category: PartCategory | null;
     quantity: string;
     minimumStock: string;
     isActive: boolean;

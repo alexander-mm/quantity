@@ -24,6 +24,7 @@ import {
     usePart,
     useParts,
     useProducts,
+    usePartCategories,
     usePartComponents,
     useSetPartComponents,
     usePartComponentProducts,
@@ -38,12 +39,13 @@ type Props = {
 
 export function PartForm({ onSuccess, mode = "create", partId }: Props) {
 
-    const { register, control, handleSubmit, reset, setError, setValue, getValues, formState: { errors } } = useForm<PartFormData>({
+    const { register, control, handleSubmit, reset, setError, setValue, formState: { errors } } = useForm<PartFormData>({
         resolver: zodResolver(partSchema),
         defaultValues: {
             code: "",
             name: "",
             description: "",
+            categoryId: "",
             minimumStock: undefined,
             initialQuantity: undefined,
             components: []
@@ -52,6 +54,7 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
 
     const { fields, append, remove } = useFieldArray({ control, name: "components" });
     const watchedComponents = useWatch({ control, name: "components" }) ?? [];
+    const categoryId = useWatch({ control, name: "categoryId" });
 
     const createMutation = useCreatePart();
     const updateMutation = useUpdatePart();
@@ -60,26 +63,31 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
     const { data: componentProductsData } = usePartComponentProducts(mode === "edit" ? partId : undefined);
     const { data: partsData } = useParts();
     const { data: productsData } = useProducts();
+    const { data: partCategoriesData } = usePartCategories();
     const setComponentsMutation = useSetPartComponents();
     const setComponentProductsMutation = useSetPartComponentProducts();
     const loading = createMutation.isPending || updateMutation.isPending;
 
     const parts = (partsData?.data ?? []).filter(part => part.id !== partId);
     const products = productsData?.data ?? [];
+    const partCategories = partCategoriesData?.data ?? [];
 
     useEffect(() => {
 
-        if (mode !== "create" || !partsData?.data || getValues("code")) {
+        if (mode !== "create" || !partsData?.data || !categoryId) {
             return;
         }
 
-        const nextCode = getNextSequentialCode(partsData.data[0]?.code);
+        const lastPartInCategory = partsData.data.find(
+            part => part.categoryId === categoryId
+        );
 
-        if (nextCode) {
-            setValue("code", nextCode);
-        }
+        setValue(
+            "code",
+            getNextSequentialCode(lastPartInCategory?.code)
+        );
 
-    }, [mode, partsData, getValues, setValue]);
+    }, [mode, categoryId, partsData, setValue]);
 
     useEffect(() => {
 
@@ -91,6 +99,7 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
             code: partData.data.code,
             name: partData.data.name,
             description: partData.data.description ?? "",
+            categoryId: partData.data.categoryId ?? "",
             minimumStock: Number(partData.data.minimumStock),
             components: [
                 ...(componentsData?.data ?? []).map(item => ({
@@ -155,6 +164,7 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
             code: rest.code,
             name: rest.name,
             description: rest.description || undefined,
+            categoryId: rest.categoryId || undefined,
             minimumStock: Number(rest.minimumStock) || 0,
             ...(mode === "create" ? { initialQuantity: Number(rest.initialQuantity) || undefined } : {})
         };
@@ -221,6 +231,48 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
             <div>
                 <Label className="mb-1">Descripción (opcional)</Label>
                 <Input {...register("description")} />
+            </div>
+
+            <div>
+                <Label className="mb-1">Categoría</Label>
+                <Controller
+                    control={control}
+                    name="categoryId"
+                    render={({ field }) => {
+
+                        const items = partCategories.map(category => ({
+                            value: category.id,
+                            label: category.name
+                        }));
+
+                        const selected = items.find(item => item.value === field.value) ?? null;
+
+                        return (
+                            <Combobox
+                                items={items}
+                                value={selected}
+                                onValueChange={(item) => field.onChange(item ? item.value : "")}
+                            >
+                                <ComboboxInput placeholder="Buscar categoría..." />
+                                <ComboboxContent>
+                                    {(item) => (
+                                        <ComboboxItem key={item.value} value={item}>
+                                            {item.label}
+                                        </ComboboxItem>
+                                    )}
+                                </ComboboxContent>
+                                <ComboboxEmpty>
+                                    No se encontraron categorías.
+                                </ComboboxEmpty>
+                            </Combobox>
+                        );
+
+                    }}
+                />
+                <p className="text-xs text-muted-foreground">
+                    Al elegir una categoría, el código se sugiere automáticamente en base a la última pieza registrada en esa categoría.
+                </p>
+                <p className="text-sm text-red-500">{errors.categoryId?.message}</p>
             </div>
 
             <div>

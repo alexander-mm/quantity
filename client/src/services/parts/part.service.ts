@@ -20,6 +20,7 @@ export type CreatePartRequest = {
     code: string;
     name: string;
     description?: string;
+    categoryId?: string;
     minimumStock?: number;
     initialQuantity?: number;
 };
