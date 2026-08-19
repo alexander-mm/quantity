@@ -2,6 +2,8 @@ import { Search, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StoreSelector } from "@/components/selectors/store-selector";
+import { useAuth } from "@/hooks";
+import { ROLES } from "@/constants/roles";
 import type { Store } from "@/types";
 
 type ProductsToolbarProps = {
@@ -27,6 +29,9 @@ export function ProductsToolbar(
         onStoreChange
     }: ProductsToolbarProps
 ) {
+
+    const { user } = useAuth();
+    const isAdmin = user?.roleName === ROLES.ADMIN;
 
     return (
 
@@ -60,12 +65,14 @@ export function ProductsToolbar(
 
             </div>
 
-            <Button
-                onClick={onNewProduct}
-            >
-                <Plus size={18} />
-                Nuevo producto
-            </Button>
+            {isAdmin && (
+                <Button
+                    onClick={onNewProduct}
+                >
+                    <Plus size={18} />
+                    Nuevo producto
+                </Button>
+            )}
         </div>
     );
 }

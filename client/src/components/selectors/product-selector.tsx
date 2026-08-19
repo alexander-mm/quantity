@@ -1,5 +1,11 @@
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+    Combobox,
+    ComboboxInput,
+    ComboboxContent,
+    ComboboxItem,
+    ComboboxEmpty
+} from "@/components/ui/combobox";
 import type { Product } from "@/types";
 
 type Props={
@@ -17,29 +23,34 @@ export function ProductSelector({
     placeholder="Seleccione un producto",
     onChange
 }:Props){
+
+    const items = products.map(product => ({
+        value: product.id,
+        label: `${product.internalCode} - ${product.name}`
+    }));
+
+    const selected = items.find(item => item.value === value) ?? null;
+
     return(
         <div className="flex-1">
-            <Label>{label}</Label>
-            <Select
-                value={value}
-                onValueChange={onChange}
+            <Label className="mb-1">{label}</Label>
+            <Combobox
+                items={items}
+                value={selected}
+                onValueChange={(item) => onChange(item ? item.value : "")}
             >
-                <SelectTrigger>
-                    <SelectValue placeholder={placeholder}/>
-                </SelectTrigger>
-                <SelectContent>
-                    {
-                        products.map(product=>(
-                            <SelectItem
-                                key={product.id}
-                                value={product.id}
-                            >
-                                {product.internalCode} - {product.name}
-                            </SelectItem>
-                        ))
-                    }
-                </SelectContent>
-            </Select>
+                <ComboboxInput placeholder={placeholder} />
+                <ComboboxContent>
+                    {(item) => (
+                        <ComboboxItem key={item.value} value={item}>
+                            {item.label}
+                        </ComboboxItem>
+                    )}
+                </ComboboxContent>
+                <ComboboxEmpty>
+                    No se encontraron productos.
+                </ComboboxEmpty>
+            </Combobox>
         </div>
     );
 }
