@@ -67,10 +67,90 @@ export class InventoryMovementController {
         next: NextFunction
     ): Promise<void> {
         try {
-            const movement = await this.service.create(req.body);
+            const movement = await this.service.createDraft(req.body);
             res.status(201).json(
                 ApiResponse.success(
-                    "Movimiento registrado correctamente.",
+                    "Movimiento guardado como borrador.",
+                    movement
+                )
+            );
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async update(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+        try {
+            const { id } = req.params;
+            if (!id || Array.isArray(id)) {
+                res.status(400).json(
+                    ApiResponse.error(
+                        "Id inválido."
+                    )
+                );
+                return;
+            }
+            const movement = await this.service.update(id, req.body);
+            res.status(200).json(
+                ApiResponse.success(
+                    "Movimiento actualizado correctamente.",
+                    movement
+                )
+            );
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async delete(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+        try {
+            const { id } = req.params;
+            if (!id || Array.isArray(id)) {
+                res.status(400).json(
+                    ApiResponse.error(
+                        "Id inválido."
+                    )
+                );
+                return;
+            }
+            await this.service.cancel(id);
+            res.status(200).json(
+                ApiResponse.success(
+                    "Movimiento cancelado correctamente."
+                )
+            );
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async confirm(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+        try {
+            const { id } = req.params;
+            if (!id || Array.isArray(id)) {
+                res.status(400).json(
+                    ApiResponse.error(
+                        "Id inválido."
+                    )
+                );
+                return;
+            }
+            const movement = await this.service.confirm(id);
+            res.status(200).json(
+                ApiResponse.success(
+                    "Movimiento confirmado correctamente.",
                     movement
                 )
             );

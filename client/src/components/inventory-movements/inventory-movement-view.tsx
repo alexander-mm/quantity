@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { InventoryMovementStatusBadge } from "./inventory-movement-status-badge";
 import type { InventoryMovement } from "@/types";
 
 type Props = {
@@ -25,6 +26,10 @@ export function InventoryMovementView({ movement, onClose }: Props) {
                 <div>
                     <p className="text-sm text-muted-foreground">Movimiento</p>
                     <p className="font-medium">{movement.movementType.name}</p>
+                </div>
+                <div>
+                    <p className="text-sm text-muted-foreground">Estado</p>
+                    <InventoryMovementStatusBadge status={movement.status} />
                 </div>
                 <div>
                     <p className="text-sm text-muted-foreground">Fecha</p>

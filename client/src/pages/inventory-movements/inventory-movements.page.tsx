@@ -5,9 +5,12 @@ import {
     InventoryMovementsEmptyState,
     InventoryMovementModal,
     InventoryMovementViewModal,
-    InventoryMovementsToolbar
+    InventoryMovementsToolbar,
+    ConfirmInventoryMovementDialog,
+    CancelInventoryMovementDialog
 } from "@/components";
-import { useInventoryMovements } from "@/hooks";
+import { useInventoryMovements, useConfirmInventoryMovement, useCancelInventoryMovement } from "@/hooks";
+import { toast } from "react-hot-toast";
 import { useState, useMemo } from "react";
 import type { InventoryMovement } from "@/types";
 
@@ -19,9 +22,15 @@ export function InventoryMovementsPage() {
         isError
     } = useInventoryMovements();
 
+    const confirmMutation = useConfirmInventoryMovement();
+    const cancelMutation = useCancelInventoryMovement();
+
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");
     const [movementToView, setMovementToView] = useState<InventoryMovement | null>(null);
+    const [movementToEdit, setMovementToEdit] = useState<InventoryMovement | null>(null);
+    const [movementToConfirm, setMovementToConfirm] = useState<InventoryMovement | null>(null);
+    const [movementToCancel, setMovementToCancel] = useState<InventoryMovement | null>(null);
 
     const movements = useMemo(() => {
         const list = data?.data ?? [];
@@ -94,6 +103,9 @@ export function InventoryMovementsPage() {
                                 <InventoryMovementsTable
                                     movements={movements}
                                     onView={(movement) => setMovementToView(movement)}
+                                    onEdit={(movement) => setMovementToEdit(movement)}
+                                    onConfirm={(movement) => setMovementToConfirm(movement)}
+                                    onCancel={(movement) => setMovementToCancel(movement)}
                                 />
                                 <p className="mt-4 text-sm text-muted-foreground">
                                     Mostrando {movements.length} movimientos
@@ -108,6 +120,12 @@ export function InventoryMovementsPage() {
                 onOpenChange={setOpen}
             />
 
+            <InventoryMovementModal
+                open={!!movementToEdit}
+                movement={movementToEdit}
+                onOpenChange={() => setMovementToEdit(null)}
+            />
+
             <InventoryMovementViewModal
                 open={!!movementToView}
                 movement={movementToView}
@@ -115,6 +133,46 @@ export function InventoryMovementsPage() {
                     if (!value) {
                         setMovementToView(null);
                     }
+                }}
+            />
+
+            <ConfirmInventoryMovementDialog
+                open={!!movementToConfirm}
+                loading={confirmMutation.isPending}
+                onOpenChange={() => setMovementToConfirm(null)}
+                onConfirm={() => {
+                    if (!movementToConfirm) {
+                        return;
+                    }
+                    confirmMutation.mutate(movementToConfirm.id, {
+                        onSuccess: () => {
+                            toast.success("Movimiento confirmado.");
+                            setMovementToConfirm(null);
+                        },
+                        onError: () => {
+                            toast.error("No se pudo confirmar.");
+                        }
+                    });
+                }}
+            />
+
+            <CancelInventoryMovementDialog
+                open={!!movementToCancel}
+                loading={cancelMutation.isPending}
+                onOpenChange={() => setMovementToCancel(null)}
+                onConfirm={() => {
+                    if (!movementToCancel) {
+                        return;
+                    }
+                    cancelMutation.mutate(movementToCancel.id, {
+                        onSuccess: () => {
+                            toast.success("Movimiento cancelado.");
+                            setMovementToCancel(null);
+                        },
+                        onError: () => {
+                            toast.error("No se pudo cancelar el movimiento.");
+                        }
+                    });
                 }}
             />
 

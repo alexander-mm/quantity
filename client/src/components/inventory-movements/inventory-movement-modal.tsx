@@ -6,14 +6,17 @@ import {
 } from "@/components/ui/dialog";
 
 import { InventoryMovementForm } from "./inventory-movement-form";
+import type { InventoryMovement } from "@/types";
 
 type Props={
     open:boolean;
+    movement?: InventoryMovement | null;
     onOpenChange:(open:boolean)=>void;
 };
 
 export function InventoryMovementModal({
     open,
+    movement,
     onOpenChange
 }:Props){
 
@@ -25,11 +28,13 @@ export function InventoryMovementModal({
             <DialogContent className="sm:max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>
-                        Nuevo movimiento
+                        {movement ? `Editar movimiento` : "Nuevo movimiento"}
                     </DialogTitle>
                 </DialogHeader>
 
                 <InventoryMovementForm
+                    key={movement?.id ?? "new"}
+                    movement={movement}
                     onSuccess={()=>{
                         onOpenChange(false);
                     }}

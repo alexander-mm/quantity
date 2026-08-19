@@ -4,3 +4,6 @@ export * from "./inventory-movements-empty-state";
 export * from "./inventory-movement-modal";
 export * from "./inventory-movement-view";
 export * from "./inventory-movement-view-modal";
+export * from "./inventory-movement-status-badge";
+export * from "./confirm-inventory-movement-dialog";
+export * from "./cancel-inventory-movement-dialog";
