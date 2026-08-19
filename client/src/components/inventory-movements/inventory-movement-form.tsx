@@ -20,6 +20,7 @@ import {
     useProducts,
     useStores,
     useUsers,
+    useAuth,
     useCreateInventoryMovement,
     useUpdateInventoryMovement,
     useUpdateProductMinimumStock
@@ -64,6 +65,7 @@ export function InventoryMovementForm({ movement, onSuccess }: Props) {
     const { data: productsData } = useProducts();
     const { data: storesData } = useStores();
     const { data: usersData } = useUsers();
+    const { user: currentUser } = useAuth();
     const createMutation = useCreateInventoryMovement();
     const updateMutation = useUpdateInventoryMovement();
     const updateMinimumStockMutation = useUpdateProductMinimumStock();
@@ -107,14 +109,16 @@ export function InventoryMovementForm({ movement, onSuccess }: Props) {
 
         }
 
-        if (users.length === 0) {
+        const userId = currentUser?.id ?? users[0]?.id;
+
+        if (!userId) {
             toast.error("No existen usuarios registrados.");
             return;
         }
 
         createMutation.mutate({
             ...data,
-            userId: users[0]!.id,
+            userId,
             movementDate: new Date()
         }, {
             onSuccess: () => {
@@ -128,7 +132,7 @@ export function InventoryMovementForm({ movement, onSuccess }: Props) {
     }
 
     return (
-        <form onSubmit={handleSubmit(onSubmit, onFormError)} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit, onFormError)} noValidate className="space-y-5">
 
             <div>
                 <Label className="mb-1">Tipo de movimiento</Label>
@@ -272,7 +276,7 @@ export function InventoryMovementForm({ movement, onSuccess }: Props) {
 
             <div>
                 <Label className="mb-1">Costo unitario</Label>
-                <Input type="number" placeholder="0" {...register("unitCost", {
+                <Input type="number" min={0} step="0.01" placeholder="0" {...register("unitCost", {
                     setValueAs: (v) => (v === "" ? undefined : Number(v))
                 })} />
                 <p className="text-xs text-muted-foreground">
