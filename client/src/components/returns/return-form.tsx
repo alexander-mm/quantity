@@ -12,7 +12,7 @@ import { Combobox, ComboboxInput, ComboboxContent, ComboboxItem, ComboboxEmpty }
 import { returnSchema } from "@/validators";
 import type { ReturnFormData } from "@/validators";
 import { useSales, useProducts, useStores, useReturns, useCreateReturn, useOfflineCollection } from "@/hooks";
-import { generateOfflineId, getNextSequentialCode, offlineDb, todayLocalDateString } from "@/lib";
+import { generateOfflineId, getNextSequentialCode, matchProductByBarcode, offlineDb, todayLocalDateString } from "@/lib";
 import { RETURN_REASON_LABELS } from "./return-reason-labels";
 import type { ReturnDisposition } from "@/types";
 
@@ -234,7 +234,17 @@ export function ReturnForm({ onSuccess }: Props) {
                             const selected = items.find(item => item.value === field.value) ?? null;
 
                             return (
-                                <Combobox items={items} value={selected} onValueChange={(item) => field.onChange(item ? item.value : "")}>
+                                <Combobox
+                                    items={items}
+                                    value={selected}
+                                    onValueChange={(item) => field.onChange(item ? item.value : "")}
+                                    onInputValueChange={(text) => {
+                                        const match = matchProductByBarcode(products, text);
+                                        if (match) {
+                                            field.onChange(match.id);
+                                        }
+                                    }}
+                                >
                                     <ComboboxInput placeholder="Buscar producto..." />
                                     <ComboboxContent>
                                         {(item) => <ComboboxItem key={item.value} value={item}>{item.label}</ComboboxItem>}

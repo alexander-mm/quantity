@@ -25,6 +25,7 @@ import {
     useUpdateProductMinimumStock
 } from "@/hooks";
 import { toast } from "react-hot-toast";
+import { matchProductByBarcode } from "@/lib";
 import type { InventoryMovement } from "@/types";
 
 type Props = {
@@ -166,24 +167,32 @@ export function InventoryMovementForm({ movement, onSuccess }: Props) {
 
                         const selected = items.find(item => item.value === field.value) ?? null;
 
+                        const handleSelect = (item: { value: string; label: string } | null) => {
+
+                            field.onChange(item ? item.value : "");
+
+                            if (!item) {
+                                return;
+                            }
+
+                            const product = products.find(p => p.id === item.value);
+
+                            if (product?.costPrice !== undefined && product?.costPrice !== null) {
+                                setValue("unitCost", Number(product.costPrice));
+                            }
+
+                        };
+
                         return (
                             <Combobox
                                 items={items}
                                 value={selected}
-                                onValueChange={(item) => {
-
-                                    field.onChange(item ? item.value : "");
-
-                                    if (!item) {
-                                        return;
+                                onValueChange={handleSelect}
+                                onInputValueChange={(text) => {
+                                    const match = matchProductByBarcode(products, text);
+                                    if (match) {
+                                        handleSelect({ value: match.id, label: `${match.internalCode} - ${match.name}` });
                                     }
-
-                                    const product = products.find(p => p.id === item.value);
-
-                                    if (product?.costPrice !== undefined && product?.costPrice !== null) {
-                                        setValue("unitCost", Number(product.costPrice));
-                                    }
-
                                 }}
                             >
                                 <ComboboxInput placeholder="Buscar producto..." />

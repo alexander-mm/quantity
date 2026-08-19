@@ -6,6 +6,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useProducts } from "@/hooks";
+import { matchProductByBarcode } from "@/lib";
 
 type Props = { index: number; onRemove: () => void; };
 
@@ -31,8 +32,10 @@ export function StockTransferDetailRow({ index, onRemove }: Props) {
                     name={`details.${index}.productId`}
                     render={({ field }) => {
 
-                        const items = products
-                            .filter(product => !selectedProductIds.has(product.id))
+                        const availableProducts = products
+                            .filter(product => !selectedProductIds.has(product.id));
+
+                        const items = availableProducts
                             .map(product => ({
                                 value: product.id,
                                 label: `${product.internalCode} - ${product.name}`
@@ -45,6 +48,12 @@ export function StockTransferDetailRow({ index, onRemove }: Props) {
                                 items={items}
                                 value={selected}
                                 onValueChange={(item) => field.onChange(item ? item.value : "")}
+                                onInputValueChange={(text) => {
+                                    const match = matchProductByBarcode(availableProducts, text);
+                                    if (match) {
+                                        field.onChange(match.id);
+                                    }
+                                }}
                             >
                                 <ComboboxInput placeholder="Buscar producto..." />
                                 <ComboboxContent>

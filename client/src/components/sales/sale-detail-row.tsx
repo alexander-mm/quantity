@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useProducts, useProductPriceEntries, useClients, useMarginProfiles, useOfflineCollection, useKitAvailability } from "@/hooks";
-import { resolveProductPriceEntries, getCachedProductPriceEntries, offlineDb } from "@/lib";
+import { resolveProductPriceEntries, getCachedProductPriceEntries, offlineDb, matchProductByBarcode } from "@/lib";
 import { formatCurrency } from "@/lib/format-currency";
 
 const NO_PROFILE = "none";
@@ -221,69 +221,80 @@ export function SaleDetailRow({
                             items.find(item=>item.value===field.value)
                             ??null;
 
+                        const handleSelect=(item:{value:string;label:string}|null)=>{
+
+                            field.onChange(item?item.value:"");
+
+                            if(!item){
+                                return;
+                            }
+
+                            if(priceEntryKey){
+
+                                resolveProductPriceEntries(item.value).then(entries=>{
+
+                                    const match = entries.find(
+                                        entry=>entry.currency===entryCurrency&&entry.sequence===entrySequence
+                                    );
+
+                                    const newUnitPrice = match
+                                        ? Number(match.price)
+                                        : undefined;
+
+                                    setValue(`details.${index}.unitPrice`, newUnitPrice);
+
+                                    if(newUnitPrice!==undefined){
+                                        applyClientDiscount(quantity,newUnitPrice);
+                                    } else {
+                                        toast.error(
+                                            `${item.label} no tiene precio registrado en "${selectedEntryLabel}". Ingresa el precio manualmente.`
+                                        );
+                                    }
+
+                                }).catch(error=>{
+                                    console.error(error);
+                                });
+
+                                return;
+
+                            }
+
+                            const product = allProducts.find(p => p.id === item.value);
+
+                            const priceForCurrency=
+                                isCop
+                                    ?product?.pvpCop
+                                    :product?.pvp;
+
+                            if(priceForCurrency!==undefined&&priceForCurrency!==null){
+
+                                const newUnitPrice=Number(priceForCurrency);
+
+                                setValue(
+                                    `details.${index}.unitPrice`,
+                                    newUnitPrice
+                                );
+
+                                applyClientDiscount(quantity,newUnitPrice);
+
+                            }
+
+                        };
+
                         return(
 
                             <Combobox
                                 items={items}
                                 value={selected}
-                                onValueChange={(item)=>{
-
-                                    field.onChange(item?item.value:"");
-
-                                    if(!item){
-                                        return;
+                                onValueChange={handleSelect}
+                                onInputValueChange={(text)=>{
+                                    const match=matchProductByBarcode(products,text);
+                                    if(match){
+                                        const matchedItem=items.find(item=>item.value===match.id);
+                                        if(matchedItem){
+                                            handleSelect(matchedItem);
+                                        }
                                     }
-
-                                    if(priceEntryKey){
-
-                                        resolveProductPriceEntries(item.value).then(entries=>{
-
-                                            const match = entries.find(
-                                                entry=>entry.currency===entryCurrency&&entry.sequence===entrySequence
-                                            );
-
-                                            const newUnitPrice = match
-                                                ? Number(match.price)
-                                                : undefined;
-
-                                            setValue(`details.${index}.unitPrice`, newUnitPrice);
-
-                                            if(newUnitPrice!==undefined){
-                                                applyClientDiscount(quantity,newUnitPrice);
-                                            } else {
-                                                toast.error(
-                                                    `${item.label} no tiene precio registrado en "${selectedEntryLabel}". Ingresa el precio manualmente.`
-                                                );
-                                            }
-
-                                        }).catch(error=>{
-                                            console.error(error);
-                                        });
-
-                                        return;
-
-                                    }
-
-                                    const product = allProducts.find(p => p.id === item.value);
-
-                                    const priceForCurrency=
-                                        isCop
-                                            ?product?.pvpCop
-                                            :product?.pvp;
-
-                                    if(priceForCurrency!==undefined&&priceForCurrency!==null){
-
-                                        const newUnitPrice=Number(priceForCurrency);
-
-                                        setValue(
-                                            `details.${index}.unitPrice`,
-                                            newUnitPrice
-                                        );
-
-                                        applyClientDiscount(quantity,newUnitPrice);
-
-                                    }
-
                                 }}
                             >
 
