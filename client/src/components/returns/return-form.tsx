@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,8 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Combobox, ComboboxInput, ComboboxContent, ComboboxItem, ComboboxEmpty } from "@/components/ui/combobox";
 import { returnSchema } from "@/validators";
 import type { ReturnFormData } from "@/validators";
-import { useSales, useProducts, useStores, useCreateReturn, useOfflineCollection } from "@/hooks";
-import { generateOfflineId, offlineDb, todayLocalDateString } from "@/lib";
+import { useSales, useProducts, useStores, useReturns, useCreateReturn, useOfflineCollection } from "@/hooks";
+import { generateOfflineId, getNextSequentialCode, offlineDb, todayLocalDateString } from "@/lib";
 import { RETURN_REASON_LABELS } from "./return-reason-labels";
 import type { ReturnDisposition } from "@/types";
 
@@ -30,7 +30,7 @@ export function ReturnForm({ onSuccess }: Props) {
 
     const [linkToSale, setLinkToSale] = useState(true);
 
-    const { register, control, handleSubmit, reset, setValue, formState: { errors } } = useForm<ReturnFormData>({
+    const { register, control, handleSubmit, reset, setValue, getValues, formState: { errors } } = useForm<ReturnFormData>({
         resolver: zodResolver(returnSchema),
         defaultValues: {
             number: "",
@@ -51,6 +51,7 @@ export function ReturnForm({ onSuccess }: Props) {
     const { data: salesData } = useSales();
     const { data: productsData } = useProducts();
     const { data: storesData } = useStores();
+    const { data: returnsData } = useReturns();
     const createMutation = useCreateReturn();
 
     const sales = useOfflineCollection(salesData?.data, () => offlineDb.sales.toArray());
@@ -59,6 +60,24 @@ export function ReturnForm({ onSuccess }: Props) {
 
     const confirmedSales = sales.filter(sale => sale.status === "CONFIRMED");
     const selectedSale = confirmedSales.find(sale => sale.id === saleId);
+
+    useEffect(() => {
+
+        if (!returnsData?.data || getValues("number")) {
+            return;
+        }
+
+        const [lastReturn] = [...returnsData.data].sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+        const nextNumber = getNextSequentialCode(lastReturn?.number);
+
+        if (nextNumber) {
+            setValue("number", nextNumber);
+        }
+
+    }, [returnsData, getValues, setValue]);
 
     const onSubmit = (data: ReturnFormData) => {
 

@@ -19,6 +19,7 @@ export interface Return {
     disposition: ReturnDisposition | null;
     returnDate: string;
     resolvedAt: string | null;
+    createdAt: string;
     sale: { id: string; number: string } | null;
     saleDetail: { id: string; unitPrice: string } | null;
     product: { id: string; internalCode: string; name: string };
