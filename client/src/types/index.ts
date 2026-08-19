@@ -30,5 +30,6 @@ export * from "./account-receivable";
 export * from "./raw-materials";
 export * from "./part-recipes";
 export * from "./equipment-parts";
+export * from "./part-production";
 export * from "./part-cutting-orders";
 export * from "./returns";

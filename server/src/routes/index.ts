@@ -37,6 +37,7 @@ import returnRoutes from "../modules/return/return.routes.js";
 import partComponentRoutes from "../modules/part-component/part-component.routes.js";
 import partComponentProductRoutes from "../modules/part-component-product/part-component-product.routes.js";
 import partAssemblyRoutes from "../modules/part-assembly/part-assembly.routes.js";
+import partProductionRoutes from "../modules/part-production/part-production.routes.js";
 import telegramRoutes from "../modules/telegram/telegram.routes.js";
 import jobsRoutes from "../modules/jobs/jobs.routes.js";
 
@@ -112,6 +113,8 @@ router.use("/raw-material-adjustments", rawMaterialAdjustmentRoutes);
 router.use("/part-recipes", partRecipeRoutes);
 
 router.use("/equipment-parts", equipmentPartRoutes);
+
+router.use("/part-production", partProductionRoutes);
 
 router.use("/part-cutting-orders", partCuttingOrderRoutes);
 
