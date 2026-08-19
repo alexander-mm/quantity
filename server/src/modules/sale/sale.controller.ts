@@ -9,12 +9,12 @@ export class SaleController {
     private readonly service = new SaleService();
 
     async findAll(
-        _req: Request,
+        req: AuthenticatedRequest,
         res: Response,
         next: NextFunction
     ): Promise<void> {
         try {
-            const sales = await this.service.findAll();
+            const sales = await this.service.findAll(req.user);
             res.status(200).json(
                 ApiResponse.success(
                     "Ventas obtenidas correctamente.",

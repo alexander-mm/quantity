@@ -14,6 +14,7 @@ import { EquipmentPartRepository } from "../equipment-part/equipment-part.reposi
 import { PartRepository } from "../part/part.repository.js";
 import { PartMovementRepository } from "../part-movement/part-movement.repository.js";
 import { TelegramService, escapeTelegramHtml } from "../../integrations/telegram/telegram.service.js";
+import { ROLES } from "../../shared/constants/roles.js";
 import type { SaleWithRelations } from "./sale.repository.js";
 
 export class SaleService {
@@ -80,8 +81,16 @@ export class SaleService {
 
     }
 
-    async findAll(): Promise<Sale[]> {
-        return this.repository.findAll();
+    async findAll(
+        requestingUser?: { roleName: string; storeId: string }
+    ): Promise<Sale[]> {
+
+        const storeId =
+            requestingUser?.roleName === ROLES.STORE
+                ? BigInt(requestingUser.storeId)
+                : undefined;
+
+        return this.repository.findAll(storeId);
     }
 
     async findById(

@@ -48,8 +48,11 @@ export class SaleRepository extends BaseRepository {
         super(prismaClient);
     }
 
-    async findAll(): Promise<SaleWithRelations[]> {
+    async findAll(
+        storeId?: bigint
+    ): Promise<SaleWithRelations[]> {
         return this.prisma.sale.findMany({
+            where: storeId ? { storeId } : undefined,
             orderBy: {
                 saleDate: "desc"
             },
