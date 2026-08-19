@@ -1,6 +1,6 @@
-import { InventoryMovement, Prisma } from "@prisma/client";
+import { InventoryMovement, MovementType, Prisma } from "@prisma/client";
 import { prisma } from "../../database/index.js";
-import { CreateInventoryMovementDto } from "./inventory-movement.dto.js";
+import { CreateInventoryMovementDto, UpdateInventoryMovementDto } from "./inventory-movement.dto.js";
 import { NotFoundError, ValidationError } from "../../shared/errors/index.js";
 import { InventoryMovementRepository } from "./inventory-movement.repository.js";
 import { ProductRepository } from "../product/product.repository.js";
@@ -110,9 +110,10 @@ export class InventoryMovementService {
 
     }
 
-    async create(
-        data: CreateInventoryMovementDto
-    ): Promise<InventoryMovement> {
+    private async validateReferences(
+        data: CreateInventoryMovementDto | UpdateInventoryMovementDto
+    ): Promise<MovementType> {
+
         // Producto
         const product = await this.productRepository.findById(
             BigInt(data.productId)
@@ -179,6 +180,16 @@ export class InventoryMovementService {
             );
         }
 
+        return movementType;
+
+    }
+
+    async create(
+        data: CreateInventoryMovementDto
+    ): Promise<InventoryMovement> {
+
+        const movementType = await this.validateReferences(data);
+
         return prisma.$transaction(async (tx) => {
 
             const service = this.withTransaction(tx);
@@ -189,6 +200,148 @@ export class InventoryMovementService {
             );
 
         });
+    }
+
+    // Movimiento manual registrado desde la pagina de Movimientos: queda en
+    // borrador y no afecta el inventario hasta que se confirme.
+    async createDraft(
+        data: CreateInventoryMovementDto
+    ): Promise<InventoryMovement> {
+
+        await this.validateReferences(data);
+
+        return this.repository.create(data, "DRAFT");
+
+    }
+
+    async update(
+        id: string,
+        data: UpdateInventoryMovementDto
+    ): Promise<InventoryMovement> {
+
+        const movement = await this.repository.findById(
+            BigInt(id)
+        );
+
+        if (!movement) {
+            throw new NotFoundError(
+                "Movimiento no encontrado."
+            );
+        }
+
+        if (movement.status !== "DRAFT") {
+            throw new ValidationError(
+                "Solo se pueden editar movimientos en borrador."
+            );
+        }
+
+        await this.validateReferences(data);
+
+        return this.repository.update(
+            BigInt(id),
+            data
+        );
+
+    }
+
+    async cancel(
+        id: string
+    ): Promise<InventoryMovement> {
+
+        const movement = await this.repository.findById(
+            BigInt(id)
+        );
+
+        if (!movement) {
+            throw new NotFoundError(
+                "Movimiento no encontrado."
+            );
+        }
+
+        if (movement.status !== "DRAFT") {
+            throw new ValidationError(
+                "Solo se pueden cancelar movimientos en borrador."
+            );
+        }
+
+        return this.repository.cancel(
+            BigInt(id)
+        );
+
+    }
+
+    async confirm(
+        id: string
+    ): Promise<InventoryMovement> {
+
+        return prisma.$transaction(async (tx) => {
+
+            const service = this.withTransaction(tx);
+
+            const movement = await service.repository.findById(
+                BigInt(id)
+            );
+
+            if (!movement) {
+                throw new NotFoundError(
+                    "Movimiento no encontrado."
+                );
+            }
+
+            if (movement.status !== "DRAFT") {
+                throw new ValidationError(
+                    "El movimiento ya fue confirmado."
+                );
+            }
+
+            const movementType = await service.movementTypeRepository.findById(
+                movement.movementTypeId
+            );
+
+            if (!movementType) {
+                throw new NotFoundError(
+                    "El tipo de movimiento no existe."
+                );
+            }
+
+            if (movementType.affectsStock) {
+
+                switch (movementType.stockOperation) {
+
+                    case "IN":
+
+                        await service.inventoryStockService.increaseStock(
+                            movement.productId,
+                            movement.storeId,
+                            movement.quantity
+                        );
+
+                        break;
+
+                    case "OUT":
+
+                        await service.inventoryStockService.decreaseStock(
+                            movement.productId,
+                            movement.storeId,
+                            movement.quantity
+                        );
+
+                        break;
+
+                    case "NONE":
+
+                        break;
+
+                }
+
+            }
+
+            return service.repository.confirm(
+                BigInt(id)
+            );
+
+        });
+
     }
 
     async createWithTransaction(

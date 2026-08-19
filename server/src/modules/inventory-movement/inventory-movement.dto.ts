@@ -21,3 +21,5 @@ export interface CreateInventoryMovementDto {
     movementDate: Date;
 
 }
+
+export type UpdateInventoryMovementDto = CreateInventoryMovementDto;

@@ -1,5 +1,5 @@
 import { InventoryMovement, PrismaClient, Prisma } from "@prisma/client";
-import { CreateInventoryMovementDto } from "./inventory-movement.dto.js";
+import { CreateInventoryMovementDto, UpdateInventoryMovementDto } from "./inventory-movement.dto.js";
 import { BaseRepository } from "../../repositories/base/BaseRepository.js";
 import { safeUserSelect } from "../../shared/constants/safe-user-select.js";
 type InventoryMovementWithRelations =
@@ -95,7 +95,8 @@ export class InventoryMovementRepository extends BaseRepository {
     }
 
     async create(
-        data: CreateInventoryMovementDto
+        data: CreateInventoryMovementDto,
+        status: "DRAFT" | "CONFIRMED" = "CONFIRMED"
     ): Promise<InventoryMovement> {
         return this.prisma.inventoryMovement.create({
             data: {
@@ -129,7 +130,80 @@ export class InventoryMovementRepository extends BaseRepository {
                 quantity: data.quantity,
                 unitCost: data.unitCost,
                 observations: data.observations,
+                movementDate: data.movementDate,
+                status
+            }
+        });
+    }
+
+    async update(
+        id: bigint,
+        data: UpdateInventoryMovementDto
+    ): Promise<InventoryMovement> {
+        return this.prisma.inventoryMovement.update({
+            where: {
+                id
+            },
+            data: {
+                movementType: {
+                    connect: {
+                        id: data.movementTypeId
+                    }
+                },
+                product: {
+                    connect: {
+                        id: data.productId
+                    }
+                },
+                store: {
+                    connect: {
+                        id: data.storeId
+                    }
+                },
+                user: {
+                    connect: {
+                        id: data.userId
+                    }
+                },
+                client: data.clientId
+                    ? {
+                        connect: {
+                            id: data.clientId
+                        }
+                    }
+                    : {
+                        disconnect: true
+                    },
+                quantity: data.quantity,
+                unitCost: data.unitCost,
+                observations: data.observations,
                 movementDate: data.movementDate
+            }
+        });
+    }
+
+    async confirm(
+        id: bigint
+    ): Promise<InventoryMovement> {
+        return this.prisma.inventoryMovement.update({
+            where: {
+                id
+            },
+            data: {
+                status: "CONFIRMED"
+            }
+        });
+    }
+
+    async cancel(
+        id: bigint
+    ): Promise<InventoryMovement> {
+        return this.prisma.inventoryMovement.update({
+            where: {
+                id
+            },
+            data: {
+                status: "CANCELLED"
             }
         });
     }
@@ -142,7 +216,8 @@ export class InventoryMovementRepository extends BaseRepository {
             where: {
                 productId,
                 storeId,
-                isActive: true
+                isActive: true,
+                status: "CONFIRMED"
             },
             include: {
                 movementType: true,

@@ -5,6 +5,7 @@ export interface InventoryMovement {
     unitCost: string;
     observations: string | null;
     movementDate: string;
+    status: "DRAFT" | "CONFIRMED" | "CANCELLED";
     movementType: {
         id: string;
         name: string;

@@ -6,7 +6,7 @@ import { validate } from "../../middleware/validate.js";
 import { ROLES } from "../../shared/constants/roles.js";
 
 import { InventoryMovementController } from "./inventory-movement.controller.js";
-import { createInventoryMovementSchema } from "./inventory-movement.validator.js";
+import { createInventoryMovementSchema, updateInventoryMovementSchema } from "./inventory-movement.validator.js";
 
 const router = Router();
 
@@ -39,6 +39,28 @@ router.post(
     authorize(ROLES.ADMIN),
     validate(createInventoryMovementSchema),
     controller.create.bind(controller)
+);
+
+router.put(
+    "/:id",
+    authenticate,
+    authorize(ROLES.ADMIN),
+    validate(updateInventoryMovementSchema),
+    controller.update.bind(controller)
+);
+
+router.delete(
+    "/:id",
+    authenticate,
+    authorize(ROLES.ADMIN),
+    controller.delete.bind(controller)
+);
+
+router.post(
+    "/:id/confirm",
+    authenticate,
+    authorize(ROLES.ADMIN),
+    controller.confirm.bind(controller)
 );
 
 export default router;

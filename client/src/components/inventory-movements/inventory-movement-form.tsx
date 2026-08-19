@@ -5,6 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+    Combobox,
+    ComboboxInput,
+    ComboboxContent,
+    ComboboxItem,
+    ComboboxEmpty
+} from "@/components/ui/combobox";
 import { inventoryMovementSchema } from "@/validators";
 import type { InventoryMovementFormData } from "@/validators";
 import { MinimumStockField } from "@/components/shared";
@@ -14,19 +21,35 @@ import {
     useStores,
     useUsers,
     useCreateInventoryMovement,
+    useUpdateInventoryMovement,
     useUpdateProductMinimumStock
 } from "@/hooks";
 import { toast } from "react-hot-toast";
+import type { InventoryMovement } from "@/types";
 
 type Props = {
+    movement?: InventoryMovement | null;
     onSuccess?: () => void;
 };
 
-export function InventoryMovementForm({ onSuccess }: Props) {
+function toFormData(movement: InventoryMovement): InventoryMovementFormData {
+    return {
+        movementTypeId: movement.movementType.id,
+        productId: movement.product.id,
+        storeId: movement.store.id,
+        quantity: Number(movement.quantity),
+        unitCost: Number(movement.unitCost),
+        observations: movement.observations ?? ""
+    };
+}
 
-    const { register, control, handleSubmit, reset, formState: { errors } } = useForm({
+export function InventoryMovementForm({ movement, onSuccess }: Props) {
+
+    const isEditing = !!movement;
+
+    const { register, control, handleSubmit, reset, setValue, formState: { errors } } = useForm({
         resolver: zodResolver(inventoryMovementSchema),
-        defaultValues: {
+        defaultValues: movement ? toFormData(movement) : {
             movementTypeId: "",
             productId: "",
             storeId: "",
@@ -41,35 +64,64 @@ export function InventoryMovementForm({ onSuccess }: Props) {
     const { data: storesData } = useStores();
     const { data: usersData } = useUsers();
     const createMutation = useCreateInventoryMovement();
+    const updateMutation = useUpdateInventoryMovement();
     const updateMinimumStockMutation = useUpdateProductMinimumStock();
     const movementTypes = movementTypesData?.data ?? [];
     const products = productsData?.data ?? [];
     const stores = storesData?.data ?? [];
     const users = usersData?.data ?? [];
-    const loading = createMutation.isPending;
+    const loading = createMutation.isPending || updateMutation.isPending;
 
     const productId = useWatch({ control, name: "productId" });
     const selectedProduct = products.find(product => product.id === productId);
 
     const onSubmit = (data: InventoryMovementFormData) => {
 
+        const onError = () => {
+            toast.error(
+                isEditing
+                    ? "No se pudo actualizar el movimiento."
+                    : "No se pudo registrar el movimiento."
+            );
+        };
+
+        if (isEditing) {
+
+            updateMutation.mutate({
+                id: movement.id,
+                data: {
+                    ...data,
+                    userId: movement.user.id,
+                    movementDate: new Date(movement.movementDate)
+                }
+            }, {
+                onSuccess: () => {
+                    toast.success("Movimiento actualizado.");
+                    onSuccess?.();
+                },
+                onError
+            });
+
+            return;
+
+        }
+
         if (users.length === 0) {
             toast.error("No existen usuarios registrados.");
             return;
         }
+
         createMutation.mutate({
             ...data,
             userId: users[0]!.id,
             movementDate: new Date()
         }, {
             onSuccess: () => {
-                toast.success("Movimiento registrado.");
+                toast.success("Movimiento guardado como borrador.");
                 reset();
                 onSuccess?.();
             },
-            onError: () => {
-                toast.error("No se pudo registrar el movimiento.");
-            }
+            onError
         });
 
     }
@@ -105,20 +157,50 @@ export function InventoryMovementForm({ onSuccess }: Props) {
                 <Controller
                     control={control}
                     name="productId"
-                    render={({ field }) => (
-                        <Select value={field.value} onValueChange={field.onChange}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Seleccione" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {products.map(item => (
-                                    <SelectItem key={item.id} value={item.id}>
-                                        {item.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    )}
+                    render={({ field }) => {
+
+                        const items = products.map(product => ({
+                            value: product.id,
+                            label: `${product.internalCode} - ${product.name}`
+                        }));
+
+                        const selected = items.find(item => item.value === field.value) ?? null;
+
+                        return (
+                            <Combobox
+                                items={items}
+                                value={selected}
+                                onValueChange={(item) => {
+
+                                    field.onChange(item ? item.value : "");
+
+                                    if (!item) {
+                                        return;
+                                    }
+
+                                    const product = products.find(p => p.id === item.value);
+
+                                    if (product?.costPrice !== undefined && product?.costPrice !== null) {
+                                        setValue("unitCost", Number(product.costPrice));
+                                    }
+
+                                }}
+                            >
+                                <ComboboxInput placeholder="Buscar producto..." />
+                                <ComboboxContent>
+                                    {(item) => (
+                                        <ComboboxItem key={item.value} value={item}>
+                                            {item.label}
+                                        </ComboboxItem>
+                                    )}
+                                </ComboboxContent>
+                                <ComboboxEmpty>
+                                    No se encontraron productos.
+                                </ComboboxEmpty>
+                            </Combobox>
+                        );
+
+                    }}
                 />
                 <p className="text-sm text-red-500">
                     {errors.productId?.message}
@@ -184,6 +266,9 @@ export function InventoryMovementForm({ onSuccess }: Props) {
                 <Input type="number" placeholder="0" {...register("unitCost", {
                     setValueAs: (v) => (v === "" ? undefined : Number(v))
                 })} />
+                <p className="text-xs text-muted-foreground">
+                    Se llena automáticamente con el costo del producto seleccionado; puedes ajustarlo si es necesario.
+                </p>
                 <p className="text-sm text-red-500">
                     {errors.unitCost?.message}
                 </p>
@@ -202,7 +287,7 @@ export function InventoryMovementForm({ onSuccess }: Props) {
                     {
                         loading
                             ? "Guardando..."
-                            : "Guardar"
+                            : isEditing ? "Guardar cambios" : "Guardar como borrador"
                     }
                 </Button>
             </div>

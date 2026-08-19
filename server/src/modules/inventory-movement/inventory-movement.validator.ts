@@ -43,3 +43,5 @@ export const createInventoryMovementSchema = z.object({
     movementDate: z.coerce.date()
 
 });
+
+export const updateInventoryMovementSchema = createInventoryMovementSchema;
