@@ -3,7 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatCurrency } from "@/lib/format-currency";
-import { useProduct, useProductPriceEntries, useMarginProfiles } from "@/hooks";
+import { useAuth, useProduct, useProductPriceEntries, useMarginProfiles } from "@/hooks";
+import { ROLES } from "@/constants/roles";
 import type { Product } from "@/types";
 
 type Props = {
@@ -14,6 +15,8 @@ type Props = {
 
 export function ProductViewModal({ product, open, onOpenChange }: Props) {
 
+    const { user } = useAuth();
+    const isAdmin = user?.roleName === ROLES.ADMIN;
     const { data: detailData } = useProduct(product?.id);
     const { data: priceEntriesData } = useProductPriceEntries(product?.id);
     const { data: marginProfilesData } = useMarginProfiles();
@@ -84,7 +87,7 @@ export function ProductViewModal({ product, open, onOpenChange }: Props) {
                             <p className="text-sm text-muted-foreground">Stock mínimo</p>
                             <p className="font-medium">{product.minimumStock}</p>
                         </div>
-                        {product.costPrice && (
+                        {isAdmin && product.costPrice && (
                             <div>
                                 <p className="text-sm text-muted-foreground">Precio de costo</p>
                                 <p className="font-medium">{formatCurrency(product.costPrice, "USD")}</p>

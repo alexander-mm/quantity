@@ -8,6 +8,7 @@ import {
     PartsTable,
     PartsEmptyState,
     PartModal,
+    PartViewModal,
     DeletePartDialog
 } from "@/components";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ export function PartsPage() {
     const [search, setSearch] = useState("");
     const [open, setOpen] = useState(false);
     const [selectedPart, setSelectedPart] = useState<Part | null>(null);
+    const [partToView, setPartToView] = useState<Part | null>(null);
     const [partToDelete, setPartToDelete] = useState<Part | null>(null);
 
     const allQuery = useParts();
@@ -102,6 +104,7 @@ export function PartsPage() {
                         : (
                             <PartsTable
                                 parts={parts}
+                                onView={(part) => setPartToView(part)}
                                 onEdit={(part) => {
                                     setSelectedPart(part);
                                     setOpen(true);
@@ -122,6 +125,16 @@ export function PartsPage() {
                 }}
                 mode={selectedPart ? "edit" : "create"}
                 partId={selectedPart?.id}
+            />
+
+            <PartViewModal
+                open={!!partToView}
+                part={partToView}
+                onOpenChange={(value) => {
+                    if (!value) {
+                        setPartToView(null);
+                    }
+                }}
             />
 
             <DeletePartDialog
