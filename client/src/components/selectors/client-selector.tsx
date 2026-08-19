@@ -1,5 +1,11 @@
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+    Combobox,
+    ComboboxInput,
+    ComboboxContent,
+    ComboboxItem,
+    ComboboxEmpty
+} from "@/components/ui/combobox";
 import type { Client } from "@/types";
 
 type Props={
@@ -23,29 +29,34 @@ export function ClientSelector({
     placeholder="Seleccione un cliente",
     onChange
 }:Props){
+
+    const items = clients.map(client => ({
+        value: client.id,
+        label: `${getClientLabel(client)} - ${client.document}`
+    }));
+
+    const selected = items.find(item => item.value === value) ?? null;
+
     return(
         <div className="flex-1">
             <Label className="mb-1">{label}</Label>
-            <Select
-                value={value}
-                onValueChange={onChange}
+            <Combobox
+                items={items}
+                value={selected}
+                onValueChange={(item) => onChange(item ? item.value : "")}
             >
-                <SelectTrigger>
-                    <SelectValue placeholder={placeholder}/>
-                </SelectTrigger>
-                <SelectContent>
-                    {
-                        clients.map(client=>(
-                            <SelectItem
-                                key={client.id}
-                                value={client.id}
-                            >
-                                {getClientLabel(client)} - {client.document}
-                            </SelectItem>
-                        ))
-                    }
-                </SelectContent>
-            </Select>
+                <ComboboxInput placeholder={placeholder} />
+                <ComboboxContent>
+                    {(item) => (
+                        <ComboboxItem key={item.value} value={item}>
+                            {item.label}
+                        </ComboboxItem>
+                    )}
+                </ComboboxContent>
+                <ComboboxEmpty>
+                    No se encontraron clientes.
+                </ComboboxEmpty>
+            </Combobox>
         </div>
     );
 }
