@@ -19,7 +19,6 @@ export * from "./parts";
 export * from "./product-assembly.schema";
 export * from "./raw-materials";
 export * from "./raw-material-movements";
-export * from "./part-recipes";
 export * from "./equipment-parts";
 export * from "./part-cutting-orders";
 export * from "./returns/return.schema";

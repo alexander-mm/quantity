@@ -167,7 +167,6 @@ export function DashboardLayout({
                 { to: "/raw-materials", label: "Admin. de M. Prima", visibility: "adminOrProduction" },
                 { to: "/raw-material-movements", label: "Movimientos de M. Prima", visibility: "adminOrProduction" },
                 { to: "/raw-material-adjustments", label: "Ajustes de M. Prima", visibility: "adminOrProduction" },
-                { to: "/part-recipes", label: "Recetas de Corte", visibility: "adminOrProduction" },
                 { to: "/part-cutting-orders", label: "Órdenes de Corte", visibility: "adminOrProduction" },
                 { to: "/equipment-parts", label: "Cálculo de Producción", visibility: "adminOrProduction" },
                 { to: "/assembly", label: "Ensamblaje", visibility: "adminOrProduction" }

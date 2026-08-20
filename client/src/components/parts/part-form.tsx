@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { Controller, useForm, useFieldArray, useWatch } from "react-hook-form";
 import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,8 +30,10 @@ import {
     usePartComponentProducts,
     useSetPartComponentProducts,
     usePartRecipe,
-    useSetPartRecipe
+    useSetPartRecipe,
+    useRawMaterials
 } from "@/hooks";
+import type { RawMaterialShape } from "@/types";
 
 type Props = {
     onSuccess?: () => void;
@@ -42,6 +44,12 @@ type Props = {
 function uppercaseOnChange(e: ChangeEvent<HTMLInputElement>) {
     e.target.value = e.target.value.toUpperCase();
 }
+
+const RAW_MATERIAL_SHAPE_LABELS: Record<RawMaterialShape, string> = {
+    SHEET: "lámina",
+    TUBE: "tubo",
+    ROD: "varilla"
+};
 
 export function PartForm({ onSuccess, mode = "create", partId }: Props) {
 
@@ -56,6 +64,10 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
             cost: undefined,
             initialQuantity: undefined,
             components: [],
+            rawMaterialId: "",
+            pieceWidth: undefined,
+            pieceHeight: undefined,
+            pieceLength: undefined,
             piecesPerUnit: undefined,
             laserMeters: undefined,
             usesMechanicalCut: false,
@@ -70,6 +82,7 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
     const { fields, append, remove } = useFieldArray({ control, name: "components" });
     const watchedComponents = useWatch({ control, name: "components" }) ?? [];
     const categoryId = useWatch({ control, name: "categoryId" });
+    const rawMaterialIdWatch = useWatch({ control, name: "rawMaterialId" });
     const piecesPerUnitWatch = useWatch({ control, name: "piecesPerUnit" });
     const laserMetersWatch = useWatch({ control, name: "laserMeters" });
     const usesMechanicalCutWatch = useWatch({ control, name: "usesMechanicalCut" });
@@ -82,8 +95,8 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
     // cargado — asi al tildarlo el input queda vacio (solo el placeholder "0"), en vez de
     // forzar un valor. Se sincroniza contra los datos cargados durante el render (no en un
     // efecto) comparando el id, siguiendo el patron recomendado para "ajustar estado" de React.
-    // Laser/mecanico/doblez/curvado dependen de la receta de corte (necesitan una materia
-    // prima de la cual sacar la tarifa); soldadura/otro viven en la Pieza y no dependen de eso.
+    // Laser/mecanico/doblez/curvado dependen de que haya una materia prima elegida (necesitan
+    // su tarifa); soldadura/otro viven en la Pieza y no dependen de eso.
     const [loadedRecipeId, setLoadedRecipeId] = useState<string | undefined>(undefined);
     const [laserEnabled, setLaserEnabled] = useState(false);
     const [bendEnabled, setBendEnabled] = useState(false);
@@ -101,15 +114,20 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
     const { data: partsData } = useParts();
     const { data: productsData } = useProducts();
     const { data: partCategoriesData } = usePartCategories();
+    const { data: rawMaterialsData } = useRawMaterials();
     const setComponentsMutation = useSetPartComponents();
     const setComponentProductsMutation = useSetPartComponentProducts();
     const setRecipeMutation = useSetPartRecipe();
     const loading = createMutation.isPending || updateMutation.isPending;
 
-    // El costeo por corte solo aplica si la pieza ya tiene una receta de corte definida
-    // (materia prima + piezas por unidad se cargan aparte, en "Recetas de corte").
     const recipe = recipeData?.data;
-    const hasCuttingRecipe = !!recipe;
+    const rawMaterials = useMemo(() => rawMaterialsData?.data ?? [], [rawMaterialsData]);
+
+    // La receta de corte (materia prima, dimensiones y costeo) se administra toda acá — ya no
+    // hay un formulario aparte de "Recetas de corte".
+    const selectedRawMaterial = rawMaterials.find(item => item.id === rawMaterialIdWatch);
+    const rawMaterialShape = selectedRawMaterial?.shape;
+    const hasRawMaterial = !!rawMaterialIdWatch;
 
     if (recipe && recipe.id !== loadedRecipeId) {
         setLoadedRecipeId(recipe.id);
@@ -150,7 +168,7 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
 
     useEffect(() => {
 
-        if (hasCuttingRecipe || (validComponents.length === 0 && !weldingEnabled && !otherEnabled)) {
+        if (hasRawMaterial || (validComponents.length === 0 && !weldingEnabled && !otherEnabled)) {
             return;
         }
 
@@ -174,7 +192,7 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
         validComponentsKey,
         parts,
         products,
-        hasCuttingRecipe,
+        hasRawMaterial,
         weldingEnabled,
         otherEnabled,
         weldingCostWatch,
@@ -184,11 +202,11 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
 
     useEffect(() => {
 
-        if (!recipe) {
+        if (!selectedRawMaterial) {
             return;
         }
 
-        const cost = calculatePartCost(recipe.rawMaterial, {
+        const cost = calculatePartCost(selectedRawMaterial, {
             piecesPerUnit: Number(piecesPerUnitWatch) || undefined,
             laserMeters: laserEnabled ? (Number(laserMetersWatch) || 0) : undefined,
             usesMechanicalCut: !!usesMechanicalCutWatch,
@@ -201,7 +219,7 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
         setValue("cost", cost);
 
     }, [
-        recipe,
+        selectedRawMaterial,
         piecesPerUnitWatch,
         laserMetersWatch,
         usesMechanicalCutWatch,
@@ -242,6 +260,11 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
                     quantity: Number(item.quantity)
                 }))
             ],
+            rawMaterialId: recipe?.rawMaterialId ?? "",
+            pieceWidth: recipe?.pieceWidth !== undefined && recipe?.pieceWidth !== null ? Number(recipe.pieceWidth) : undefined,
+            pieceHeight: recipe?.pieceHeight !== undefined && recipe?.pieceHeight !== null ? Number(recipe.pieceHeight) : undefined,
+            pieceLength: recipe?.pieceLength !== undefined && recipe?.pieceLength !== null ? Number(recipe.pieceLength) : undefined,
+            piecesPerUnit: recipe?.piecesPerUnit !== undefined && recipe?.piecesPerUnit !== null ? Number(recipe.piecesPerUnit) : undefined,
             laserMeters: recipe?.laserMeters !== undefined && recipe?.laserMeters !== null ? Number(recipe.laserMeters) : undefined,
             usesMechanicalCut: recipe?.usesMechanicalCut ?? false,
             bendCount: recipe?.bendCount !== undefined && recipe?.bendCount !== null ? Number(recipe.bendCount) : undefined,
@@ -282,23 +305,20 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
 
     }
 
-    async function saveRecipeCosting(targetPartId: string, data: PartFormData) {
+    async function saveRecipe(targetPartId: string, data: PartFormData) {
 
-        // Solo hay algo que guardar si la pieza ya tiene receta de corte (materia prima, que
-        // se carga en "Recetas de corte") — reenviamos ese dato tal cual estaba, y
-        // actualizamos piezas por unidad + laser/corte mecánico/doblez/curvado (soldadura y
-        // "otro" viven en la Pieza, se guardan junto con el resto del formulario).
-        if (!recipe) {
+        // Solo hay algo que guardar si se eligió materia prima de origen.
+        if (!data.rawMaterialId) {
             return;
         }
 
         await setRecipeMutation.mutateAsync({
             partId: targetPartId,
             data: {
-                rawMaterialId: recipe.rawMaterialId,
-                pieceWidth: recipe.pieceWidth !== null ? Number(recipe.pieceWidth) : undefined,
-                pieceHeight: recipe.pieceHeight !== null ? Number(recipe.pieceHeight) : undefined,
-                pieceLength: recipe.pieceLength !== null ? Number(recipe.pieceLength) : undefined,
+                rawMaterialId: data.rawMaterialId,
+                pieceWidth: data.pieceWidth !== undefined ? Number(data.pieceWidth) : undefined,
+                pieceHeight: data.pieceHeight !== undefined ? Number(data.pieceHeight) : undefined,
+                pieceLength: data.pieceLength !== undefined ? Number(data.pieceLength) : undefined,
                 piecesPerUnit: data.piecesPerUnit !== undefined ? Number(data.piecesPerUnit) : undefined,
                 laserMeters: laserEnabled ? (Number(data.laserMeters) || 0) : undefined,
                 usesMechanicalCut: !!data.usesMechanicalCut,
@@ -350,9 +370,9 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
 
                     try {
                         await saveComponents(partId, components);
-                        await saveRecipeCosting(partId, data);
+                        await saveRecipe(partId, data);
                     } catch {
-                        toast.error("La pieza se actualizó, pero no se pudo guardar el costeo.");
+                        toast.error("La pieza se actualizó, pero no se pudo guardar la receta de corte o de ensamblaje.");
                     }
 
                     toast.success("Pieza actualizada correctamente.");
@@ -368,8 +388,9 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
 
                 try {
                     await saveComponents(response.data.id, components);
+                    await saveRecipe(response.data.id, data);
                 } catch {
-                    toast.error("La pieza se creó, pero no se pudo guardar la receta de ensamblaje.");
+                    toast.error("La pieza se creó, pero no se pudo guardar la receta de corte o de ensamblaje.");
                 }
 
                 toast.success("Pieza creada correctamente.");
@@ -603,29 +624,91 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
             <div className="space-y-3 rounded-lg border p-3">
 
                 <div>
-                    <Label className="mb-1">Costeo de corte (opcional)</Label>
+                    <Label className="mb-1">Receta de corte (opcional)</Label>
                     <p className="text-xs text-muted-foreground">
-                        La materia prima se elige en "Recetas de corte" — acá se cargan las piezas por unidad y
-                        las operaciones que dependen de esa materia prima (láser, corte mecánico, doblez, curvado).
-                        Marca solo lo que aplica a esta pieza.
+                        Si esta pieza se corta de una lámina, tubo o varilla, elegí la materia prima de origen.
+                        Esto habilita el costeo de corte (piezas por unidad, láser, corte mecánico, doblez, curvado).
                     </p>
                 </div>
 
-                {!hasCuttingRecipe && (
+                <div>
+                    <Label className="mb-1">Materia prima de origen</Label>
+                    <Controller
+                        control={control}
+                        name="rawMaterialId"
+                        render={({ field }) => {
+
+                            const items = rawMaterials.map(item => ({
+                                value: item.id,
+                                label: `${item.code} - ${item.name} (${RAW_MATERIAL_SHAPE_LABELS[item.shape]})`
+                            }));
+
+                            const selected = items.find(item => item.value === field.value) ?? null;
+
+                            return (
+                                <Combobox
+                                    items={items}
+                                    value={selected}
+                                    onValueChange={(item) => field.onChange(item ? item.value : "")}
+                                >
+                                    <ComboboxInput placeholder="Buscar materia prima..." />
+                                    <ComboboxContent>
+                                        {(item) => (
+                                            <ComboboxItem key={item.value} value={item}>
+                                                {item.label}
+                                            </ComboboxItem>
+                                        )}
+                                    </ComboboxContent>
+                                    <ComboboxEmpty>
+                                        No se encontraron materias primas.
+                                    </ComboboxEmpty>
+                                </Combobox>
+                            );
+
+                        }}
+                    />
+                    <p className="text-sm text-red-500">{errors.rawMaterialId?.message}</p>
+                </div>
+
+                {rawMaterialShape === "SHEET" && (
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div>
+                            <Label className="mb-1">Ancho de la pieza (cm, opcional)</Label>
+                            <Input type="number" step="0.01" min={0} placeholder="0" {...register("pieceWidth", {
+                                setValueAs: (v) => (v === "" ? undefined : Number(v))
+                            })} />
+                            <p className="text-sm text-red-500">{errors.pieceWidth?.message}</p>
+                        </div>
+                        <div>
+                            <Label className="mb-1">Alto de la pieza (cm, opcional)</Label>
+                            <Input type="number" step="0.01" min={0} placeholder="0" {...register("pieceHeight", {
+                                setValueAs: (v) => (v === "" ? undefined : Number(v))
+                            })} />
+                            <p className="text-sm text-red-500">{errors.pieceHeight?.message}</p>
+                        </div>
+                    </div>
+                )}
+
+                {(rawMaterialShape === "TUBE" || rawMaterialShape === "ROD") && (
+                    <div>
+                        <Label className="mb-1">Longitud de la pieza (cm, opcional)</Label>
+                        <Input type="number" step="0.01" min={0} placeholder="0" {...register("pieceLength", {
+                            setValueAs: (v) => (v === "" ? undefined : Number(v))
+                        })} />
+                        <p className="text-sm text-red-500">{errors.pieceLength?.message}</p>
+                    </div>
+                )}
+
+                {!hasRawMaterial && (
                     <p className="text-sm text-amber-600">
-                        Esta pieza todavía no tiene una receta de corte, así que no aplican estas operaciones
+                        Sin materia prima elegida no aplican piezas por unidad ni las operaciones de corte
                         (dependen de la tarifa de una materia prima). Si igual necesita soldadura u otro costo,
                         se cargan más abajo, en "Costos adicionales".
                     </p>
                 )}
 
-                {hasCuttingRecipe && recipe && (
+                {hasRawMaterial && (
                     <>
-
-                        <div>
-                            <p className="text-sm text-muted-foreground">Materia prima</p>
-                            <p className="font-medium">{recipe.rawMaterial.code} - {recipe.rawMaterial.name}</p>
-                        </div>
 
                         <div className="w-28">
                             <Label className="mb-1">Piezas / unidad</Label>
@@ -832,14 +915,14 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
                         setValueAs: (v) => (v === "" ? undefined : Number(v))
                     })}
                 />
-                {hasCuttingRecipe && (
+                {hasRawMaterial && (
                     <p className="text-sm text-muted-foreground">
                         Calculado automáticamente a partir de la receta de corte (materia prima, láser,
                         corte mecánico, doblez, curvado, soldadura y otros costos) — podés ajustarlo a mano si
                         hace falta.
                     </p>
                 )}
-                {!hasCuttingRecipe && (validComponents.length > 0 || weldingEnabled || otherEnabled) && (
+                {!hasRawMaterial && (validComponents.length > 0 || weldingEnabled || otherEnabled) && (
                     <p className="text-sm text-muted-foreground">
                         Calculado automáticamente sumando el costo de los componentes de la receta de ensamblaje
                         (si tiene) más soldadura y otros costos (si aplican) — podés ajustarlo a mano si hace falta.

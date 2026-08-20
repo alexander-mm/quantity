@@ -9,7 +9,7 @@ import {
     ConfirmInventoryMovementDialog,
     CancelInventoryMovementDialog
 } from "@/components";
-import { useInventoryMovements, useConfirmInventoryMovement, useCancelInventoryMovement } from "@/hooks";
+import { useInventoryMovements, useConfirmInventoryMovement, useCancelInventoryMovement, useStores } from "@/hooks";
 import { toast } from "react-hot-toast";
 import { useState, useMemo } from "react";
 import type { InventoryMovement } from "@/types";
@@ -22,26 +22,40 @@ export function InventoryMovementsPage() {
         isError
     } = useInventoryMovements();
 
+    const { data: storesData } = useStores();
+    const stores = storesData?.data ?? [];
+
     const confirmMutation = useConfirmInventoryMovement();
     const cancelMutation = useCancelInventoryMovement();
 
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");
+    const [storeId, setStoreId] = useState("");
     const [movementToView, setMovementToView] = useState<InventoryMovement | null>(null);
     const [movementToEdit, setMovementToEdit] = useState<InventoryMovement | null>(null);
     const [movementToConfirm, setMovementToConfirm] = useState<InventoryMovement | null>(null);
     const [movementToCancel, setMovementToCancel] = useState<InventoryMovement | null>(null);
 
     const movements = useMemo(() => {
+
         const list = data?.data ?? [];
-        if (!search) return list;
         const term = search.toLowerCase();
-        return list.filter(m =>
-            m.product.name.toLowerCase().includes(term) ||
-            m.movementType.name.toLowerCase().includes(term) ||
-            m.store.name.toLowerCase().includes(term)
-        );
-    }, [data, search]);
+
+        return list.filter(m => {
+
+            const matchesSearch =
+                !term ||
+                m.product.name.toLowerCase().includes(term) ||
+                m.movementType.name.toLowerCase().includes(term) ||
+                m.store.name.toLowerCase().includes(term);
+
+            const matchesStore = !storeId || m.store.id === storeId;
+
+            return matchesSearch && matchesStore;
+
+        });
+
+    }, [data, search, storeId]);
 
     if (isLoading) {
 
@@ -89,6 +103,9 @@ export function InventoryMovementsPage() {
                     onNewMovement={() => setOpen(true)}
                     search={search}
                     onSearchChange={setSearch}
+                    stores={stores}
+                    storeId={storeId}
+                    onStoreChange={setStoreId}
                 />
             </div>
 

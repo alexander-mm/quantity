@@ -34,7 +34,6 @@ import { WholesalersPage, WholesalerDetailPage } from "@/pages/wholesalers";
 import { RawMaterialsPage } from "@/pages/raw-materials";
 import { RawMaterialMovementsPage } from "@/pages/raw-material-movements";
 import { RawMaterialAdjustmentsPage } from "@/pages/raw-material-adjustments";
-import { PartRecipesPage } from "@/pages/part-recipes";
 import { EquipmentPartsPage } from "@/pages/equipment-parts";
 import { PartCuttingOrdersPage } from "@/pages/part-cutting-orders";
 
@@ -369,17 +368,6 @@ const router = createBrowserRouter([
             <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.PRODUCTION]}>
                 <DashboardLayout>
                     <RawMaterialAdjustmentsPage />
-                </DashboardLayout>
-            </ProtectedRoute>
-        )
-    },
-
-    {
-        path: "/part-recipes",
-        element: (
-            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.PRODUCTION]}>
-                <DashboardLayout>
-                    <PartRecipesPage />
                 </DashboardLayout>
             </ProtectedRoute>
         )

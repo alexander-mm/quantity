@@ -14,8 +14,12 @@ export const partSchema = z.object({
         quantity: z.coerce.number({ error: "La cantidad es obligatoria." }).positive("La cantidad debe ser mayor que cero.")
     })).optional(),
 
-    // Costeo de corte (opcional: solo si esta pieza ya tiene una receta de corte definida en
-    // "Recetas de corte" — acá solo se cargan las operaciones que consume, no la materia prima).
+    // Receta de corte (opcional): de qué materia prima se corta esta pieza y el costeo
+    // asociado. Todo se administra desde acá — ya no existe un formulario aparte.
+    rawMaterialId: z.string().trim().optional(),
+    pieceWidth: z.coerce.number().positive("Debe ser mayor que cero.").optional(),
+    pieceHeight: z.coerce.number().positive("Debe ser mayor que cero.").optional(),
+    pieceLength: z.coerce.number().positive("Debe ser mayor que cero.").optional(),
     piecesPerUnit: z.coerce.number().positive("Debe ser mayor que cero.").optional(),
     laserMeters: z.coerce.number().min(0, "No puede ser negativo.").optional(),
     usesMechanicalCut: z.coerce.boolean().optional(),
