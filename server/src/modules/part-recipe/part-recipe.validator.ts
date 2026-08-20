@@ -28,7 +28,8 @@ export const setPartRecipeSchema = z.object({
     piecesPerUnit: z
         .coerce
         .number()
-        .positive("Las piezas por unidad deben ser mayor que cero."),
+        .positive("Las piezas por unidad deben ser mayor que cero.")
+        .optional(),
 
     // Costeo de producción: todos opcionales, se activan con un check en el formulario.
     laserMeters: z

@@ -40,8 +40,7 @@ export function PartRecipeForm({ part, onSuccess }: Props) {
             rawMaterialShape: undefined,
             pieceWidth: undefined,
             pieceHeight: undefined,
-            pieceLength: undefined,
-            piecesPerUnit: undefined
+            pieceLength: undefined
         }
     });
 
@@ -68,8 +67,7 @@ export function PartRecipeForm({ part, onSuccess }: Props) {
             rawMaterialShape: recipe.rawMaterial.shape,
             pieceWidth: recipe.pieceWidth !== null ? Number(recipe.pieceWidth) : undefined,
             pieceHeight: recipe.pieceHeight !== null ? Number(recipe.pieceHeight) : undefined,
-            pieceLength: recipe.pieceLength !== null ? Number(recipe.pieceLength) : undefined,
-            piecesPerUnit: Number(recipe.piecesPerUnit)
+            pieceLength: recipe.pieceLength !== null ? Number(recipe.pieceLength) : undefined
         });
 
     }, [recipeData, reset]);
@@ -93,9 +91,9 @@ export function PartRecipeForm({ part, onSuccess }: Props) {
             pieceWidth: data.pieceWidth !== undefined ? Number(data.pieceWidth) : undefined,
             pieceHeight: data.pieceHeight !== undefined ? Number(data.pieceHeight) : undefined,
             pieceLength: data.pieceLength !== undefined ? Number(data.pieceLength) : undefined,
-            piecesPerUnit: Number(data.piecesPerUnit),
-            // Este formulario no administra el costeo de operaciones — se reenvía tal cual
-            // estaba para no perderlo (se edita en Piezas, pero comparten el mismo registro).
+            // Este formulario no administra piezas por unidad ni el costeo de operaciones —
+            // se editan en Piezas y no se reenvían acá (el servidor preserva lo existente
+            // cuando piecesPerUnit se omite; el resto se reenvía tal cual para no perderlo).
             laserMeters: recipe?.laserMeters !== null && recipe?.laserMeters !== undefined ? Number(recipe.laserMeters) : undefined,
             usesMechanicalCut: recipe?.usesMechanicalCut ?? false,
             bendCount: recipe?.bendCount !== null && recipe?.bendCount !== undefined ? Number(recipe.bendCount) : undefined,
@@ -168,14 +166,14 @@ export function PartRecipeForm({ part, onSuccess }: Props) {
             {rawMaterialShape === "SHEET" && (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
-                        <Label>Ancho de la pieza (cm)</Label>
+                        <Label>Ancho de la pieza (cm, opcional)</Label>
                         <Input type="number" step="0.01" min={0} placeholder="0" {...register("pieceWidth", {
                             setValueAs: (v) => (v === "" ? undefined : Number(v))
                         })} />
                         <p className="text-sm text-red-500">{errors.pieceWidth?.message}</p>
                     </div>
                     <div>
-                        <Label>Alto de la pieza (cm)</Label>
+                        <Label>Alto de la pieza (cm, opcional)</Label>
                         <Input type="number" step="0.01" min={0} placeholder="0" {...register("pieceHeight", {
                             setValueAs: (v) => (v === "" ? undefined : Number(v))
                         })} />
@@ -186,7 +184,7 @@ export function PartRecipeForm({ part, onSuccess }: Props) {
 
             {(rawMaterialShape === "TUBE" || rawMaterialShape === "ROD") && (
                 <div>
-                    <Label>Longitud de la pieza (cm)</Label>
+                    <Label>Longitud de la pieza (cm, opcional)</Label>
                     <Input type="number" step="0.01" min={0} placeholder="0" {...register("pieceLength", {
                         setValueAs: (v) => (v === "" ? undefined : Number(v))
                     })} />
@@ -194,21 +192,18 @@ export function PartRecipeForm({ part, onSuccess }: Props) {
                 </div>
             )}
 
-            <div>
-                <Label className="mb-1">Piezas por unidad de materia prima</Label>
-                <Input type="number" step="1" min={0} placeholder="0" {...register("piecesPerUnit", {
-                    setValueAs: (v) => (v === "" ? undefined : Number(v))
-                })} />
-                <p className="mt-1 text-xs text-muted-foreground">
-                    Cuántas piezas de este tipo salen de una lámina o un tubo (ajústalo al valor real del corte).
+            <div className="rounded-md border p-2">
+                <p className="text-sm text-muted-foreground">Piezas por unidad de materia prima</p>
+                <p className="font-medium">
+                    {recipeData?.data?.piecesPerUnit !== null && recipeData?.data?.piecesPerUnit !== undefined
+                        ? Number(recipeData.data.piecesPerUnit)
+                        : "Sin definir"}
                 </p>
-                <p className="text-sm text-red-500">{errors.piecesPerUnit?.message}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                    Se carga en la ficha de la pieza, en "Piezas" — ahí también se define el costeo (láser, corte
+                    mecánico, dobleces, curvas, soldadura, otros).
+                </p>
             </div>
-
-            <p className="text-xs text-muted-foreground">
-                El costeo de esta pieza (láser, corte mecánico, dobleces, curvas, soldadura, otros) se define en
-                la ficha de la pieza, en "Piezas".
-            </p>
 
             <div className="flex justify-end">
                 <Button type="submit" disabled={loading}>

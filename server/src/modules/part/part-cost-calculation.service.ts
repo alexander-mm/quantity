@@ -13,7 +13,7 @@ type RawMaterialCostFields = {
 };
 
 type PartRecipeCostFields = {
-    piecesPerUnit: Prisma.Decimal;
+    piecesPerUnit: Prisma.Decimal | null;
     laserMeters: Prisma.Decimal | null;
     usesMechanicalCut: boolean;
     bendCount: Prisma.Decimal | null;

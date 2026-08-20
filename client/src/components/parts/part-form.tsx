@@ -56,6 +56,7 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
             cost: undefined,
             initialQuantity: undefined,
             components: [],
+            piecesPerUnit: undefined,
             laserMeters: undefined,
             usesMechanicalCut: false,
             bendCount: undefined,
@@ -69,6 +70,7 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
     const { fields, append, remove } = useFieldArray({ control, name: "components" });
     const watchedComponents = useWatch({ control, name: "components" }) ?? [];
     const categoryId = useWatch({ control, name: "categoryId" });
+    const piecesPerUnitWatch = useWatch({ control, name: "piecesPerUnit" });
     const laserMetersWatch = useWatch({ control, name: "laserMeters" });
     const usesMechanicalCutWatch = useWatch({ control, name: "usesMechanicalCut" });
     const bendCountWatch = useWatch({ control, name: "bendCount" });
@@ -187,7 +189,7 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
         }
 
         const cost = calculatePartCost(recipe.rawMaterial, {
-            piecesPerUnit: Number(recipe.piecesPerUnit) || undefined,
+            piecesPerUnit: Number(piecesPerUnitWatch) || undefined,
             laserMeters: laserEnabled ? (Number(laserMetersWatch) || 0) : undefined,
             usesMechanicalCut: !!usesMechanicalCutWatch,
             bendCount: bendEnabled ? (Number(bendCountWatch) || 0) : undefined,
@@ -200,6 +202,7 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
 
     }, [
         recipe,
+        piecesPerUnitWatch,
         laserMetersWatch,
         usesMechanicalCutWatch,
         bendCountWatch,
@@ -281,10 +284,10 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
 
     async function saveRecipeCosting(targetPartId: string, data: PartFormData) {
 
-        // Solo hay algo que guardar si la pieza ya tiene receta de corte (materia prima +
-        // piezas por unidad, que se cargan en "Recetas de corte") — reenviamos esos campos
-        // tal cual estaban, y actualizamos únicamente laser/corte mecánico/doblez/curvado
-        // (soldadura y "otro" viven en la Pieza, se guardan junto con el resto del formulario).
+        // Solo hay algo que guardar si la pieza ya tiene receta de corte (materia prima, que
+        // se carga en "Recetas de corte") — reenviamos ese dato tal cual estaba, y
+        // actualizamos piezas por unidad + laser/corte mecánico/doblez/curvado (soldadura y
+        // "otro" viven en la Pieza, se guardan junto con el resto del formulario).
         if (!recipe) {
             return;
         }
@@ -296,7 +299,7 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
                 pieceWidth: recipe.pieceWidth !== null ? Number(recipe.pieceWidth) : undefined,
                 pieceHeight: recipe.pieceHeight !== null ? Number(recipe.pieceHeight) : undefined,
                 pieceLength: recipe.pieceLength !== null ? Number(recipe.pieceLength) : undefined,
-                piecesPerUnit: Number(recipe.piecesPerUnit),
+                piecesPerUnit: data.piecesPerUnit !== undefined ? Number(data.piecesPerUnit) : undefined,
                 laserMeters: laserEnabled ? (Number(data.laserMeters) || 0) : undefined,
                 usesMechanicalCut: !!data.usesMechanicalCut,
                 bendCount: bendEnabled ? (Number(data.bendCount) || 0) : undefined,
@@ -602,9 +605,9 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
                 <div>
                     <Label className="mb-1">Costeo de corte (opcional)</Label>
                     <p className="text-xs text-muted-foreground">
-                        Marca solo lo que aplica a esta pieza. La materia prima y las piezas por unidad se definen
-                        en "Recetas de corte" — acá solo se cargan las operaciones que dependen de esa materia
-                        prima (láser, corte mecánico, doblez, curvado).
+                        La materia prima se elige en "Recetas de corte" — acá se cargan las piezas por unidad y
+                        las operaciones que dependen de esa materia prima (láser, corte mecánico, doblez, curvado).
+                        Marca solo lo que aplica a esta pieza.
                     </p>
                 </div>
 
@@ -622,6 +625,20 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
                         <div>
                             <p className="text-sm text-muted-foreground">Materia prima</p>
                             <p className="font-medium">{recipe.rawMaterial.code} - {recipe.rawMaterial.name}</p>
+                        </div>
+
+                        <div className="w-28">
+                            <Label className="mb-1">Piezas / unidad</Label>
+                            <Input
+                                type="number"
+                                step="1"
+                                min={0}
+                                placeholder="0"
+                                {...register("piecesPerUnit", {
+                                    setValueAs: (v) => (v === "" ? undefined : Number(v))
+                                })}
+                            />
+                            <p className="text-sm text-red-500">{errors.piecesPerUnit?.message}</p>
                         </div>
 
                         <div className="rounded-md border p-2">

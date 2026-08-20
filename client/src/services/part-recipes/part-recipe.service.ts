@@ -11,7 +11,7 @@ export type SetPartRecipeRequest = {
     pieceWidth?: number;
     pieceHeight?: number;
     pieceLength?: number;
-    piecesPerUnit: number;
+    piecesPerUnit?: number;
     laserMeters?: number;
     usesMechanicalCut?: boolean;
     bendCount?: number;

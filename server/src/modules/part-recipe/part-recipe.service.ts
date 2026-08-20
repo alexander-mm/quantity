@@ -1,4 +1,4 @@
-import { NotFoundError, ValidationError } from "../../shared/errors/index.js";
+import { NotFoundError } from "../../shared/errors/index.js";
 import { PartRepository } from "../part/part.repository.js";
 import { PartCostCalculationService } from "../part/part-cost-calculation.service.js";
 import { RawMaterialRepository } from "../raw-material/raw-material.repository.js";
@@ -33,14 +33,7 @@ export class PartRecipeService {
             throw new NotFoundError("La materia prima seleccionada no existe.");
         }
 
-        if (rawMaterial.shape === "SHEET" && (data.pieceWidth === undefined || data.pieceHeight === undefined)) {
-            throw new ValidationError("Para una lámina debe indicar el ancho y el alto de la pieza.");
-        }
-
-        if ((rawMaterial.shape === "TUBE" || rawMaterial.shape === "ROD") && data.pieceLength === undefined) {
-            throw new ValidationError("Para un tubo o varilla debe indicar la longitud de la pieza.");
-        }
-
+        // Ancho/alto/longitud son solo referencia (no alimentan ningún cálculo) — opcionales.
         const recipe = await this.repository.upsert(BigInt(partId), data);
 
         const cost = this.costCalculationService.calculate(recipe, part);

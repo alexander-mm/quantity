@@ -8,7 +8,8 @@ export interface PartRecipe {
     pieceWidth: string | null;
     pieceHeight: string | null;
     pieceLength: string | null;
-    piecesPerUnit: string;
+    // Se carga desde la ficha de la Pieza — puede no estar definido todavía.
+    piecesPerUnit: string | null;
     isActive: boolean;
     rawMaterial: RawMaterial;
 

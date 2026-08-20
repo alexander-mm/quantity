@@ -16,6 +16,7 @@ export const partSchema = z.object({
 
     // Costeo de corte (opcional: solo si esta pieza ya tiene una receta de corte definida en
     // "Recetas de corte" — acá solo se cargan las operaciones que consume, no la materia prima).
+    piecesPerUnit: z.coerce.number().positive("Debe ser mayor que cero.").optional(),
     laserMeters: z.coerce.number().min(0, "No puede ser negativo.").optional(),
     usesMechanicalCut: z.coerce.boolean().optional(),
     bendCount: z.coerce.number().min(0, "No puede ser negativo.").optional(),
