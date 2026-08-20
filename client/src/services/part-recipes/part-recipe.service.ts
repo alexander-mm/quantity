@@ -12,6 +12,10 @@ export type SetPartRecipeRequest = {
     pieceHeight?: number;
     pieceLength?: number;
     piecesPerUnit: number;
+    laserMeters?: number;
+    usesMechanicalCut?: boolean;
+    bendCount?: number;
+    curveCount?: number;
 };
 
 export async function setPartRecipe(

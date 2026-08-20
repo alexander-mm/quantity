@@ -1,5 +1,6 @@
 import { NotFoundError, ValidationError } from "../../shared/errors/index.js";
 import { PartRepository } from "../part/part.repository.js";
+import { PartCostCalculationService } from "../part/part-cost-calculation.service.js";
 import { RawMaterialRepository } from "../raw-material/raw-material.repository.js";
 
 import { PartRecipeRepository } from "./part-recipe.repository.js";
@@ -10,6 +11,7 @@ export class PartRecipeService {
     private readonly repository = new PartRecipeRepository();
     private readonly partRepository = new PartRepository();
     private readonly rawMaterialRepository = new RawMaterialRepository();
+    private readonly costCalculationService = new PartCostCalculationService();
 
     async findByPart(partId: string) {
 
@@ -39,7 +41,13 @@ export class PartRecipeService {
             throw new ValidationError("Para un tubo o varilla debe indicar la longitud de la pieza.");
         }
 
-        return this.repository.upsert(BigInt(partId), data);
+        const recipe = await this.repository.upsert(BigInt(partId), data);
+
+        const cost = this.costCalculationService.calculate(recipe, part);
+
+        await this.partRepository.update(BigInt(partId), { cost });
+
+        return recipe;
 
     }
 

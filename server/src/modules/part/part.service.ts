@@ -5,12 +5,14 @@ import { ConflictError, NotFoundError, ValidationError } from "../../shared/erro
 import { PartMovementRepository } from "../part-movement/part-movement.repository.js";
 
 import { PartRepository, PartWithCategory } from "./part.repository.js";
+import { PartCostCalculationService } from "./part-cost-calculation.service.js";
 import { CreatePartDto, UpdatePartDto } from "./part.dto.js";
 
 export class PartService {
 
     private readonly repository = new PartRepository();
     private readonly movementRepository = new PartMovementRepository();
+    private readonly costCalculationService = new PartCostCalculationService();
 
     async findAll(): Promise<PartWithCategory[]> {
 
@@ -86,6 +88,9 @@ export class PartService {
                 description: data.description,
                 minimumStock: data.minimumStock ?? 0,
                 cost: data.cost,
+                weldingCost: data.weldingCost ?? null,
+                otherCostDescription: data.otherCostDescription ?? null,
+                otherCostAmount: data.otherCostAmount ?? null,
                 category: data.categoryId
                     ? { connect: { id: BigInt(data.categoryId) } }
                     : undefined
@@ -103,6 +108,9 @@ export class PartService {
                 description: data.description,
                 minimumStock: data.minimumStock ?? 0,
                 cost: data.cost,
+                weldingCost: data.weldingCost ?? null,
+                otherCostDescription: data.otherCostDescription ?? null,
+                otherCostAmount: data.otherCostAmount ?? null,
                 category: data.categoryId
                     ? { connect: { id: BigInt(data.categoryId) } }
                     : undefined
@@ -146,16 +154,25 @@ export class PartService {
             throw new ConflictError("Ya existe una pieza con ese código.");
         }
 
-        return this.repository.update(BigInt(id), {
+        await this.repository.update(BigInt(id), {
             code: data.code,
             name: data.name,
             description: data.description,
             minimumStock: data.minimumStock ?? 0,
             cost: data.cost,
+            weldingCost: data.weldingCost ?? null,
+            otherCostDescription: data.otherCostDescription ?? null,
+            otherCostAmount: data.otherCostAmount ?? null,
             category: data.categoryId
                 ? { connect: { id: BigInt(data.categoryId) } }
                 : { disconnect: true }
         });
+
+        // Si tiene receta de corte, el costo autoritativo lo recalcula el servidor con los
+        // datos ya guardados (no-op si la pieza no tiene receta de corte).
+        await this.costCalculationService.recalculateForPart(BigInt(id));
+
+        return this.repository.findById(BigInt(id)) as Promise<Part>;
 
     }
     async delete(

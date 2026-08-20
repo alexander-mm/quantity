@@ -7,6 +7,9 @@ export interface CreatePartDto {
     cost: number;
     initialQuantity?: number;
     userId: string;
+    weldingCost?: number;
+    otherCostDescription?: string;
+    otherCostAmount?: number;
 }
 
 export interface UpdatePartDto {
@@ -16,4 +19,7 @@ export interface UpdatePartDto {
     categoryId?: string;
     minimumStock?: number;
     cost: number;
+    weldingCost?: number;
+    otherCostDescription?: string;
+    otherCostAmount?: number;
 }

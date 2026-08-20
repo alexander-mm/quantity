@@ -16,6 +16,14 @@ export interface RawMaterial {
     quantity: string;
     minimumStock: string;
     isActive: boolean;
+
+    // Costeo de producción: todos opcionales.
+    cost: string | null;
+    wastePercentage: string | null;
+    laserCostPerMeter: string | null;
+    mechanicalCutCost: string | null;
+    bendCostPerBend: string | null;
+    curveCostPerCurve: string | null;
 }
 
 export type RawMaterialMovementType = "IN" | "OUT";

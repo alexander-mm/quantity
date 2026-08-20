@@ -11,4 +11,11 @@ export interface PartRecipe {
     piecesPerUnit: string;
     isActive: boolean;
     rawMaterial: RawMaterial;
+
+    // Costeo de producción: cuánto de cada operación consume esta pieza puntual (soldadura
+    // y "otro" viven en Part, no acá, porque no dependen de ninguna materia prima).
+    laserMeters: string | null;
+    usesMechanicalCut: boolean;
+    bendCount: string | null;
+    curveCount: string | null;
 }

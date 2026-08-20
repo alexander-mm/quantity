@@ -1,7 +1,16 @@
 export type RawMaterialShape = "SHEET" | "TUBE" | "ROD";
 export type TubeProfile = "ROUND" | "SQUARE" | "RECTANGULAR";
 
-export interface CreateRawMaterialDto {
+export interface RawMaterialCostingFieldsDto {
+    cost?: number;
+    wastePercentage?: number;
+    laserCostPerMeter?: number;
+    mechanicalCutCost?: number;
+    bendCostPerBend?: number;
+    curveCostPerCurve?: number;
+}
+
+export interface CreateRawMaterialDto extends RawMaterialCostingFieldsDto {
     code: string;
     name: string;
     shape: RawMaterialShape;
@@ -16,7 +25,7 @@ export interface CreateRawMaterialDto {
     userId: string;
 }
 
-export interface UpdateRawMaterialDto {
+export interface UpdateRawMaterialDto extends RawMaterialCostingFieldsDto {
     code: string;
     name: string;
     shape: RawMaterialShape;

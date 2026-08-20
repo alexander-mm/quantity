@@ -24,6 +24,9 @@ export type CreatePartRequest = {
     minimumStock?: number;
     cost: number;
     initialQuantity?: number;
+    weldingCost?: number;
+    otherCostDescription?: string;
+    otherCostAmount?: number;
 };
 
 export async function createPart(payload: CreatePartRequest): Promise<ApiResponse<Part>> {

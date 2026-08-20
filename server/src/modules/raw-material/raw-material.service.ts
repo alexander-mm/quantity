@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../database/index.js";
 import { ConflictError, NotFoundError, ValidationError } from "../../shared/errors/index.js";
 import { RawMaterialMovementRepository } from "../raw-material-movement/raw-material-movement.repository.js";
+import { PartCostCalculationService } from "../part/part-cost-calculation.service.js";
 
 import { RawMaterialRepository } from "./raw-material.repository.js";
 import { CreateRawMaterialDto, UpdateRawMaterialDto } from "./raw-material.dto.js";
@@ -11,6 +12,7 @@ export class RawMaterialService {
 
     private readonly repository = new RawMaterialRepository();
     private readonly movementRepository = new RawMaterialMovementRepository();
+    private readonly costCalculationService = new PartCostCalculationService();
 
     async findAll() {
 
@@ -79,7 +81,13 @@ export class RawMaterialService {
             height: (data.shape === "SHEET" ? data.height : (data.profile === "RECTANGULAR" ? data.height : null)) ?? null,
             length: ((data.shape === "TUBE" || data.shape === "ROD") ? data.length : null) ?? null,
             profile: (data.shape === "TUBE" ? data.profile : null) ?? null,
-            minimumStock: data.minimumStock ?? 0
+            minimumStock: data.minimumStock ?? 0,
+            cost: data.cost ?? null,
+            wastePercentage: data.wastePercentage ?? null,
+            laserCostPerMeter: data.laserCostPerMeter ?? null,
+            mechanicalCutCost: data.mechanicalCutCost ?? null,
+            bendCostPerBend: data.bendCostPerBend ?? null,
+            curveCostPerCurve: data.curveCostPerCurve ?? null
         };
 
     }
@@ -147,7 +155,11 @@ export class RawMaterialService {
             throw new ConflictError("Ya existe una materia prima con ese código.");
         }
 
-        return this.repository.update(BigInt(id), this.buildAttributes(data));
+        const updated = await this.repository.update(BigInt(id), this.buildAttributes(data));
+
+        await this.costCalculationService.recalculateForRawMaterial(BigInt(id));
+
+        return updated;
 
     }
 

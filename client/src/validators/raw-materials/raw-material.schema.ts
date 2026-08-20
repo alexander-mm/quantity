@@ -15,7 +15,15 @@ export const rawMaterialSchema = z.object({
         z.enum(["ROUND", "SQUARE", "RECTANGULAR"]).optional()
     ),
     minimumStock: z.coerce.number().min(0, "No puede ser negativo.").optional(),
-    initialQuantity: z.coerce.number().min(0, "No puede ser negativo.").optional()
+    initialQuantity: z.coerce.number().min(0, "No puede ser negativo.").optional(),
+
+    // Costeo de producción: todos opcionales.
+    cost: z.coerce.number().min(0, "No puede ser negativo.").optional(),
+    wastePercentage: z.coerce.number().min(0, "No puede ser negativo.").max(100, "No puede superar 100.").optional(),
+    laserCostPerMeter: z.coerce.number().min(0, "No puede ser negativo.").optional(),
+    mechanicalCutCost: z.coerce.number().min(0, "No puede ser negativo.").optional(),
+    bendCostPerBend: z.coerce.number().min(0, "No puede ser negativo.").optional(),
+    curveCostPerCurve: z.coerce.number().min(0, "No puede ser negativo.").optional()
 
 }).superRefine((data, ctx) => {
 

@@ -36,6 +36,24 @@ export class PartRecipeRepository extends BaseRepository {
 
     }
 
+    async findByRawMaterial(
+        rawMaterialId: bigint
+    ): Promise<PartRecipeWithRelations[]> {
+
+        return this.prisma.partRecipe.findMany({
+
+            where: {
+                rawMaterialId
+            },
+
+            include: {
+                rawMaterial: true
+            }
+
+        });
+
+    }
+
     async upsert(
         partId: bigint,
         data: SetPartRecipeDto
@@ -53,7 +71,11 @@ export class PartRecipeRepository extends BaseRepository {
                 pieceWidth: data.pieceWidth ?? null,
                 pieceHeight: data.pieceHeight ?? null,
                 pieceLength: data.pieceLength ?? null,
-                piecesPerUnit: data.piecesPerUnit
+                piecesPerUnit: data.piecesPerUnit,
+                laserMeters: data.laserMeters ?? null,
+                usesMechanicalCut: data.usesMechanicalCut ?? false,
+                bendCount: data.bendCount ?? null,
+                curveCount: data.curveCount ?? null
             },
 
             update: {
@@ -61,7 +83,11 @@ export class PartRecipeRepository extends BaseRepository {
                 pieceWidth: data.pieceWidth ?? null,
                 pieceHeight: data.pieceHeight ?? null,
                 pieceLength: data.pieceLength ?? null,
-                piecesPerUnit: data.piecesPerUnit
+                piecesPerUnit: data.piecesPerUnit,
+                laserMeters: data.laserMeters ?? null,
+                usesMechanicalCut: data.usesMechanicalCut ?? false,
+                bendCount: data.bendCount ?? null,
+                curveCount: data.curveCount ?? null
             },
 
             include: {

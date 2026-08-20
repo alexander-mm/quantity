@@ -28,6 +28,30 @@ export const setPartRecipeSchema = z.object({
     piecesPerUnit: z
         .coerce
         .number()
-        .positive("Las piezas por unidad deben ser mayor que cero.")
+        .positive("Las piezas por unidad deben ser mayor que cero."),
+
+    // Costeo de producción: todos opcionales, se activan con un check en el formulario.
+    laserMeters: z
+        .coerce
+        .number()
+        .min(0, "Los metros de corte láser no pueden ser negativos.")
+        .optional(),
+
+    usesMechanicalCut: z
+        .coerce
+        .boolean()
+        .optional(),
+
+    bendCount: z
+        .coerce
+        .number()
+        .min(0, "El número de dobleces no puede ser negativo.")
+        .optional(),
+
+    curveCount: z
+        .coerce
+        .number()
+        .min(0, "El número de curvas no puede ser negativo.")
+        .optional()
 
 });

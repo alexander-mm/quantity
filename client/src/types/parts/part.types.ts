@@ -18,6 +18,11 @@ export interface Part {
     minimumStock: string;
     cost: string;
     isActive: boolean;
+
+    // Costos adicionales opcionales: aplican sin importar si la pieza se corta o se ensambla.
+    weldingCost: string | null;
+    otherCostDescription: string | null;
+    otherCostAmount: string | null;
 }
 
 export type PartMovementType = "IN" | "OUT";

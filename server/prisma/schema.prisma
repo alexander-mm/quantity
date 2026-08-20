@@ -721,6 +721,13 @@ model Part {
   createdBy    BigInt?
   updatedBy    BigInt?
 
+  // Costos adicionales opcionales: aplican sin importar si la pieza se corta, se ensambla,
+  // o ninguna de las dos (a diferencia de laser/corte mecanico/doblez/curvado, que viven en
+  // PartRecipe porque dependen de la tarifa de una materia prima concreta).
+  weldingCost           Decimal? @db.Decimal(12, 2)
+  otherCostDescription  String?
+  otherCostAmount       Decimal? @db.Decimal(12, 2)
+
   category          PartCategory?                @relation(fields: [categoryId], references: [id])
   movementDetails   PartMovementDetail[]
   recipe            PartRecipe?
@@ -930,6 +937,20 @@ model RawMaterial {
   createdBy    BigInt?
   updatedBy    BigInt?
 
+  // Costeo de producción: costo de esta materia prima y tarifas de proceso (todos opcionales,
+  // se activan con un check en el formulario). Editables a mano cuando cambia el mercado.
+  cost                      Decimal? @db.Decimal(12, 2)
+  // % de daño o pérdida de material: infla unicamente el costo de la materia prima.
+  wastePercentage           Decimal? @db.Decimal(5, 2)
+  // Corte laser: tarifa por metro lineal.
+  laserCostPerMeter         Decimal? @db.Decimal(12, 2)
+  // Corte mecanico (con herramienta electrica): monto fijo, no varia por metro.
+  mechanicalCutCost         Decimal? @db.Decimal(12, 2)
+  // Doblez mecanico (laminas): tarifa por doblez.
+  bendCostPerBend           Decimal? @db.Decimal(12, 2)
+  // Curvado (tubos/varillas): tarifa por curva.
+  curveCostPerCurve         Decimal? @db.Decimal(12, 2)
+
   recipes         PartRecipe[]
   movementDetails RawMaterialMovementDetail[]
   cuttingOrders   PartCuttingOrder[]
@@ -988,6 +1009,16 @@ model PartRecipe {
   updatedAt     DateTime @updatedAt
   createdBy     BigInt?
   updatedBy     BigInt?
+
+  // Costeo de producción: cuánto de cada operación consume esta pieza puntual (todos
+  // opcionales, se activan con un check). Se multiplican contra las tarifas de la materia
+  // prima elegida arriba — por eso viven acá y no en Part (soldadura/otro sí viven en Part,
+  // porque son montos directos que no dependen de ninguna materia prima).
+  laserMeters       Decimal? @db.Decimal(10, 2)
+  // Corte mecanico: solo indica si esta pieza lo usa (suma el monto fijo de la materia prima).
+  usesMechanicalCut Boolean  @default(false)
+  bendCount         Decimal? @db.Decimal(10, 2)
+  curveCount        Decimal? @db.Decimal(10, 2)
 
   part        Part        @relation(fields: [partId], references: [id])
   rawMaterial RawMaterial @relation(fields: [rawMaterialId], references: [id])

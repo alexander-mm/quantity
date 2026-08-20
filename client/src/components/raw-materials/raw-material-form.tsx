@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -45,18 +45,47 @@ export function RawMaterialForm({ onSuccess, mode = "create", rawMaterialId }: P
             length: undefined,
             profile: undefined,
             minimumStock: undefined,
-            initialQuantity: undefined
+            initialQuantity: undefined,
+            cost: undefined,
+            wastePercentage: undefined,
+            laserCostPerMeter: undefined,
+            mechanicalCutCost: undefined,
+            bendCostPerBend: undefined,
+            curveCostPerCurve: undefined
         }
     });
 
     const shape = useWatch({ control, name: "shape" });
     const profile = useWatch({ control, name: "profile" });
 
+    // El check de cada campo es un estado propio, independiente de si ya tiene un numero
+    // cargado — asi al tildarlo el input queda vacio (solo el placeholder "0"), en vez de
+    // forzar un valor. Se sincroniza contra los datos cargados durante el render (no en un
+    // efecto) comparando el id, siguiendo el patron recomendado para "ajustar estado" de React.
+    const [loadedRawMaterialId, setLoadedRawMaterialId] = useState<string | undefined>(undefined);
+    const [costEnabled, setCostEnabled] = useState(false);
+    const [wasteEnabled, setWasteEnabled] = useState(false);
+    const [laserEnabled, setLaserEnabled] = useState(false);
+    const [mechanicalEnabled, setMechanicalEnabled] = useState(false);
+    const [bendEnabled, setBendEnabled] = useState(false);
+    const [curveEnabled, setCurveEnabled] = useState(false);
+
     const createMutation = useCreateRawMaterial();
     const updateMutation = useUpdateRawMaterial();
     const { data: rawMaterialData } = useRawMaterial(mode === "edit" ? rawMaterialId : undefined);
     const { data: rawMaterialsData } = useRawMaterials();
     const loading = createMutation.isPending || updateMutation.isPending;
+
+    if (rawMaterialData?.data && rawMaterialData.data.id !== loadedRawMaterialId) {
+        const item = rawMaterialData.data;
+        setLoadedRawMaterialId(item.id);
+        setCostEnabled(item.cost !== null);
+        setWasteEnabled(item.wastePercentage !== null);
+        setLaserEnabled(item.laserCostPerMeter !== null);
+        setMechanicalEnabled(item.mechanicalCutCost !== null);
+        setBendEnabled(item.bendCostPerBend !== null);
+        setCurveEnabled(item.curveCostPerCurve !== null);
+    }
 
     const otherRawMaterials = (rawMaterialsData?.data ?? []).filter(item => item.id !== rawMaterialId);
 
@@ -104,7 +133,13 @@ export function RawMaterialForm({ onSuccess, mode = "create", rawMaterialId }: P
             height: item.height !== null ? Number(item.height) : undefined,
             length: item.length !== null ? Number(item.length) : undefined,
             profile: item.profile ?? undefined,
-            minimumStock: Number(item.minimumStock)
+            minimumStock: Number(item.minimumStock),
+            cost: item.cost !== null ? Number(item.cost) : undefined,
+            wastePercentage: item.wastePercentage !== null ? Number(item.wastePercentage) : undefined,
+            laserCostPerMeter: item.laserCostPerMeter !== null ? Number(item.laserCostPerMeter) : undefined,
+            mechanicalCutCost: item.mechanicalCutCost !== null ? Number(item.mechanicalCutCost) : undefined,
+            bendCostPerBend: item.bendCostPerBend !== null ? Number(item.bendCostPerBend) : undefined,
+            curveCostPerCurve: item.curveCostPerCurve !== null ? Number(item.curveCostPerCurve) : undefined
         });
 
     }, [mode, rawMaterialData, reset]);
@@ -132,7 +167,13 @@ export function RawMaterialForm({ onSuccess, mode = "create", rawMaterialId }: P
             length: data.length !== undefined ? Number(data.length) : undefined,
             profile: (data.profile || undefined) as TubeProfile | undefined,
             minimumStock: Number(data.minimumStock) || 0,
-            ...(mode === "create" ? { initialQuantity: Number(data.initialQuantity) || undefined } : {})
+            ...(mode === "create" ? { initialQuantity: Number(data.initialQuantity) || undefined } : {}),
+            cost: costEnabled ? (Number(data.cost) || 0) : undefined,
+            wastePercentage: wasteEnabled ? (Number(data.wastePercentage) || 0) : undefined,
+            laserCostPerMeter: laserEnabled ? (Number(data.laserCostPerMeter) || 0) : undefined,
+            mechanicalCutCost: mechanicalEnabled ? (Number(data.mechanicalCutCost) || 0) : undefined,
+            bendCostPerBend: bendEnabled ? (Number(data.bendCostPerBend) || 0) : undefined,
+            curveCostPerCurve: curveEnabled ? (Number(data.curveCostPerCurve) || 0) : undefined
         };
 
         const onError = (error: unknown) => {
@@ -341,6 +382,191 @@ export function RawMaterialForm({ onSuccess, mode = "create", rawMaterialId }: P
                         <p className="text-sm text-red-500">{errors.initialQuantity?.message}</p>
                     </div>
                 )}
+
+            </div>
+
+            <div className="space-y-3 rounded-lg border p-3">
+
+                <div>
+                    <Label className="mb-1">Costeo de producción (opcional)</Label>
+                    <p className="text-xs text-muted-foreground">
+                        Marca solo lo que aplica a esta materia prima. Estos valores son la única fuente de
+                        verdad: cambiarlos aquí recalcula sola cualquier pieza que se corte de esta materia prima.
+                    </p>
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+
+                    <div className="rounded-md border p-2">
+                        <label htmlFor="costEnabled" className="flex cursor-pointer items-center gap-2">
+                            <input
+                                type="checkbox"
+                                id="costEnabled"
+                                checked={costEnabled}
+                                onChange={(e) => {
+                                    setCostEnabled(e.target.checked);
+                                    if (!e.target.checked) setValue("cost", undefined);
+                                }}
+                            />
+                            <span className="text-sm font-medium">Costo</span>
+                        </label>
+                        {costEnabled && (
+                            <>
+                                <Input
+                                    className="mt-2 w-24"
+                                    type="number"
+                                    step="0.01"
+                                    min={0}
+                                    placeholder="0"
+                                    {...register("cost", { setValueAs: toOptionalNumber })}
+                                />
+                                <p className="text-sm text-red-500">{errors.cost?.message}</p>
+                            </>
+                        )}
+                    </div>
+
+                    <div className="rounded-md border p-2">
+                        <label htmlFor="wasteEnabled" className="flex cursor-pointer items-center gap-2">
+                            <input
+                                type="checkbox"
+                                id="wasteEnabled"
+                                checked={wasteEnabled}
+                                onChange={(e) => {
+                                    setWasteEnabled(e.target.checked);
+                                    if (!e.target.checked) setValue("wastePercentage", undefined);
+                                }}
+                            />
+                            <span className="text-sm font-medium">% de daño o pérdida</span>
+                        </label>
+                        {wasteEnabled && (
+                            <>
+                                <Input
+                                    className="mt-2 w-24"
+                                    type="number"
+                                    step="0.01"
+                                    min={0}
+                                    max={100}
+                                    placeholder="0"
+                                    {...register("wastePercentage", { setValueAs: toOptionalNumber })}
+                                />
+                                <p className="text-sm text-red-500">{errors.wastePercentage?.message}</p>
+                            </>
+                        )}
+                    </div>
+
+                    <div className="rounded-md border p-2">
+                        <label htmlFor="laserEnabled" className="flex cursor-pointer items-center gap-2">
+                            <input
+                                type="checkbox"
+                                id="laserEnabled"
+                                checked={laserEnabled}
+                                onChange={(e) => {
+                                    setLaserEnabled(e.target.checked);
+                                    if (!e.target.checked) setValue("laserCostPerMeter", undefined);
+                                }}
+                            />
+                            <span className="text-sm font-medium">Costo de corte láser ($/metro)</span>
+                        </label>
+                        {laserEnabled && (
+                            <>
+                                <Input
+                                    className="mt-2 w-24"
+                                    type="number"
+                                    step="0.01"
+                                    min={0}
+                                    placeholder="0"
+                                    {...register("laserCostPerMeter", { setValueAs: toOptionalNumber })}
+                                />
+                                <p className="text-sm text-red-500">{errors.laserCostPerMeter?.message}</p>
+                            </>
+                        )}
+                    </div>
+
+                    <div className="rounded-md border p-2">
+                        <label htmlFor="mechanicalEnabled" className="flex cursor-pointer items-center gap-2">
+                            <input
+                                type="checkbox"
+                                id="mechanicalEnabled"
+                                checked={mechanicalEnabled}
+                                onChange={(e) => {
+                                    setMechanicalEnabled(e.target.checked);
+                                    if (!e.target.checked) setValue("mechanicalCutCost", undefined);
+                                }}
+                            />
+                            <span className="text-sm font-medium">Costo de corte mecánico (monto fijo)</span>
+                        </label>
+                        {mechanicalEnabled && (
+                            <>
+                                <Input
+                                    className="mt-2 w-24"
+                                    type="number"
+                                    step="0.01"
+                                    min={0}
+                                    placeholder="0"
+                                    {...register("mechanicalCutCost", { setValueAs: toOptionalNumber })}
+                                />
+                                <p className="text-sm text-red-500">{errors.mechanicalCutCost?.message}</p>
+                            </>
+                        )}
+                    </div>
+
+                    <div className="rounded-md border p-2">
+                        <label htmlFor="bendEnabled" className="flex cursor-pointer items-center gap-2">
+                            <input
+                                type="checkbox"
+                                id="bendEnabled"
+                                checked={bendEnabled}
+                                onChange={(e) => {
+                                    setBendEnabled(e.target.checked);
+                                    if (!e.target.checked) setValue("bendCostPerBend", undefined);
+                                }}
+                            />
+                            <span className="text-sm font-medium">Costo de doblez mecánico ($/doblez)</span>
+                        </label>
+                        {bendEnabled && (
+                            <>
+                                <Input
+                                    className="mt-2 w-24"
+                                    type="number"
+                                    step="0.01"
+                                    min={0}
+                                    placeholder="0"
+                                    {...register("bendCostPerBend", { setValueAs: toOptionalNumber })}
+                                />
+                                <p className="text-sm text-red-500">{errors.bendCostPerBend?.message}</p>
+                            </>
+                        )}
+                    </div>
+
+                    <div className="rounded-md border p-2">
+                        <label htmlFor="curveEnabled" className="flex cursor-pointer items-center gap-2">
+                            <input
+                                type="checkbox"
+                                id="curveEnabled"
+                                checked={curveEnabled}
+                                onChange={(e) => {
+                                    setCurveEnabled(e.target.checked);
+                                    if (!e.target.checked) setValue("curveCostPerCurve", undefined);
+                                }}
+                            />
+                            <span className="text-sm font-medium">Costo de curvado ($/curva)</span>
+                        </label>
+                        {curveEnabled && (
+                            <>
+                                <Input
+                                    className="mt-2 w-24"
+                                    type="number"
+                                    step="0.01"
+                                    min={0}
+                                    placeholder="0"
+                                    {...register("curveCostPerCurve", { setValueAs: toOptionalNumber })}
+                                />
+                                <p className="text-sm text-red-500">{errors.curveCostPerCurve?.message}</p>
+                            </>
+                        )}
+                    </div>
+
+                </div>
 
             </div>
 

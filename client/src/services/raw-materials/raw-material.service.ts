@@ -28,6 +28,12 @@ export type CreateRawMaterialRequest = {
     profile?: TubeProfile;
     minimumStock?: number;
     initialQuantity?: number;
+    cost?: number;
+    wastePercentage?: number;
+    laserCostPerMeter?: number;
+    mechanicalCutCost?: number;
+    bendCostPerBend?: number;
+    curveCostPerCurve?: number;
 };
 
 export async function createRawMaterial(payload: CreateRawMaterialRequest): Promise<ApiResponse<RawMaterial>> {

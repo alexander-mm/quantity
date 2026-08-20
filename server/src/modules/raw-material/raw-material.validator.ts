@@ -54,7 +54,45 @@ const baseRawMaterialSchema = z.object({
     profile: z.preprocess(
         (value) => (value === "" ? undefined : value),
         z.enum(["ROUND", "SQUARE", "RECTANGULAR"]).optional()
-    )
+    ),
+
+    // Costeo de producción: todos opcionales, se activan con un check en el formulario.
+    cost: z
+        .coerce
+        .number()
+        .min(0, "El costo no puede ser negativo.")
+        .optional(),
+
+    wastePercentage: z
+        .coerce
+        .number()
+        .min(0, "El % de daño o pérdida no puede ser negativo.")
+        .max(100, "El % de daño o pérdida no puede superar 100.")
+        .optional(),
+
+    laserCostPerMeter: z
+        .coerce
+        .number()
+        .min(0, "El costo de corte láser no puede ser negativo.")
+        .optional(),
+
+    mechanicalCutCost: z
+        .coerce
+        .number()
+        .min(0, "El costo de corte mecánico no puede ser negativo.")
+        .optional(),
+
+    bendCostPerBend: z
+        .coerce
+        .number()
+        .min(0, "El costo de doblez no puede ser negativo.")
+        .optional(),
+
+    curveCostPerCurve: z
+        .coerce
+        .number()
+        .min(0, "El costo de curvado no puede ser negativo.")
+        .optional()
 
 });
 

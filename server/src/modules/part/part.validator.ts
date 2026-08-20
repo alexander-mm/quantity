@@ -41,6 +41,25 @@ export const createPartSchema = z.object({
         .coerce
         .number()
         .min(0, "No puede ser negativo.")
+        .optional(),
+
+    // Costos adicionales opcionales: aplican sin importar si la pieza se corta o se ensambla.
+    weldingCost: z
+        .coerce
+        .number()
+        .min(0, "El costo de soldadura no puede ser negativo.")
+        .optional(),
+
+    otherCostDescription: z
+        .string()
+        .trim()
+        .max(150, "La descripción no puede superar los 150 caracteres.")
+        .optional(),
+
+    otherCostAmount: z
+        .coerce
+        .number()
+        .min(0, "El monto de \"otro\" no puede ser negativo.")
         .optional()
 
 });

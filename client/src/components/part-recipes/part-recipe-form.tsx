@@ -86,12 +86,20 @@ export function PartRecipeForm({ part, onSuccess }: Props) {
 
     const onSubmit = (data: PartRecipeFormData) => {
 
+        const recipe = recipeData?.data;
+
         const payload = {
             rawMaterialId: data.rawMaterialId,
             pieceWidth: data.pieceWidth !== undefined ? Number(data.pieceWidth) : undefined,
             pieceHeight: data.pieceHeight !== undefined ? Number(data.pieceHeight) : undefined,
             pieceLength: data.pieceLength !== undefined ? Number(data.pieceLength) : undefined,
-            piecesPerUnit: Number(data.piecesPerUnit)
+            piecesPerUnit: Number(data.piecesPerUnit),
+            // Este formulario no administra el costeo de operaciones — se reenvía tal cual
+            // estaba para no perderlo (se edita en Piezas, pero comparten el mismo registro).
+            laserMeters: recipe?.laserMeters !== null && recipe?.laserMeters !== undefined ? Number(recipe.laserMeters) : undefined,
+            usesMechanicalCut: recipe?.usesMechanicalCut ?? false,
+            bendCount: recipe?.bendCount !== null && recipe?.bendCount !== undefined ? Number(recipe.bendCount) : undefined,
+            curveCount: recipe?.curveCount !== null && recipe?.curveCount !== undefined ? Number(recipe.curveCount) : undefined
         };
 
         setRecipeMutation.mutate({ partId: part.id, data: payload }, {
@@ -196,6 +204,11 @@ export function PartRecipeForm({ part, onSuccess }: Props) {
                 </p>
                 <p className="text-sm text-red-500">{errors.piecesPerUnit?.message}</p>
             </div>
+
+            <p className="text-xs text-muted-foreground">
+                El costeo de esta pieza (láser, corte mecánico, dobleces, curvas, soldadura, otros) se define en
+                la ficha de la pieza, en "Piezas".
+            </p>
 
             <div className="flex justify-end">
                 <Button type="submit" disabled={loading}>
