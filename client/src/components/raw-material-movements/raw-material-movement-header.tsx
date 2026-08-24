@@ -37,7 +37,11 @@ export function RawMaterialMovementHeader() {
                     render={({ field }) => (
                         <Select value={field.value} onValueChange={field.onChange}>
                             <SelectTrigger>
-                                <SelectValue placeholder="Seleccione" />
+                                <SelectValue placeholder="Seleccione">
+                                    {(value: string | null) =>
+                                        value === "OUT" ? "Salida (consumo)" : "Entrada (compra)"
+                                    }
+                                </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="IN">Entrada (compra)</SelectItem>

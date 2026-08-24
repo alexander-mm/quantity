@@ -1,5 +1,5 @@
 import { PageContainer, PageHeader, SalesToolbar, SalesTable, SaleModal, SaleViewModal } from "@/components";
-import { useSales } from "@/hooks";
+import { useSales, useStores } from "@/hooks";
 import { useMemo, useState } from "react";
 import type { Sale } from "@/types";
 import { getClientLabel } from "@/lib/client-label";
@@ -12,11 +12,19 @@ export function SalesPage() {
         isError
     } = useSales();
 
+    const { data: storesData } = useStores();
+    const stores = storesData?.data ?? [];
+
     const [search, setSearch] = useState("");
+    const [storeFilter, setStoreFilter] = useState("");
 
     const sales = useMemo(() => {
 
-        const list = data?.data ?? [];
+        let list = data?.data ?? [];
+
+        if (storeFilter) {
+            list = list.filter(sale => sale.store.id === storeFilter);
+        }
 
         if (!search) {
             return list;
@@ -30,7 +38,7 @@ export function SalesPage() {
             getClientLabel(sale.client).toLowerCase().includes(term)
         );
 
-    }, [data, search]);
+    }, [data, search, storeFilter]);
 
     const [open, setOpen] =
         useState(false);
@@ -62,6 +70,9 @@ export function SalesPage() {
                     }}
                     search={search}
                     onSearchChange={setSearch}
+                    stores={stores}
+                    storeId={storeFilter}
+                    onStoreChange={setStoreFilter}
                 />
 
             </div>

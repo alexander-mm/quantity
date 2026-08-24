@@ -37,7 +37,11 @@ export function PartMovementHeader() {
                     render={({ field }) => (
                         <Select value={field.value} onValueChange={field.onChange}>
                             <SelectTrigger>
-                                <SelectValue placeholder="Seleccione" />
+                                <SelectValue placeholder="Seleccione">
+                                    {(value: string | null) =>
+                                        value === "OUT" ? "Descarga (consumo)" : "Carga (producción)"
+                                    }
+                                </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="IN">Carga (producción)</SelectItem>

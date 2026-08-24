@@ -10,6 +10,7 @@ const router=Router();
 const controller=new SaleController();
 
 router.get("/",authenticate,blockRoles(ROLES.PRODUCTION),controller.findAll.bind(controller));
+router.get("/next-number/:storeId",authenticate,blockRoles(ROLES.PRODUCTION),controller.previewNextNumber.bind(controller));
 router.get("/:id",authenticate,blockRoles(ROLES.PRODUCTION),controller.findById.bind(controller));
 router.post("/",authenticate,blockRoles(ROLES.PRODUCTION),validate(createSaleSchema),controller.create.bind(controller));
 router.put("/:id",authenticate,blockRoles(ROLES.PRODUCTION),validate(updateSaleSchema),controller.update.bind(controller));

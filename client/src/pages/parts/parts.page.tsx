@@ -12,13 +12,14 @@ import {
     DeletePartDialog
 } from "@/components";
 import { Button } from "@/components/ui/button";
-import { useParts, useLowStockParts, useDeletePart } from "@/hooks";
+import { useParts, useLowStockParts, useDeletePart, usePartCategories } from "@/hooks";
 import type { Part } from "@/types";
 
 export function PartsPage() {
 
     const [onlyLowStock, setOnlyLowStock] = useState(false);
     const [search, setSearch] = useState("");
+    const [categoryFilter, setCategoryFilter] = useState("");
     const [open, setOpen] = useState(false);
     const [selectedPart, setSelectedPart] = useState<Part | null>(null);
     const [partToView, setPartToView] = useState<Part | null>(null);
@@ -27,6 +28,8 @@ export function PartsPage() {
     const allQuery = useParts();
     const lowStockQuery = useLowStockParts();
     const deleteMutation = useDeletePart();
+    const { data: categoriesData } = usePartCategories();
+    const categories = categoriesData?.data ?? [];
 
     const { data, isLoading, isError } = onlyLowStock ? lowStockQuery : allQuery;
 
@@ -52,7 +55,11 @@ export function PartsPage() {
 
     const parts = useMemo(() => {
 
-        const list = data?.data ?? [];
+        let list = data?.data ?? [];
+
+        if (categoryFilter) {
+            list = list.filter(part => part.categoryId === categoryFilter);
+        }
 
         if (!search) {
             return list;
@@ -65,7 +72,7 @@ export function PartsPage() {
             part.code.toLowerCase().includes(term)
         );
 
-    }, [data, search]);
+    }, [data, search, categoryFilter]);
 
     return (
         <PageContainer>
@@ -82,6 +89,9 @@ export function PartsPage() {
                         onNewPart={() => setOpen(true)}
                         search={search}
                         onSearchChange={setSearch}
+                        categories={categories}
+                        categoryId={categoryFilter}
+                        onCategoryChange={setCategoryFilter}
                     />
                 </div>
 

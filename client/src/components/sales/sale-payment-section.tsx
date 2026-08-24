@@ -119,7 +119,14 @@ export function SalePaymentSection() {
                     render={({ field }) => (
                         <Select value={field.value} onValueChange={field.onChange}>
                             <SelectTrigger>
-                                <SelectValue placeholder="Seleccione" />
+                                <SelectValue placeholder="Seleccione">
+                                    {(value: string | null) => {
+                                        if (value === "CASH") return "Efectivo";
+                                        if (value === "TRANSFER") return "Transferencia";
+                                        if (value === "CREDIT") return "Crédito";
+                                        return "Seleccione";
+                                    }}
+                                </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="CASH">Efectivo</SelectItem>
@@ -175,7 +182,11 @@ export function SalePaymentSection() {
                                         onValueChange={(value) => field.onChange(value ? Number(value) : undefined)}
                                     >
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Sin plazo" />
+                                            <SelectValue placeholder="Sin plazo">
+                                                {(value: string | null) =>
+                                                    value ? `${value} días` : "Sin plazo"
+                                                }
+                                            </SelectValue>
                                         </SelectTrigger>
                                         <SelectContent>
                                             {TERM_OPTIONS.map(days => (
@@ -200,7 +211,11 @@ export function SalePaymentSection() {
                                 render={({ field }) => (
                                     <Select value={field.value ?? ""} onValueChange={field.onChange}>
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Seleccione" />
+                                            <SelectValue placeholder="Seleccione">
+                                                {(value: string | null) =>
+                                                    value === "TRANSFER" ? "Transferencia" : value === "CASH" ? "Efectivo" : "Seleccione"
+                                                }
+                                            </SelectValue>
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="CASH">Efectivo</SelectItem>

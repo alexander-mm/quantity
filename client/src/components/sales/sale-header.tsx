@@ -273,7 +273,12 @@ export function SaleHeader() {
                             }}
                         >
                             <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Precio base del producto" />
+                                <SelectValue placeholder="Precio base del producto">
+                                    {(value: string | null) =>
+                                        filteredPriceEntryLabels.find(entry => `${entry.currency}-${entry.sequence}` === value)?.label
+                                            ?? "Precio base del producto"
+                                    }
+                                </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                                 {filteredPriceEntryLabels.map(entry => (
@@ -339,7 +344,11 @@ export function SaleHeader() {
 
                                 <SelectValue
                                     placeholder="Seleccione"
-                                />
+                                >
+                                    {(value: string | null) =>
+                                        stores.find(item => item.id === value)?.name ?? "Seleccione"
+                                    }
+                                </SelectValue>
                             </SelectTrigger>
 
                             <SelectContent>

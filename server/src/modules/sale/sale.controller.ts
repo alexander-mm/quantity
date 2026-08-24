@@ -53,6 +53,46 @@ export class SaleController {
         }
     }
 
+    async previewNextNumber(
+        req: AuthenticatedRequest,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+        try {
+            const { storeId } = req.params;
+            if (!storeId || Array.isArray(storeId)) {
+                res.status(400).json(
+                    ApiResponse.error(
+                        "Id de tienda inválido."
+                    )
+                );
+                return;
+            }
+
+            if (
+                req.user?.roleName === ROLES.STORE &&
+                storeId !== req.user.storeId
+            ) {
+                res.status(403).json(
+                    ApiResponse.error(
+                        "Solo puedes consultar el número de tu propia tienda."
+                    )
+                );
+                return;
+            }
+
+            const number = await this.service.previewNextNumber(storeId);
+            res.status(200).json(
+                ApiResponse.success(
+                    "Número obtenido correctamente.",
+                    { number }
+                )
+            );
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async create(
         req: AuthenticatedRequest,
         res: Response,

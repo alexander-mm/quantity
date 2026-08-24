@@ -75,7 +75,11 @@ export function PurchaseHeader() {
                             <SelectTrigger>
                                 <SelectValue
                                     placeholder="Seleccione"
-                                />
+                                >
+                                    {(value: string | null) =>
+                                        suppliers.find(item => item.id === value)?.companyName ?? "Seleccione"
+                                    }
+                                </SelectValue>
                             </SelectTrigger>
 
                             <SelectContent>
@@ -113,7 +117,11 @@ export function PurchaseHeader() {
                             <SelectTrigger>
                                 <SelectValue
                                     placeholder="Seleccione"
-                                />
+                                >
+                                    {(value: string | null) =>
+                                        stores.find(item => item.id === value)?.name ?? "Seleccione"
+                                    }
+                                </SelectValue>
                             </SelectTrigger>
 
                             <SelectContent>

@@ -206,7 +206,14 @@ export function ReturnForm({ onSuccess }: Props) {
                                 }}
                             >
                                 <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Seleccione el producto devuelto" />
+                                    <SelectValue placeholder="Seleccione el producto devuelto">
+                                        {(value: string | null) => {
+                                            const detail = selectedSale.details.find(d => d.id === value);
+                                            return detail
+                                                ? `${detail.product.name} (x${Number(detail.quantity)})`
+                                                : "Seleccione el producto devuelto";
+                                        }}
+                                    </SelectValue>
                                 </SelectTrigger>
                                 <SelectContent>
                                     {selectedSale.details.map(detail => (
@@ -268,7 +275,13 @@ export function ReturnForm({ onSuccess }: Props) {
                         name="storeId"
                         render={({ field }) => (
                             <Select value={field.value} onValueChange={field.onChange}>
-                                <SelectTrigger><SelectValue placeholder="Seleccione" /></SelectTrigger>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Seleccione">
+                                        {(value: string | null) =>
+                                            stores.find(store => store.id === value)?.name ?? "Seleccione"
+                                        }
+                                    </SelectValue>
+                                </SelectTrigger>
                                 <SelectContent>
                                     {stores.map(store => (
                                         <SelectItem key={store.id} value={store.id}>{store.name}</SelectItem>
@@ -297,7 +310,13 @@ export function ReturnForm({ onSuccess }: Props) {
                     name="reason"
                     render={({ field }) => (
                         <Select value={field.value ?? ""} onValueChange={field.onChange}>
-                            <SelectTrigger><SelectValue placeholder="Seleccione un motivo" /></SelectTrigger>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Seleccione un motivo">
+                                    {(value: string | null) =>
+                                        (value && RETURN_REASON_LABELS[value as keyof typeof RETURN_REASON_LABELS]) ?? "Seleccione un motivo"
+                                    }
+                                </SelectValue>
+                            </SelectTrigger>
                             <SelectContent>
                                 {Object.entries(RETURN_REASON_LABELS).map(([value, label]) => (
                                     <SelectItem key={value} value={value}>{label}</SelectItem>
@@ -321,7 +340,15 @@ export function ReturnForm({ onSuccess }: Props) {
                     name="disposition"
                     render={({ field }) => (
                         <Select value={field.value ?? ""} onValueChange={(value) => field.onChange(value || undefined)}>
-                            <SelectTrigger><SelectValue placeholder="Dejar pendiente de revisión" /></SelectTrigger>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Dejar pendiente de revisión">
+                                    {(value: string | null) => {
+                                        if (value === "RESTOCK") return "Vuelve a stock vendible";
+                                        if (value === "DAMAGED") return "Dañado";
+                                        return "Dejar pendiente de revisión";
+                                    }}
+                                </SelectValue>
+                            </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="RESTOCK">Vuelve a stock vendible</SelectItem>
                                 <SelectItem value="DAMAGED">Dañado</SelectItem>

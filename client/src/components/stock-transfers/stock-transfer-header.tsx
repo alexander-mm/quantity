@@ -59,7 +59,11 @@ export function StockTransferHeader() {
                     render={({ field }) => (
                         <Select value={field.value} onValueChange={field.onChange}>
                             <SelectTrigger>
-                                <SelectValue placeholder="Seleccione" />
+                                <SelectValue placeholder="Seleccione">
+                                    {(value: string | null) =>
+                                        value === "TECHNICIAN" ? "Técnico" : "Tienda / Bodega"
+                                    }
+                                </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="STORE">Tienda / Bodega</SelectItem>
@@ -79,7 +83,14 @@ export function StockTransferHeader() {
                         render={({ field }) => (
                             <Select value={field.value ?? ""} onValueChange={field.onChange}>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Seleccione un técnico" />
+                                    <SelectValue placeholder="Seleccione un técnico">
+                                        {(value: string | null) => {
+                                            const technician = technicians.find(t => t.id === value);
+                                            return technician
+                                                ? `${technician.firstName} ${technician.lastName}`
+                                                : "Seleccione un técnico";
+                                        }}
+                                    </SelectValue>
                                 </SelectTrigger>
                                 <SelectContent>
                                     {technicians.map(t => (

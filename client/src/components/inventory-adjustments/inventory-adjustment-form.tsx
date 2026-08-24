@@ -159,7 +159,11 @@ export function InventoryAdjustmentForm({ onSuccess }: Props) {
                     render={({ field }) => (
                         <Select value={field.value} onValueChange={field.onChange}>
                             <SelectTrigger>
-                                <SelectValue />
+                                <SelectValue>
+                                    {(value: string | null) =>
+                                        value === "OUT" ? "Ajuste negativo (faltante / dañado)" : "Ajuste positivo (sobrante)"
+                                    }
+                                </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="IN">Ajuste positivo (sobrante)</SelectItem>

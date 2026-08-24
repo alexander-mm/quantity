@@ -25,7 +25,11 @@ export function StoreSelector({
                 onValueChange={onChange}
             >
                 <SelectTrigger>
-                    <SelectValue placeholder={placeholder}/>
+                    <SelectValue placeholder={placeholder}>
+                        {(selectedValue: string | null) =>
+                            stores.find(store => store.id === selectedValue)?.name ?? placeholder
+                        }
+                    </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                     {

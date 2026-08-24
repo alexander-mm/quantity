@@ -126,7 +126,11 @@ export function StoreForm({ onSuccess, mode = "create", storeId }: Props) {
                     render={({ field }) => (
                         <Select value={field.value} onValueChange={field.onChange}>
                             <SelectTrigger>
-                                <SelectValue />
+                                <SelectValue>
+                                    {(value: string | null) =>
+                                        value === "STORE" ? "Tienda" : "Bodega Principal"
+                                    }
+                                </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="MAIN_WAREHOUSE">Bodega Principal</SelectItem>

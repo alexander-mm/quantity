@@ -276,6 +276,21 @@ export class SaleService {
 
     }
 
+    // Vista previa del consecutivo que se asignará al guardar (no reserva
+    // número: si otra venta de la misma tienda se confirma antes, el número
+    // real se recalcula en create() bajo bloqueo).
+    async previewNextNumber(
+        storeId: string
+    ): Promise<string> {
+
+        const lastSale = await this.repository.findLastByStore(
+            BigInt(storeId)
+        );
+
+        return this.buildNextSaleNumber(lastSale?.number);
+
+    }
+
     async create(
         data: CreateSaleDto
     ): Promise<Sale> {

@@ -113,7 +113,14 @@ export function ProductViewModal({ product, open, onOpenChange }: Props) {
                             }
                         >
                             <SelectTrigger>
-                                <SelectValue placeholder="Precio base (sin perfil)" />
+                                <SelectValue placeholder="Precio base (sin perfil)">
+                                    {(value: string | null) => {
+                                        const profile = marginProfiles.find(item => item.id === value);
+                                        return profile
+                                            ? `${profile.name} (-${Number(profile.percentage)}%)`
+                                            : "Precio base (sin perfil)";
+                                    }}
+                                </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                                 {marginProfiles.map(profile => (

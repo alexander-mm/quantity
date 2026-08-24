@@ -370,7 +370,17 @@ export function SaleDetailRow({
                         }}
                     >
                         <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Sin perfil" />
+                            <SelectValue placeholder="Sin perfil">
+                                {(value: string | null) => {
+                                    if (!value || value === NO_PROFILE) {
+                                        return "Sin perfil";
+                                    }
+                                    const profile = marginProfiles.find(item => item.id === value);
+                                    return profile
+                                        ? `${profile.name} (-${Number(profile.percentage)}%)`
+                                        : "Sin perfil";
+                                }}
+                            </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value={NO_PROFILE}>Sin perfil</SelectItem>

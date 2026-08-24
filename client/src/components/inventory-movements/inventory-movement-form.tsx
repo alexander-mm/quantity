@@ -142,7 +142,11 @@ export function InventoryMovementForm({ movement, onSuccess }: Props) {
                     render={({ field }) => (
                         <Select value={field.value} onValueChange={field.onChange}>
                             <SelectTrigger>
-                                <SelectValue placeholder="Seleccione" />
+                                <SelectValue placeholder="Seleccione">
+                                    {(value: string | null) =>
+                                        movementTypes.find(item => item.id === value)?.name ?? "Seleccione"
+                                    }
+                                </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                                 {movementTypes.map(item => (
@@ -246,7 +250,11 @@ export function InventoryMovementForm({ movement, onSuccess }: Props) {
                     render={({ field }) => (
                         <Select value={field.value} onValueChange={field.onChange}>
                             <SelectTrigger>
-                                <SelectValue placeholder="Seleccione" />
+                                <SelectValue placeholder="Seleccione">
+                                    {(value: string | null) =>
+                                        stores.find(item => item.id === value)?.name ?? "Seleccione"
+                                    }
+                                </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                                 {stores.map(item => (

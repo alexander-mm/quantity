@@ -44,7 +44,11 @@ export function ProductsTable({
                     onValueChange={(value) => value && setPriceEntryKey(value)}
                 >
                     <SelectTrigger className="h-8 w-28 border-none bg-transparent p-0 text-sm font-semibold shadow-none focus-visible:ring-0">
-                        <SelectValue />
+                        <SelectValue>
+                            {(value: string | null) =>
+                                priceEntryLabels.find(entry => `${entry.currency}-${entry.sequence}` === value)?.label ?? ""
+                            }
+                        </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                         {priceEntryLabels.map(entry => (

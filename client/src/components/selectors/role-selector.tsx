@@ -25,7 +25,11 @@ export function RoleSelector({
                 onValueChange={onChange}
             >
                 <SelectTrigger>
-                    <SelectValue placeholder={placeholder} />
+                    <SelectValue placeholder={placeholder}>
+                        {(selectedValue: string | null) =>
+                            roles.find(role => role.id === selectedValue)?.name ?? placeholder
+                        }
+                    </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                     {

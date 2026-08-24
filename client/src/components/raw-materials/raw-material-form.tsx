@@ -252,7 +252,13 @@ export function RawMaterialForm({ onSuccess, mode = "create", rawMaterialId }: P
                                 }}
                             >
                                 <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Seleccione" />
+                                    <SelectValue placeholder="Seleccione">
+                                        {(value: string | null) => {
+                                            if (value === "TUBE") return "Tubo";
+                                            if (value === "ROD") return "Varilla";
+                                            return "Lámina";
+                                        }}
+                                    </SelectValue>
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="SHEET">Lámina</SelectItem>
@@ -305,7 +311,14 @@ export function RawMaterialForm({ onSuccess, mode = "create", rawMaterialId }: P
                                         onValueChange={(value) => field.onChange(value || undefined)}
                                     >
                                         <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Seleccione un perfil" />
+                                            <SelectValue placeholder="Seleccione un perfil">
+                                                {(value: string | null) => {
+                                                    if (value === "SQUARE") return "Cuadrado";
+                                                    if (value === "RECTANGULAR") return "Rectangular";
+                                                    if (value === "ROUND") return "Redondo";
+                                                    return "Seleccione un perfil";
+                                                }}
+                                            </SelectValue>
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="ROUND">Redondo</SelectItem>

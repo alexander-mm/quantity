@@ -15,6 +15,18 @@ export async function getSales():
 
 }
 
+export async function getNextSaleNumber(
+    storeId:string
+):Promise<ApiResponse<{number:string}>>{
+
+    const {data}=await api.get<
+        ApiResponse<{number:string}>
+    >(`/sales/next-number/${storeId}`);
+
+    return data;
+
+}
+
 export async function getSaleById(
     id:string
 ):Promise<ApiResponse<Sale>>{

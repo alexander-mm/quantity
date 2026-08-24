@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -6,7 +7,7 @@ import { toast } from "react-hot-toast";
 import axios from "axios";
 import { saleSchema } from "@/validators";
 import type { SaleFormData } from "@/validators";
-import { useCreateSale, useUpdateSale, useUsers, useAuth } from "@/hooks";
+import { useCreateSale, useUpdateSale, useUsers, useAuth, useNextSaleNumber } from "@/hooks";
 import { generateOfflineId, todayLocalDateString } from "@/lib";
 import { SaleHeader } from "./sale-header";
 import { SalePaymentSection } from "./sale-payment-section";
@@ -58,6 +59,8 @@ export function SaleForm({
 
     const isEditing = !!sale;
 
+    const { user: currentUser } = useAuth();
+
     const methods =
         useForm<SaleFormData>({
 
@@ -68,7 +71,7 @@ export function SaleForm({
             defaultValues: sale ? toFormData(sale) : {
                 number: "",
                 clientId: "",
-                storeId: "",
+                storeId: currentUser?.storeId ?? "",
                 currency: "USD",
                 saleDate: todayLocalDateString(),
                 reference: "",
@@ -97,6 +100,26 @@ const details =
         control: methods.control,
         name: "details"
     });
+
+const storeId =
+    useWatch({
+        control: methods.control,
+        name: "storeId"
+    });
+
+const {
+    data: nextNumberData
+} = useNextSaleNumber(storeId, !isEditing);
+
+useEffect(() => {
+
+    if (isEditing) {
+        return;
+    }
+
+    methods.setValue("number", nextNumberData?.data.number ?? "");
+
+}, [isEditing, nextNumberData, methods]);
 
 const currency =
     useWatch({
@@ -174,8 +197,6 @@ const total =
 
     const users =
         usersData?.data ?? [];
-
-    const { user: currentUser } = useAuth();
 
     const createMutation =
         useCreateSale();
