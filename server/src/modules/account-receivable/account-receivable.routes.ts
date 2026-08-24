@@ -6,7 +6,7 @@ import { validate } from "../../middleware/validate.js";
 import { ROLES } from "../../shared/constants/roles.js";
 
 import { AccountReceivableController } from "./account-receivable.controller.js";
-import { updateAccountReceivableSchema } from "./account-receivable.validator.js";
+import { createAccountReceivablePaymentSchema, updateAccountReceivableSchema } from "./account-receivable.validator.js";
 
 const router = Router();
 
@@ -46,6 +46,14 @@ router.put(
     authorize(ROLES.ADMIN),
     validate(updateAccountReceivableSchema),
     controller.update.bind(controller)
+);
+
+router.post(
+    "/:id/payments",
+    authenticate,
+    authorize(ROLES.ADMIN),
+    validate(createAccountReceivablePaymentSchema),
+    controller.createPayment.bind(controller)
 );
 
 router.post(

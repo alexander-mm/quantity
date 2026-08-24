@@ -16,3 +16,11 @@ export interface UpdateAccountReceivableDto {
     number: string;
     observations?: string;
 }
+
+export interface CreateAccountReceivablePaymentDto {
+    amount: number;
+    paymentMethod: "CASH" | "TRANSFER";
+    paymentDate: Date;
+    vouchers?: string[];
+    observations?: string;
+}

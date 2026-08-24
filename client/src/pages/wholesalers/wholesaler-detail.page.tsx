@@ -11,6 +11,7 @@ import {
     AccountsReceivableEmptyState,
     AccountReceivableViewModal,
     EditAccountReceivableModal,
+    MakeAccountReceivablePaymentModal,
     MarkPaidDialog,
     ConfirmSaleDialog
 } from "@/components";
@@ -38,6 +39,7 @@ export function WholesalerDetailPage() {
     const [itemToView, setItemToView] = useState<AccountReceivable | null>(null);
     const [itemToEdit, setItemToEdit] = useState<AccountReceivable | null>(null);
     const [itemToConfirm, setItemToConfirm] = useState<AccountReceivable | null>(null);
+    const [itemToPay, setItemToPay] = useState<AccountReceivable | null>(null);
     const [itemToMarkPaid, setItemToMarkPaid] = useState<AccountReceivable | null>(null);
 
     const confirmMutation = useConfirmSale();
@@ -102,6 +104,7 @@ export function WholesalerDetailPage() {
                                 onView={(item) => setItemToView(item)}
                                 onEdit={(item) => setItemToEdit(item)}
                                 onConfirmSale={(item) => setItemToConfirm(item)}
+                                onMakePayment={(item) => setItemToPay(item)}
                                 onMarkPaid={(item) => setItemToMarkPaid(item)}
                             />
                         )
@@ -124,6 +127,16 @@ export function WholesalerDetailPage() {
                 onOpenChange={(value) => {
                     if (!value) {
                         setItemToEdit(null);
+                    }
+                }}
+            />
+
+            <MakeAccountReceivablePaymentModal
+                open={!!itemToPay}
+                accountReceivable={itemToPay}
+                onOpenChange={(value) => {
+                    if (!value) {
+                        setItemToPay(null);
                     }
                 }}
             />

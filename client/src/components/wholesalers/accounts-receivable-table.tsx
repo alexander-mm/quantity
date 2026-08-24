@@ -1,4 +1,4 @@
-import { Check, DollarSign, Eye, Pencil } from "lucide-react";
+import { Check, DollarSign, Eye, HandCoins, Pencil } from "lucide-react";
 import { EntityTable } from "@/components/ui";
 import { formatCurrency } from "@/lib/format-currency";
 import { formatDateOnly } from "@/lib/format-date";
@@ -10,6 +10,7 @@ type Props = {
     onView: (accountReceivable: AccountReceivable) => void;
     onEdit: (accountReceivable: AccountReceivable) => void;
     onConfirmSale: (accountReceivable: AccountReceivable) => void;
+    onMakePayment: (accountReceivable: AccountReceivable) => void;
     onMarkPaid: (accountReceivable: AccountReceivable) => void;
 };
 
@@ -18,6 +19,7 @@ export function AccountsReceivableTable({
     onView,
     onEdit,
     onConfirmSale,
+    onMakePayment,
     onMarkPaid
 }: Props) {
     return (
@@ -63,11 +65,18 @@ export function AccountsReceivableTable({
                                     </>
                                 )}
                                 {isPendingPayment && (
-                                    <DollarSign
-                                        size={18}
-                                        className="cursor-pointer text-green-600 hover:text-green-700"
-                                        onClick={() => onMarkPaid(item)}
-                                    />
+                                    <>
+                                        <HandCoins
+                                            size={18}
+                                            className="cursor-pointer text-slate-500 hover:text-primary"
+                                            onClick={() => onMakePayment(item)}
+                                        />
+                                        <DollarSign
+                                            size={18}
+                                            className="cursor-pointer text-green-600 hover:text-green-700"
+                                            onClick={() => onMarkPaid(item)}
+                                        />
+                                    </>
                                 )}
                             </div>
                         </td>

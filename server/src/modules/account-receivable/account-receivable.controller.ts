@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 
 import { ApiResponse } from "../../shared/responses/index.js";
+import { AuthenticatedRequest } from "../../middleware/authenticate.js";
 
 import { AccountReceivableService } from "./account-receivable.service.js";
 
@@ -129,6 +130,39 @@ export class AccountReceivableController {
 
             res.status(200).json(
                 ApiResponse.success("Cuenta de cobro actualizada correctamente.", accountReceivable)
+            );
+
+        } catch (error) {
+
+            next(error);
+
+        }
+
+    }
+
+    async createPayment(
+        req: AuthenticatedRequest,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+
+        try {
+
+            const { id } = req.params;
+
+            if (!id || Array.isArray(id)) {
+                res.status(400).json(ApiResponse.error("Id inválido."));
+                return;
+            }
+
+            const accountReceivable = await this.service.createPayment(
+                id,
+                req.body,
+                req.user?.userId
+            );
+
+            res.status(200).json(
+                ApiResponse.success("Abono registrado correctamente.", accountReceivable)
             );
 
         } catch (error) {

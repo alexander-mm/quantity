@@ -1,7 +1,8 @@
 import { NotFoundError, ValidationError } from "../../shared/errors/index.js";
+import { prisma } from "../../database/index.js";
 
 import { AccountReceivableRepository } from "./account-receivable.repository.js";
-import { UpdateAccountReceivableDto } from "./account-receivable.dto.js";
+import { CreateAccountReceivablePaymentDto, UpdateAccountReceivableDto } from "./account-receivable.dto.js";
 
 export class AccountReceivableService {
 
@@ -78,6 +79,59 @@ export class AccountReceivableService {
         }
 
         return this.repository.markPaid(accountReceivable.id);
+
+    }
+
+    async createPayment(
+        id: string,
+        data: CreateAccountReceivablePaymentDto,
+        requestingUserId?: string
+    ) {
+
+        const accountReceivable = await this.repository.findById(BigInt(id));
+
+        if (!accountReceivable) {
+            throw new NotFoundError("Cuenta de cobro no encontrada.");
+        }
+
+        if (accountReceivable.sale.status !== "CONFIRMED") {
+            throw new ValidationError(
+                "Debe confirmar la venta asociada antes de poder registrar abonos."
+            );
+        }
+
+        if (accountReceivable.isPaid) {
+            throw new ValidationError("Esta cuenta de cobro ya está pagada.");
+        }
+
+        const currentAmount = Number(accountReceivable.amount);
+
+        if (data.amount > currentAmount) {
+            throw new ValidationError(
+                `El abono (${data.amount}) no puede ser mayor que el saldo pendiente (${currentAmount}).`
+            );
+        }
+
+        const newAmount = currentAmount - data.amount;
+        const isPaid = newAmount <= 0;
+
+        return prisma.$transaction(async (tx) => {
+
+            const repository = this.repository.withTransaction(tx);
+
+            await repository.createPayment(
+                accountReceivable.id,
+                data,
+                requestingUserId ? BigInt(requestingUserId) : undefined
+            );
+
+            return repository.applyPayment(
+                accountReceivable.id,
+                newAmount,
+                isPaid
+            );
+
+        });
 
     }
 

@@ -5,6 +5,21 @@ export interface AccountReceivableDownPaymentVoucher {
     number: string;
 }
 
+export interface AccountReceivablePaymentVoucher {
+    id: string;
+    number: string;
+}
+
+export interface AccountReceivablePayment {
+    id: string;
+    amount: string;
+    paymentMethod: PaymentMethod;
+    paymentDate: string;
+    observations: string | null;
+    createdAt: string;
+    vouchers: AccountReceivablePaymentVoucher[];
+}
+
 export interface AccountReceivable {
     id: string;
     uuid: string;
@@ -26,6 +41,7 @@ export interface AccountReceivable {
     client: Client;
     sale: Sale;
     downPaymentVouchers: AccountReceivableDownPaymentVoucher[];
+    payments: AccountReceivablePayment[];
 }
 
 export interface AccountReceivableSummary {

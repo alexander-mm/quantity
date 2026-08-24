@@ -6,3 +6,4 @@ export * from "./account-receivable-status-badge";
 export * from "./account-receivable-view-modal";
 export * from "./edit-account-receivable-modal";
 export * from "./mark-paid-dialog";
+export * from "./make-account-receivable-payment-modal";

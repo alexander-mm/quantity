@@ -95,6 +95,40 @@ export function AccountReceivableView({ accountReceivable, onClose }: Props) {
                 </tbody>
             </table>
 
+            {accountReceivable.payments.length > 0 && (
+                <div>
+                    <p className="mb-2 text-sm text-muted-foreground">Abonos registrados</p>
+                    <table className="w-full border rounded-lg">
+                        <thead>
+                            <tr className="border-b bg-muted">
+                                <th className="p-2 text-left">Fecha</th>
+                                <th className="p-2 text-left">Forma de pago</th>
+                                <th className="p-2 text-left">Comprobantes</th>
+                                <th className="p-2 text-right">Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {accountReceivable.payments.map(payment => (
+                                <tr key={payment.id} className="border-b">
+                                    <td className="p-2">{formatDateOnly(payment.paymentDate)}</td>
+                                    <td className="p-2">
+                                        {payment.paymentMethod === "TRANSFER" ? "Transferencia" : "Efectivo"}
+                                    </td>
+                                    <td className="p-2">
+                                        {payment.vouchers.length > 0
+                                            ? payment.vouchers.map(v => v.number).join(", ")
+                                            : "-"}
+                                    </td>
+                                    <td className="p-2 text-right">
+                                        {formatCurrency(payment.amount, accountReceivable.currency)}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+
             <div className="flex justify-end">
                 <Button type="button" variant="outline" onClick={onClose}>
                     Cerrar

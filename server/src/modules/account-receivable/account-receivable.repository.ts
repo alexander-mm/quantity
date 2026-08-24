@@ -1,7 +1,11 @@
 import { AccountReceivable, PrismaClient, Prisma } from "@prisma/client";
 
 import { BaseRepository } from "../../repositories/base/BaseRepository.js";
-import { CreateAccountReceivableDto, UpdateAccountReceivableDto } from "./account-receivable.dto.js";
+import {
+    CreateAccountReceivableDto,
+    CreateAccountReceivablePaymentDto,
+    UpdateAccountReceivableDto
+} from "./account-receivable.dto.js";
 
 type AccountReceivableWithRelations =
     Prisma.AccountReceivableGetPayload<{
@@ -18,6 +22,11 @@ type AccountReceivableWithRelations =
                 };
             };
             downPaymentVouchers: true;
+            payments: {
+                include: {
+                    vouchers: true;
+                };
+            };
         };
     }>;
 
@@ -33,7 +42,15 @@ const includeRelations = {
             }
         }
     },
-    downPaymentVouchers: true
+    downPaymentVouchers: true,
+    payments: {
+        include: {
+            vouchers: true
+        },
+        orderBy: {
+            paymentDate: "desc"
+        }
+    }
 } as const;
 
 export class AccountReceivableRepository extends BaseRepository {
@@ -276,6 +293,54 @@ export class AccountReceivableRepository extends BaseRepository {
 
         await this.prisma.accountReceivable.delete({
             where: { id: existing.id }
+        });
+
+    }
+
+    async createPayment(
+        accountReceivableId: bigint,
+        data: CreateAccountReceivablePaymentDto,
+        createdBy?: bigint
+    ): Promise<void> {
+
+        await this.prisma.accountReceivablePayment.create({
+
+            data: {
+                accountReceivableId,
+                amount: data.amount,
+                paymentMethod: data.paymentMethod,
+                paymentDate: data.paymentDate,
+                observations: data.observations,
+                createdBy,
+                vouchers: data.paymentMethod === "TRANSFER" && data.vouchers && data.vouchers.length > 0
+                    ? { create: data.vouchers.map(number => ({ number })) }
+                    : undefined
+            }
+
+        });
+
+    }
+
+    async applyPayment(
+        id: bigint,
+        newAmount: number,
+        isPaid: boolean
+    ): Promise<AccountReceivableWithRelations> {
+
+        return this.prisma.accountReceivable.update({
+
+            where: {
+                id
+            },
+
+            data: {
+                amount: newAmount,
+                isPaid,
+                paidAt: isPaid ? new Date() : undefined
+            },
+
+            include: includeRelations
+
         });
 
     }

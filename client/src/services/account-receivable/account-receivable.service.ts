@@ -42,3 +42,22 @@ export async function markAccountReceivablePaid(id: string): Promise<ApiResponse
     const { data } = await api.post<ApiResponse<AccountReceivable>>(`/accounts-receivable/${id}/mark-paid`);
     return data;
 }
+
+export type CreateAccountReceivablePaymentRequest = {
+    amount: number;
+    paymentMethod: "CASH" | "TRANSFER";
+    paymentDate: Date;
+    vouchers?: string[];
+    observations?: string;
+};
+
+export async function createAccountReceivablePayment(
+    id: string,
+    payload: CreateAccountReceivablePaymentRequest
+): Promise<ApiResponse<AccountReceivable>> {
+    const { data } = await api.post<ApiResponse<AccountReceivable>>(
+        `/accounts-receivable/${id}/payments`,
+        payload
+    );
+    return data;
+}

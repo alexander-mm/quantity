@@ -867,6 +867,7 @@ model AccountReceivable {
   sale   Sale   @relation(fields: [saleId], references: [id])
 
   downPaymentVouchers AccountReceivableDownPaymentVoucher[]
+  payments            AccountReceivablePayment[]
 
   @@index([clientId])
   @@index([isPaid])
@@ -884,6 +885,39 @@ model AccountReceivableDownPaymentVoucher {
   accountReceivable AccountReceivable @relation(fields: [accountReceivableId], references: [id])
 
   @@index([accountReceivableId])
+}
+
+// Abonos registrados despues de creada la cuenta de cobro (distintos del
+// downPayment inicial, que se registra al crear la venta a credito). Cada
+// abono descuenta AccountReceivable.amount.
+model AccountReceivablePayment {
+  id                  BigInt        @id @default(autoincrement())
+  uuid                String        @unique @default(uuid())
+  accountReceivableId BigInt
+  amount              Decimal       @db.Decimal(12, 2)
+  paymentMethod       PaymentMethod
+  paymentDate         DateTime
+  observations        String?
+  createdAt           DateTime      @default(now())
+  createdBy           BigInt?
+
+  accountReceivable AccountReceivable                 @relation(fields: [accountReceivableId], references: [id])
+  vouchers          AccountReceivablePaymentVoucher[]
+
+  @@index([accountReceivableId])
+}
+
+// Comprobantes del abono (AccountReceivablePayment), solo si se pago por transferencia.
+model AccountReceivablePaymentVoucher {
+  id        BigInt   @id @default(autoincrement())
+  uuid      String   @unique @default(uuid())
+  paymentId BigInt
+  number    String
+  createdAt DateTime @default(now())
+
+  payment AccountReceivablePayment @relation(fields: [paymentId], references: [id])
+
+  @@index([paymentId])
 }
 
 model ProductAssemblyDetail {
