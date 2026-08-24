@@ -379,7 +379,7 @@ model Sale {
   id            BigInt         @id @default(autoincrement())
   uuid          String         @unique @default(uuid())
   clientUuid    String?        @unique
-  number        String         @unique
+  number        String
   reference     String?
   clientId      BigInt
   storeId       BigInt
@@ -411,6 +411,8 @@ model Sale {
   hasLabor     Boolean @default(false)
   laborCost    Decimal @default(0) @db.Decimal(12, 2)
   total        Decimal @default(0) @db.Decimal(12, 2)
+
+  @@unique([storeId, number])
 }
 
 enum PaymentMethod {

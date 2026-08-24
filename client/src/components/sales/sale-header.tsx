@@ -170,10 +170,13 @@ export function SaleHeader() {
                 <Label className="mb-1">Número</Label>
                 <Input
                     {...register("number")}
+                    readOnly
+                    disabled
+                    placeholder="Se asigna automáticamente al guardar"
                 />
 
-                <p className="text-sm text-red-500">
-                    {errors.number?.message as string}
+                <p className="mt-1 text-xs text-muted-foreground">
+                    Consecutivo de la tienda, asignado automáticamente. No se puede editar.
                 </p>
 
             </div>

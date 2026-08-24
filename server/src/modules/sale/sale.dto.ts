@@ -10,7 +10,8 @@ export type PaymentMethodDto = "CASH" | "TRANSFER" | "CREDIT";
 
 export interface CreateSaleDto {
     clientUuid?: string;
-    number: string;
+    // Asignado por el servidor (consecutivo por tienda); se ignora si el cliente lo envía.
+    number?: string;
     clientId: string;
     storeId: string;
     userId: string;
@@ -39,7 +40,8 @@ export interface CreateSaleDto {
 }
 
 export interface UpdateSaleDto {
-    number: string;
+    // De solo lectura una vez creada la venta: el servidor lo ignora en update.
+    number?: string;
     clientId: string;
     storeId: string;
     userId: string;

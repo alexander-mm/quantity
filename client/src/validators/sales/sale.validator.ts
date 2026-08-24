@@ -2,9 +2,10 @@ import { z } from "zod";
 
 export const saleSchema=z.object({
 
+    // Consecutivo por tienda asignado por el servidor; de solo lectura en el formulario.
     number:z
         .string()
-        .min(1,"Ingrese el número."),
+        .optional(),
 
     clientId:z
         .string()

@@ -69,14 +69,25 @@ export class SaleRepository extends BaseRepository {
         });
     }
 
-    async findByNumber(
-        number: string
+    // Última venta registrada en la tienda, usada para calcular el siguiente
+    // consecutivo (Sale.number es único por tienda, no globalmente).
+    async findLastByStore(
+        storeId: bigint
     ): Promise<Sale | null> {
         return this.prisma.sale.findFirst({
             where: {
-                number
+                storeId
+            },
+            orderBy: {
+                id: "desc"
             }
         });
+    }
+
+    async lockStoreForNumbering(
+        storeId: bigint
+    ): Promise<void> {
+        await this.prisma.$queryRaw`SELECT id FROM "Store" WHERE id = ${storeId} FOR UPDATE`;
     }
 
     async findByClientUuid(
@@ -115,7 +126,8 @@ export class SaleRepository extends BaseRepository {
         return this.prisma.sale.create({
             data: {
                 clientUuid: data.clientUuid,
-                number: data.number,
+                // Asignado por SaleService.create antes de llamar aquí.
+                number: data.number!,
                 clientId: BigInt(data.clientId),
                 storeId: BigInt(data.storeId),
                 userId: BigInt(data.userId),
@@ -184,7 +196,8 @@ export class SaleRepository extends BaseRepository {
         return this.prisma.sale.update({
             where: { id },
             data: {
-                number: data.number,
+                // number no se toca aquí: es un consecutivo por tienda asignado
+                // al crear la venta y es de solo lectura una vez asignado.
                 clientId: BigInt(data.clientId),
                 storeId: BigInt(data.storeId),
                 currency: data.currency,

@@ -87,7 +87,7 @@ export class SaleController {
     }
 
     async update(
-        req: Request,
+        req: AuthenticatedRequest,
         res: Response,
         next: NextFunction
     ): Promise<void> {
@@ -101,9 +101,23 @@ export class SaleController {
                 );
                 return;
             }
+
+            if (
+                req.user?.roleName === ROLES.STORE &&
+                req.body.storeId !== req.user.storeId
+            ) {
+                res.status(403).json(
+                    ApiResponse.error(
+                        "Solo puedes editar ventas de tu propia tienda."
+                    )
+                );
+                return;
+            }
+
             const sale = await this.service.update(
                 id,
-                req.body
+                req.body,
+                req.user
             );
             res.status(200).json(
                 ApiResponse.success(
@@ -117,7 +131,7 @@ export class SaleController {
     }
 
     async delete(
-        req: Request,
+        req: AuthenticatedRequest,
         res: Response,
         next: NextFunction
     ): Promise<void> {
@@ -131,7 +145,7 @@ export class SaleController {
                 );
                 return;
             }
-            await this.service.delete(id);
+            await this.service.delete(id, req.user);
             res.status(200).json(
                 ApiResponse.success(
                     "Venta eliminada correctamente."

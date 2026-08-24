@@ -252,6 +252,30 @@ export class SaleService {
 
     }
 
+    // Genera el siguiente consecutivo de una tienda a partir del último número
+    // registrado en ella (ej. "VEN-004" -> "VEN-005"). Si la tienda no tiene
+    // ventas previas, arranca en "VEN-001".
+    private buildNextSaleNumber(
+        lastNumber: string | null | undefined
+    ): string {
+
+        if (!lastNumber) {
+            return "VEN-001";
+        }
+
+        const match = lastNumber.match(/^(.*?)(\d+)$/);
+
+        if (!match) {
+            return "VEN-001";
+        }
+
+        const [, prefix, digits] = match;
+        const next = (Number(digits) + 1).toString().padStart(digits.length, "0");
+
+        return `${prefix}${next}`;
+
+    }
+
     async create(
         data: CreateSaleDto
     ): Promise<Sale> {
@@ -268,16 +292,6 @@ export class SaleService {
 
         }
 
-        const existing = await this.repository.findByNumber(
-            data.number
-        );
-
-        if (existing) {
-            throw new ConflictError(
-                "Ya existe una venta con ese número."
-            );
-        }
-
         const client = await this.clientRepository.findById(
             BigInt(data.clientId)
         );
@@ -292,16 +306,30 @@ export class SaleService {
 
         await this.validateDetailsStock(data.details, data.storeId);
 
-        const saleData: CreateSaleDto = {
-            ...data,
-            currency: client.isWholesaler && client.currency
-                ? client.currency
-                : data.currency
-        };
-
         return prisma.$transaction(async (tx) => {
 
             const saleRepository = this.repository.withTransaction(tx);
+
+            // El número de venta es un consecutivo por tienda: se calcula y
+            // asigna aquí, nunca lo decide el cliente. Se bloquea la fila de
+            // la tienda para evitar que dos ventas concurrentes de la misma
+            // tienda calculen el mismo consecutivo.
+            await saleRepository.lockStoreForNumbering(
+                BigInt(data.storeId)
+            );
+
+            const lastSale = await saleRepository.findLastByStore(
+                BigInt(data.storeId)
+            );
+
+            const saleData = {
+                ...data,
+                number: this.buildNextSaleNumber(lastSale?.number),
+                currency: client.isWholesaler && client.currency
+                    ? client.currency
+                    : data.currency
+            };
+
             const sale = await saleRepository.create(saleData);
 
             if (requiresAccountReceivable) {
@@ -347,7 +375,8 @@ export class SaleService {
 
     async update(
         id: string,
-        data: UpdateSaleDto
+        data: UpdateSaleDto,
+        requestingUser?: { roleName: string; storeId: string }
     ): Promise<Sale> {
 
         const sale = await this.repository.findById(
@@ -360,22 +389,18 @@ export class SaleService {
             );
         }
 
-        if (sale.status !== "DRAFT") {
+        if (
+            requestingUser?.roleName === ROLES.STORE &&
+            sale.storeId.toString() !== requestingUser.storeId
+        ) {
             throw new ValidationError(
-                "Solo se pueden editar ventas en borrador."
+                "Solo puedes editar ventas de tu propia tienda."
             );
         }
 
-        const existing = await this.repository.findByNumber(
-            data.number
-        );
-
-        if (
-            existing &&
-            existing.id !== BigInt(id)
-        ) {
-            throw new ConflictError(
-                "Ya existe una venta con ese número."
+        if (sale.status !== "DRAFT") {
+            throw new ValidationError(
+                "Solo se pueden editar ventas en borrador."
             );
         }
 
@@ -440,7 +465,8 @@ export class SaleService {
 
 
     async delete(
-        id: string
+        id: string,
+        requestingUser?: { roleName: string; storeId: string }
     ): Promise<void> {
 
         const sale = await this.repository.findById(
@@ -450,6 +476,15 @@ export class SaleService {
         if (!sale) {
             throw new NotFoundError(
                 "Venta no encontrada."
+            );
+        }
+
+        if (
+            requestingUser?.roleName === ROLES.STORE &&
+            sale.storeId.toString() !== requestingUser.storeId
+        ) {
+            throw new ValidationError(
+                "Solo puedes cancelar ventas de tu propia tienda."
             );
         }
 

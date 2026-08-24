@@ -30,7 +30,8 @@ export async function getSaleById(
 export type CreateSaleRequest={
 
     clientUuid:string;
-    number:string;
+    // Asignado por el servidor: consecutivo por tienda, de solo lectura.
+    number?:string;
     clientId:string;
     storeId:string;
     userId:string;

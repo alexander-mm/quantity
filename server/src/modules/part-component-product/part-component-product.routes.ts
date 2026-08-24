@@ -22,7 +22,7 @@ router.get(
 router.put(
     "/:partId",
     authenticate,
-    authorize(ROLES.ADMIN),
+    authorize(ROLES.ADMIN, ROLES.PRODUCTION),
     validate(setPartComponentProductsSchema),
     controller.set.bind(controller)
 );

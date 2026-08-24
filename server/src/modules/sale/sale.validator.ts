@@ -2,7 +2,8 @@ import { z } from "zod";
 
 const baseSaleSchema=z.object({
     clientUuid:z.string().trim().uuid().optional(),
-    number:z.string().trim().min(1).max(50),
+    // Consecutivo por tienda: lo asigna el servidor, nunca lo envía el cliente.
+    number:z.string().trim().max(50).optional(),
     clientId:z.string().trim().min(1),
     storeId:z.string().trim().min(1),
     userId:z.string().trim().min(1),

@@ -29,7 +29,7 @@ router.get(
 router.put(
     "/:productId",
     authenticate,
-    authorize(ROLES.ADMIN),
+    authorize(ROLES.ADMIN, ROLES.PRODUCTION),
     validate(setEquipmentPartsSchema),
     controller.set.bind(controller)
 );
