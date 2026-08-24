@@ -65,7 +65,8 @@ export function ProductsPage() {
 
         return list.filter(product =>
             product.name.toLowerCase().includes(term) ||
-            product.internalCode.toLowerCase().includes(term)
+            product.internalCode.toLowerCase().includes(term) ||
+            (product.barcode?.toLowerCase().includes(term) ?? false)
         );
 
     }, [data, search]);

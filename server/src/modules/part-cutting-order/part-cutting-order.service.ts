@@ -8,6 +8,7 @@ import { RawMaterialRepository } from "../raw-material/raw-material.repository.j
 import { PartMovementRepository } from "../part-movement/part-movement.repository.js";
 import { RawMaterialMovementRepository } from "../raw-material-movement/raw-material-movement.repository.js";
 
+import { notifyAdmins } from "../../realtime/realtime.service.js";
 import { PartCuttingOrderRepository } from "./part-cutting-order.repository.js";
 import { CreatePartCuttingOrderDto, UpdatePartCuttingOrderDto, ConfirmPartCuttingOrderDto } from "./part-cutting-order.dto.js";
 
@@ -202,6 +203,20 @@ export class PartCuttingOrderService {
             }
 
             return repository.confirm(order.id, goodPieces, defectivePieces);
+
+        }).then((confirmedOrder) => {
+
+            notifyAdmins("cutting-order:confirmed", {
+                orderId: confirmedOrder.id.toString(),
+                number: confirmedOrder.number,
+                partName: confirmedOrder.part.name,
+                rawMaterialName: confirmedOrder.rawMaterial.name,
+                goodPieces: Number(confirmedOrder.goodPieces),
+                defectivePieces: Number(confirmedOrder.defectivePieces),
+                userName: `${confirmedOrder.user.firstName} ${confirmedOrder.user.lastName}`
+            });
+
+            return confirmedOrder;
 
         });
 

@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BarcodeScanButton } from "@/components/scanner";
 import { useProducts, useProductPriceEntries, useClients, useMarginProfiles, useOfflineCollection, useKitAvailability } from "@/hooks";
 import { resolveProductPriceEntries, getCachedProductPriceEntries, offlineDb, matchProductByBarcode } from "@/lib";
 import { formatCurrency } from "@/lib/format-currency";
@@ -281,43 +282,60 @@ export function SaleDetailRow({
 
                         };
 
+                        const handleTypedText=(text:string)=>{
+                            const match=matchProductByBarcode(products,text);
+                            if(match){
+                                const matchedItem=items.find(item=>item.value===match.id);
+                                if(matchedItem){
+                                    handleSelect(matchedItem);
+                                }
+                            }
+                        };
+
+                        const handleScannedText=(text:string)=>{
+                            const match=matchProductByBarcode(products,text);
+                            const matchedItem=match?items.find(item=>item.value===match.id):undefined;
+                            if(matchedItem){
+                                handleSelect(matchedItem);
+                            } else {
+                                toast.error(`No se encontró un producto con el código "${text}".`);
+                            }
+                        };
+
                         return(
 
-                            <Combobox
-                                items={items}
-                                value={selected}
-                                onValueChange={handleSelect}
-                                onInputValueChange={(text)=>{
-                                    const match=matchProductByBarcode(products,text);
-                                    if(match){
-                                        const matchedItem=items.find(item=>item.value===match.id);
-                                        if(matchedItem){
-                                            handleSelect(matchedItem);
-                                        }
-                                    }
-                                }}
-                            >
+                            <div className="flex items-center gap-2">
+                                <div className="flex-1">
+                                    <Combobox
+                                        items={items}
+                                        value={selected}
+                                        onValueChange={handleSelect}
+                                        onInputValueChange={handleTypedText}
+                                    >
 
-                                <ComboboxInput
-                                    placeholder="Buscar producto..."
-                                />
+                                        <ComboboxInput
+                                            placeholder="Buscar producto..."
+                                        />
 
-                                <ComboboxContent>
-                                    {(item)=>(
-                                        <ComboboxItem
-                                            key={item.value}
-                                            value={item}
-                                        >
-                                            {item.label}
-                                        </ComboboxItem>
-                                    )}
-                                </ComboboxContent>
+                                        <ComboboxContent>
+                                            {(item)=>(
+                                                <ComboboxItem
+                                                    key={item.value}
+                                                    value={item}
+                                                >
+                                                    {item.label}
+                                                </ComboboxItem>
+                                            )}
+                                        </ComboboxContent>
 
-                                <ComboboxEmpty>
-                                    No se encontraron productos.
-                                </ComboboxEmpty>
+                                        <ComboboxEmpty>
+                                            No se encontraron productos.
+                                        </ComboboxEmpty>
 
-                            </Combobox>
+                                    </Combobox>
+                                </div>
+                                <BarcodeScanButton onScan={handleScannedText} />
+                            </div>
 
                         );
 

@@ -1,10 +1,12 @@
 import { Trash2 } from "lucide-react";
+import { toast } from "react-hot-toast";
 import { Controller, useFormContext } from "react-hook-form";
 import {
     Combobox, ComboboxInput, ComboboxContent, ComboboxItem, ComboboxEmpty
 } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { BarcodeScanButton } from "@/components/scanner";
 import { useProducts } from "@/hooks";
 import { matchProductByBarcode } from "@/lib";
 
@@ -43,24 +45,40 @@ export function StockTransferDetailRow({ index, onRemove }: Props) {
 
                         const selected = items.find(item => item.value === field.value) ?? null;
 
+                        const handleTypedText = (text: string) => {
+                            const match = matchProductByBarcode(availableProducts, text);
+                            if (match) {
+                                field.onChange(match.id);
+                            }
+                        };
+
+                        const handleScannedText = (text: string) => {
+                            const match = matchProductByBarcode(availableProducts, text);
+                            if (match) {
+                                field.onChange(match.id);
+                            } else {
+                                toast.error(`No se encontró un producto con el código "${text}".`);
+                            }
+                        };
+
                         return (
-                            <Combobox
-                                items={items}
-                                value={selected}
-                                onValueChange={(item) => field.onChange(item ? item.value : "")}
-                                onInputValueChange={(text) => {
-                                    const match = matchProductByBarcode(availableProducts, text);
-                                    if (match) {
-                                        field.onChange(match.id);
-                                    }
-                                }}
-                            >
-                                <ComboboxInput placeholder="Buscar producto..." />
-                                <ComboboxContent>
-                                    {(item) => <ComboboxItem key={item.value} value={item}>{item.label}</ComboboxItem>}
-                                </ComboboxContent>
-                                <ComboboxEmpty>No se encontraron productos.</ComboboxEmpty>
-                            </Combobox>
+                            <div className="flex items-center gap-2">
+                                <div className="flex-1">
+                                    <Combobox
+                                        items={items}
+                                        value={selected}
+                                        onValueChange={(item) => field.onChange(item ? item.value : "")}
+                                        onInputValueChange={handleTypedText}
+                                    >
+                                        <ComboboxInput placeholder="Buscar producto..." />
+                                        <ComboboxContent>
+                                            {(item) => <ComboboxItem key={item.value} value={item}>{item.label}</ComboboxItem>}
+                                        </ComboboxContent>
+                                        <ComboboxEmpty>No se encontraron productos.</ComboboxEmpty>
+                                    </Combobox>
+                                </div>
+                                <BarcodeScanButton onScan={handleScannedText} />
+                            </div>
                         );
 
                     }}

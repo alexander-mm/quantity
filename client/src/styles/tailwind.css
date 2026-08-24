@@ -128,3 +128,29 @@
     @apply font-sans;
     }
 }
+
+/* Etiqueta de producto para impresora térmica: al imprimir, se oculta todo
+   menos el área de la etiqueta (ver app/providers/print-label-provider.tsx). */
+@media print {
+  @page {
+    size: 31mm 24mm;
+    margin: 0;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  #print-label-area,
+  #print-label-area * {
+    visibility: visible;
+  }
+
+  #print-label-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 31mm;
+    height: 24mm;
+  }
+}

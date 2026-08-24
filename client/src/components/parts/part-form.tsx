@@ -18,6 +18,7 @@ import {
 import { partSchema } from "@/validators";
 import type { PartFormData } from "@/validators";
 import { getNextSequentialCode, matchProductByBarcode, calculatePartCost } from "@/lib";
+import { BarcodeScanButton } from "@/components/scanner";
 import {
     useCreatePart,
     useUpdatePart,
@@ -544,33 +545,47 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
 
                                         const selected = options.find(item => item.value === controllerField.value) ?? null;
 
+                                        const handleScannedText = (text: string) => {
+                                            const match = matchProductByBarcode(availableProducts, text);
+                                            if (match) {
+                                                controllerField.onChange(match.id);
+                                            } else {
+                                                toast.error(`No se encontró un producto con el código "${text}".`);
+                                            }
+                                        };
+
                                         return (
-                                            <Combobox
-                                                items={options}
-                                                value={selected}
-                                                onValueChange={(item) => controllerField.onChange(item ? item.value : "")}
-                                                onInputValueChange={(text) => {
-                                                    if (!isProduct) {
-                                                        return;
-                                                    }
-                                                    const match = matchProductByBarcode(availableProducts, text);
-                                                    if (match) {
-                                                        controllerField.onChange(match.id);
-                                                    }
-                                                }}
-                                            >
-                                                <ComboboxInput placeholder={isProduct ? "Buscar producto..." : "Buscar pieza..."} readOnly={!!selected} />
-                                                <ComboboxContent>
-                                                    {(item) => (
-                                                        <ComboboxItem key={item.value} value={item}>
-                                                            {item.label}
-                                                        </ComboboxItem>
-                                                    )}
-                                                </ComboboxContent>
-                                                <ComboboxEmpty>
-                                                    {isProduct ? "No se encontraron productos." : "No se encontraron piezas."}
-                                                </ComboboxEmpty>
-                                            </Combobox>
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex-1">
+                                                    <Combobox
+                                                        items={options}
+                                                        value={selected}
+                                                        onValueChange={(item) => controllerField.onChange(item ? item.value : "")}
+                                                        onInputValueChange={(text) => {
+                                                            if (!isProduct) {
+                                                                return;
+                                                            }
+                                                            const match = matchProductByBarcode(availableProducts, text);
+                                                            if (match) {
+                                                                controllerField.onChange(match.id);
+                                                            }
+                                                        }}
+                                                    >
+                                                        <ComboboxInput placeholder={isProduct ? "Buscar producto..." : "Buscar pieza..."} readOnly={!!selected} />
+                                                        <ComboboxContent>
+                                                            {(item) => (
+                                                                <ComboboxItem key={item.value} value={item}>
+                                                                    {item.label}
+                                                                </ComboboxItem>
+                                                            )}
+                                                        </ComboboxContent>
+                                                        <ComboboxEmpty>
+                                                            {isProduct ? "No se encontraron productos." : "No se encontraron piezas."}
+                                                        </ComboboxEmpty>
+                                                    </Combobox>
+                                                </div>
+                                                {isProduct && <BarcodeScanButton onScan={handleScannedText} />}
+                                            </div>
                                         );
 
                                     }}

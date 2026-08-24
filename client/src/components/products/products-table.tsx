@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { toast } from "react-hot-toast";
+import { Eye, Pencil, Printer, Trash2 } from "lucide-react";
 import { EntityTable } from "@/components/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatCurrency } from "@/lib/format-currency";
 import type { Product } from "@/types";
 import { useAuth, useProductPriceEntryLabels } from "@/hooks";
 import { ROLES } from "@/constants/roles";
+import { usePrintLabel } from "@/app/providers/print-label-provider";
 
 type Props = {
     products: Product[];
@@ -28,6 +30,22 @@ export function ProductsTable({
     const showStock = !!stockByProductId;
     const { data: priceEntryLabelsData } = useProductPriceEntryLabels();
     const priceEntryLabels = priceEntryLabelsData?.data ?? [];
+    const { printLabel } = usePrintLabel();
+
+    const handlePrintLabel = (product: Product) => {
+
+        if (!product.barcode) {
+            toast.error("Este producto no tiene código de barras asignado.");
+            return;
+        }
+
+        printLabel({
+            barcode: product.barcode,
+            internalCode: product.internalCode,
+            name: product.name
+        });
+
+    };
     const [priceEntryKey, setPriceEntryKey] = useState("USD-1");
     const [selectedCurrency, selectedSequenceRaw] = priceEntryKey.split("-");
     const selectedSequence = Number(selectedSequenceRaw);
@@ -98,6 +116,11 @@ export function ProductsTable({
                                     size={18}
                                     className="cursor-pointer text-slate-500 hover:text-primary"
                                     onClick={() => onView(product)}
+                                />
+                                <Printer
+                                    size={18}
+                                    className="cursor-pointer text-slate-500 hover:text-primary"
+                                    onClick={() => handlePrintLabel(product)}
                                 />
                                 {isAdmin && (
                                     <>

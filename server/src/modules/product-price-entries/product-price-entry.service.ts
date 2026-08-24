@@ -1,4 +1,5 @@
 import { NotFoundError } from "../../shared/errors/index.js";
+import { notifyAdmins } from "../../realtime/realtime.service.js";
 import { ProductRepository } from "../product/product.repository.js";
 import { ProductPriceEntryRepository } from "./product-price-entry.repository.js";
 import { ReplaceProductPriceEntriesDto } from "./product-price-entry.dto.js";
@@ -45,6 +46,11 @@ export class ProductPriceEntryService {
             BigInt(productId),
             data.entries
         );
+
+        notifyAdmins("product:price-changed", {
+            productId: product.id.toString(),
+            productName: product.name
+        });
 
         return this.findByProduct(productId);
 

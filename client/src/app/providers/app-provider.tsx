@@ -4,6 +4,8 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Toaster } from "react-hot-toast";
 import { queryClient } from "./query-provider";
 import { SyncBootstrap } from "./sync-bootstrap";
+import { RealtimeNotifications } from "./realtime-notifications";
+import { PrintLabelProvider } from "./print-label-provider";
 
 export function AppProvider({
     children
@@ -11,8 +13,11 @@ export function AppProvider({
 
     return (
         <QueryClientProvider client={queryClient}>
-            {children}
+            <PrintLabelProvider>
+                {children}
+            </PrintLabelProvider>
             <SyncBootstrap />
+            <RealtimeNotifications />
             <Toaster
                 position="top-right"
                 reverseOrder={false}

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { toast } from "react-hot-toast";
 import { Plus, Trash2 } from "lucide-react";
 import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import {
@@ -11,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { BarcodeScanButton } from "@/components/scanner";
 import { useProducts } from "@/hooks";
 import { getProductById, getProductPriceEntries } from "@/services";
 import { matchProductByBarcode } from "@/lib";
@@ -160,40 +162,56 @@ export function PurchaseDetailRow({
 
                         };
 
+                        const handleTypedText=(text:string)=>{
+                            const match=matchProductByBarcode(availableProducts,text);
+                            if(match){
+                                handleSelect({value:match.id,label:`${match.internalCode} - ${match.name}`});
+                            }
+                        };
+
+                        const handleScannedText=(text:string)=>{
+                            const match=matchProductByBarcode(availableProducts,text);
+                            if(match){
+                                handleSelect({value:match.id,label:`${match.internalCode} - ${match.name}`});
+                            } else {
+                                toast.error(`No se encontró un producto con el código "${text}".`);
+                            }
+                        };
+
                         return(
 
-                            <Combobox
-                                items={items}
-                                value={selected}
-                                onValueChange={handleSelect}
-                                onInputValueChange={(text)=>{
-                                    const match=matchProductByBarcode(availableProducts,text);
-                                    if(match){
-                                        handleSelect({value:match.id,label:`${match.internalCode} - ${match.name}`});
-                                    }
-                                }}
-                            >
+                            <div className="flex items-center gap-2">
+                                <div className="flex-1">
+                                    <Combobox
+                                        items={items}
+                                        value={selected}
+                                        onValueChange={handleSelect}
+                                        onInputValueChange={handleTypedText}
+                                    >
 
-                                <ComboboxInput
-                                    placeholder="Buscar producto..."
-                                />
+                                        <ComboboxInput
+                                            placeholder="Buscar producto..."
+                                        />
 
-                                <ComboboxContent>
-                                    {(item)=>(
-                                        <ComboboxItem
-                                            key={item.value}
-                                            value={item}
-                                        >
-                                            {item.label}
-                                        </ComboboxItem>
-                                    )}
-                                </ComboboxContent>
+                                        <ComboboxContent>
+                                            {(item)=>(
+                                                <ComboboxItem
+                                                    key={item.value}
+                                                    value={item}
+                                                >
+                                                    {item.label}
+                                                </ComboboxItem>
+                                            )}
+                                        </ComboboxContent>
 
-                                <ComboboxEmpty>
-                                    No se encontraron productos.
-                                </ComboboxEmpty>
+                                        <ComboboxEmpty>
+                                            No se encontraron productos.
+                                        </ComboboxEmpty>
 
-                            </Combobox>
+                                    </Combobox>
+                                </div>
+                                <BarcodeScanButton onScan={handleScannedText} />
+                            </div>
 
                         );
 

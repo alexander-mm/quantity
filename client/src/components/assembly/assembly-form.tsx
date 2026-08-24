@@ -17,6 +17,7 @@ import {
 import { productAssemblySchema } from "@/validators";
 import type { ProductAssemblyFormData } from "@/validators";
 import { getNextSequentialCode, matchProductByBarcode } from "@/lib";
+import { BarcodeScanButton } from "@/components/scanner";
 import {
     useProducts,
     useProductIdsWithRecipe,
@@ -191,30 +192,46 @@ export function AssemblyForm({ onSuccess, mode = "create", assemblyId }: Props) 
 
                             const selected = items.find(item => item.value === field.value) ?? null;
 
+                            const handleTypedText = (text: string) => {
+                                const match = matchProductByBarcode(assemblableProducts, text);
+                                if (match) {
+                                    field.onChange(match.id);
+                                }
+                            };
+
+                            const handleScannedText = (text: string) => {
+                                const match = matchProductByBarcode(assemblableProducts, text);
+                                if (match) {
+                                    field.onChange(match.id);
+                                } else {
+                                    toast.error(`No se encontró un producto con el código "${text}".`);
+                                }
+                            };
+
                             return (
-                                <Combobox
-                                    items={items}
-                                    value={selected}
-                                    onValueChange={(item) => field.onChange(item ? item.value : "")}
-                                    onInputValueChange={(text) => {
-                                        const match = matchProductByBarcode(assemblableProducts, text);
-                                        if (match) {
-                                            field.onChange(match.id);
-                                        }
-                                    }}
-                                >
-                                    <ComboboxInput placeholder="Buscar producto..." />
-                                    <ComboboxContent>
-                                        {(item) => (
-                                            <ComboboxItem key={item.value} value={item}>
-                                                {item.label}
-                                            </ComboboxItem>
-                                        )}
-                                    </ComboboxContent>
-                                    <ComboboxEmpty>
-                                        Ningún producto tiene una receta de componentes o piezas definida.
-                                    </ComboboxEmpty>
-                                </Combobox>
+                                <div className="flex items-center gap-2">
+                                    <div className="flex-1">
+                                        <Combobox
+                                            items={items}
+                                            value={selected}
+                                            onValueChange={(item) => field.onChange(item ? item.value : "")}
+                                            onInputValueChange={handleTypedText}
+                                        >
+                                            <ComboboxInput placeholder="Buscar producto..." />
+                                            <ComboboxContent>
+                                                {(item) => (
+                                                    <ComboboxItem key={item.value} value={item}>
+                                                        {item.label}
+                                                    </ComboboxItem>
+                                                )}
+                                            </ComboboxContent>
+                                            <ComboboxEmpty>
+                                                Ningún producto tiene una receta de componentes o piezas definida.
+                                            </ComboboxEmpty>
+                                        </Combobox>
+                                    </div>
+                                    <BarcodeScanButton onScan={handleScannedText} />
+                                </div>
                             );
 
                         }}

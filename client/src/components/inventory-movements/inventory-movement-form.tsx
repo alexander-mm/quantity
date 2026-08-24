@@ -15,6 +15,7 @@ import {
 import { inventoryMovementSchema } from "@/validators";
 import type { InventoryMovementFormData } from "@/validators";
 import { MinimumStockField } from "@/components/shared";
+import { BarcodeScanButton } from "@/components/scanner";
 import {
     useMovementTypes,
     useProducts,
@@ -191,30 +192,46 @@ export function InventoryMovementForm({ movement, onSuccess }: Props) {
 
                         };
 
+                        const handleTypedText = (text: string) => {
+                            const match = matchProductByBarcode(products, text);
+                            if (match) {
+                                handleSelect({ value: match.id, label: `${match.internalCode} - ${match.name}` });
+                            }
+                        };
+
+                        const handleScannedText = (text: string) => {
+                            const match = matchProductByBarcode(products, text);
+                            if (match) {
+                                handleSelect({ value: match.id, label: `${match.internalCode} - ${match.name}` });
+                            } else {
+                                toast.error(`No se encontró un producto con el código "${text}".`);
+                            }
+                        };
+
                         return (
-                            <Combobox
-                                items={items}
-                                value={selected}
-                                onValueChange={handleSelect}
-                                onInputValueChange={(text) => {
-                                    const match = matchProductByBarcode(products, text);
-                                    if (match) {
-                                        handleSelect({ value: match.id, label: `${match.internalCode} - ${match.name}` });
-                                    }
-                                }}
-                            >
-                                <ComboboxInput placeholder="Buscar producto..." />
-                                <ComboboxContent>
-                                    {(item) => (
-                                        <ComboboxItem key={item.value} value={item}>
-                                            {item.label}
-                                        </ComboboxItem>
-                                    )}
-                                </ComboboxContent>
-                                <ComboboxEmpty>
-                                    No se encontraron productos.
-                                </ComboboxEmpty>
-                            </Combobox>
+                            <div className="flex items-center gap-2">
+                                <div className="flex-1">
+                                    <Combobox
+                                        items={items}
+                                        value={selected}
+                                        onValueChange={handleSelect}
+                                        onInputValueChange={handleTypedText}
+                                    >
+                                        <ComboboxInput placeholder="Buscar producto..." />
+                                        <ComboboxContent>
+                                            {(item) => (
+                                                <ComboboxItem key={item.value} value={item}>
+                                                    {item.label}
+                                                </ComboboxItem>
+                                            )}
+                                        </ComboboxContent>
+                                        <ComboboxEmpty>
+                                            No se encontraron productos.
+                                        </ComboboxEmpty>
+                                    </Combobox>
+                                </div>
+                                <BarcodeScanButton onScan={handleScannedText} />
+                            </div>
                         );
 
                     }}

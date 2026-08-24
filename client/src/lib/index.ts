@@ -7,3 +7,4 @@ export * from "./reference-sync";
 export * from "./outbox";
 export * from "./format-date";
 export * from "./calculate-part-cost";
+export * from "./socket";

@@ -15,6 +15,7 @@ import { PartRepository } from "../part/part.repository.js";
 import { PartMovementRepository } from "../part-movement/part-movement.repository.js";
 import { TelegramService, escapeTelegramHtml } from "../../integrations/telegram/telegram.service.js";
 import { ROLES } from "../../shared/constants/roles.js";
+import { notifyAdmins } from "../../realtime/realtime.service.js";
 import type { SaleWithRelations } from "./sale.repository.js";
 
 export class SaleService {
@@ -710,6 +711,8 @@ export class SaleService {
         }).then((confirmedSale) => {
 
             void this.notifyNewSale(confirmedSale);
+            void this.notifyRealtimeSaleConfirmed(confirmedSale);
+            void this.notifyRealtimeLowStockAfterSale(confirmedSale);
 
             return confirmedSale;
 
@@ -740,6 +743,63 @@ export class SaleService {
 
         } catch (error) {
             console.error("❌ Error enviando alerta de venta a Telegram:", error);
+        }
+
+    }
+
+    private async notifyRealtimeSaleConfirmed(
+        sale: SaleWithRelations
+    ): Promise<void> {
+
+        const clientName =
+            sale.client.companyName ||
+            `${sale.client.firstName ?? ""} ${sale.client.lastName ?? ""}`.trim() ||
+            "Cliente";
+
+        notifyAdmins("sale:confirmed", {
+            saleId: sale.id.toString(),
+            number: sale.number,
+            storeName: sale.store.name,
+            clientName,
+            currency: sale.currency,
+            total: sale.total.toString()
+        });
+
+    }
+
+    // Solo revisa el stock de los productos vendidos directamente (no de los
+    // componentes de un kit): los kits no llevan stock propio, ver
+    // getRecipeRequirements() más arriba.
+    private async notifyRealtimeLowStockAfterSale(
+        sale: SaleWithRelations
+    ): Promise<void> {
+
+        for (const detail of sale.details) {
+
+            if (detail.product.assembleOnSale) {
+                continue;
+            }
+
+            const stock = await this.inventoryStockService.findByProductAndStore(
+                detail.productId.toString(),
+                sale.storeId.toString()
+            );
+
+            const quantity = stock ? Number(stock.quantity) : 0;
+            const minimumStock = Number(detail.product.minimumStock);
+
+            if (quantity <= minimumStock) {
+
+                notifyAdmins("stock:low", {
+                    productId: detail.product.id.toString(),
+                    productName: detail.product.name,
+                    storeName: sale.store.name,
+                    quantity,
+                    minimumStock
+                });
+
+            }
+
         }
 
     }

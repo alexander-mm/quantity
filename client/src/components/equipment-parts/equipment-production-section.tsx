@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "react-hot-toast";
 import {
     Combobox,
     ComboboxInput,
@@ -10,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EquipmentPartPreviewPanel } from "@/components/equipment-parts";
+import { BarcodeScanButton } from "@/components/scanner";
 import { useProducts } from "@/hooks";
 import { useEquipmentPartPreview } from "@/hooks";
 import { matchProductByBarcode } from "@/lib";
@@ -36,6 +38,22 @@ export function EquipmentProductionSection() {
 
     const selected = items.find(item => item.value === productId) ?? null;
 
+    const handleTypedText = (text: string) => {
+        const match = matchProductByBarcode(products, text);
+        if (match) {
+            setProductId(match.id);
+        }
+    };
+
+    const handleScannedText = (text: string) => {
+        const match = matchProductByBarcode(products, text);
+        if (match) {
+            setProductId(match.id);
+        } else {
+            toast.error(`No se encontró un producto con el código "${text}".`);
+        }
+    };
+
     return (
         <div className="mt-8 space-y-6">
 
@@ -44,31 +62,29 @@ export function EquipmentProductionSection() {
                 de piezas se define en Productos, al agregar componentes.
             </p>
 
-            <div className="max-w-md">
-                <Label className="mb-1">Equipo</Label>
-                <Combobox
-                    items={items}
-                    value={selected}
-                    onValueChange={(item) => setProductId(item ? item.value : "")}
-                    onInputValueChange={(text) => {
-                        const match = matchProductByBarcode(products, text);
-                        if (match) {
-                            setProductId(match.id);
-                        }
-                    }}
-                >
-                    <ComboboxInput placeholder="Buscar equipo..." />
-                    <ComboboxContent>
-                        {(item) => (
-                            <ComboboxItem key={item.value} value={item}>
-                                {item.label}
-                            </ComboboxItem>
-                        )}
-                    </ComboboxContent>
-                    <ComboboxEmpty>
-                        No se encontraron equipos.
-                    </ComboboxEmpty>
-                </Combobox>
+            <div className="flex max-w-md items-center gap-2">
+                <div className="flex-1">
+                    <Label className="mb-1">Equipo</Label>
+                    <Combobox
+                        items={items}
+                        value={selected}
+                        onValueChange={(item) => setProductId(item ? item.value : "")}
+                        onInputValueChange={handleTypedText}
+                    >
+                        <ComboboxInput placeholder="Buscar equipo..." />
+                        <ComboboxContent>
+                            {(item) => (
+                                <ComboboxItem key={item.value} value={item}>
+                                    {item.label}
+                                </ComboboxItem>
+                            )}
+                        </ComboboxContent>
+                        <ComboboxEmpty>
+                            No se encontraron equipos.
+                        </ComboboxEmpty>
+                    </Combobox>
+                </div>
+                <BarcodeScanButton onScan={handleScannedText} />
             </div>
 
             {productId && (

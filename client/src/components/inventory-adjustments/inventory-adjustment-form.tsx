@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Combobox, ComboboxInput, ComboboxContent, ComboboxItem, ComboboxEmpty } from "@/components/ui/combobox";
 import { StoreSelector } from "@/components/selectors/store-selector";
+import { BarcodeScanButton } from "@/components/scanner";
 import { inventoryAdjustmentSchema } from "@/validators";
 import type { InventoryAdjustmentFormData } from "@/validators";
 import { MinimumStockField } from "@/components/shared";
@@ -92,28 +93,44 @@ export function InventoryAdjustmentForm({ onSuccess }: Props) {
 
                         const selected = items.find(item => item.value === field.value) ?? null;
 
+                        const handleTypedText = (text: string) => {
+                            const match = matchProductByBarcode(products, text);
+                            if (match) {
+                                field.onChange(match.id);
+                            }
+                        };
+
+                        const handleScannedText = (text: string) => {
+                            const match = matchProductByBarcode(products, text);
+                            if (match) {
+                                field.onChange(match.id);
+                            } else {
+                                toast.error(`No se encontró un producto con el código "${text}".`);
+                            }
+                        };
+
                         return (
-                            <Combobox
-                                items={items}
-                                value={selected}
-                                onValueChange={(item) => field.onChange(item ? item.value : "")}
-                                onInputValueChange={(text) => {
-                                    const match = matchProductByBarcode(products, text);
-                                    if (match) {
-                                        field.onChange(match.id);
-                                    }
-                                }}
-                            >
-                                <ComboboxInput placeholder="Buscar producto..." />
-                                <ComboboxContent>
-                                    {(item) => (
-                                        <ComboboxItem key={item.value} value={item}>
-                                            {item.label}
-                                        </ComboboxItem>
-                                    )}
-                                </ComboboxContent>
-                                <ComboboxEmpty>No se encontraron productos.</ComboboxEmpty>
-                            </Combobox>
+                            <div className="flex items-center gap-2">
+                                <div className="flex-1">
+                                    <Combobox
+                                        items={items}
+                                        value={selected}
+                                        onValueChange={(item) => field.onChange(item ? item.value : "")}
+                                        onInputValueChange={handleTypedText}
+                                    >
+                                        <ComboboxInput placeholder="Buscar producto..." />
+                                        <ComboboxContent>
+                                            {(item) => (
+                                                <ComboboxItem key={item.value} value={item}>
+                                                    {item.label}
+                                                </ComboboxItem>
+                                            )}
+                                        </ComboboxContent>
+                                        <ComboboxEmpty>No se encontraron productos.</ComboboxEmpty>
+                                    </Combobox>
+                                </div>
+                                <BarcodeScanButton onScan={handleScannedText} />
+                            </div>
                         );
 
                     }}
