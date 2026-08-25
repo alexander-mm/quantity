@@ -25,3 +25,8 @@ export async function setPartRecipe(
     const { data } = await api.put<ApiResponse<PartRecipe>>(`/part-recipes/${partId}`, payload);
     return data;
 }
+
+export async function deletePartRecipe(partId: string): Promise<ApiResponse<null>> {
+    const { data } = await api.delete<ApiResponse<null>>(`/part-recipes/${partId}`);
+    return data;
+}

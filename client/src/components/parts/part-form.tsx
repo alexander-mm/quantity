@@ -32,6 +32,7 @@ import {
     useSetPartComponentProducts,
     usePartRecipe,
     useSetPartRecipe,
+    useDeletePartRecipe,
     useRawMaterials
 } from "@/hooks";
 import type { RawMaterialShape } from "@/types";
@@ -119,6 +120,7 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
     const setComponentsMutation = useSetPartComponents();
     const setComponentProductsMutation = useSetPartComponentProducts();
     const setRecipeMutation = useSetPartRecipe();
+    const deleteRecipeMutation = useDeletePartRecipe();
     const loading = createMutation.isPending || updateMutation.isPending;
 
     const recipe = recipeData?.data;
@@ -308,9 +310,18 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
 
     async function saveRecipe(targetPartId: string, data: PartFormData) {
 
-        // Solo hay algo que guardar si se eligió materia prima de origen.
         if (!data.rawMaterialId) {
+
+            // Si no hay materia prima seleccionada pero la pieza ya tenía una
+            // receta guardada, es que el usuario la quitó a propósito: hay
+            // que eliminarla (la receta es opcional). Si nunca tuvo una, no
+            // hay nada que hacer.
+            if (recipe) {
+                await deleteRecipeMutation.mutateAsync(targetPartId);
+            }
+
             return;
+
         }
 
         await setRecipeMutation.mutateAsync({
@@ -374,6 +385,7 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
                         await saveRecipe(partId, data);
                     } catch {
                         toast.error("La pieza se actualizó, pero no se pudo guardar la receta de corte o de ensamblaje.");
+                        return;
                     }
 
                     toast.success("Pieza actualizada correctamente.");
@@ -392,6 +404,7 @@ export function PartForm({ onSuccess, mode = "create", partId }: Props) {
                     await saveRecipe(response.data.id, data);
                 } catch {
                     toast.error("La pieza se creó, pero no se pudo guardar la receta de corte o de ensamblaje.");
+                    return;
                 }
 
                 toast.success("Pieza creada correctamente.");

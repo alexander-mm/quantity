@@ -54,12 +54,12 @@ export function PrintLabelProvider({
         // todo números, dejando barras más gruesas y fáciles de leer. El
         // margen (zona silenciosa) es obligatorio: sin él, muchos lectores no
         // detectan dónde empieza o termina el código.
-        JsBarcode(svgRef.current, product.barcode.replace(/\s+/g, ""), {
+        JsBarcode(svgRef.current, product.internalCode, {
             format: "CODE128",
             displayValue: false,
-            margin: 4,
-            width: 1.4,
-            height: 32
+            margin: 0,
+            width: 1,
+            height: 60
         });
 
         const handleAfterPrint = () => setProduct(null);
@@ -85,7 +85,7 @@ export function PrintLabelProvider({
             {product && (
                 <div
                     id="print-label-area"
-                    className="hidden flex-col items-center justify-center gap-0.5 border-2 border-black p-0.5 print:flex"
+                    className="hidden flex-col items-center justify-center print:flex"
                 >
                     <svg ref={svgRef} className="h-auto max-w-full" />
                     <p className="text-center text-[10px] leading-tight font-semibold">
