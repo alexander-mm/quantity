@@ -12,6 +12,7 @@ import {
 } from "@/components";
 import { useMemo, useState } from "react";
 import { useProducts, useDeleteProduct, useStores, useInventoryStock, useKitAvailability } from "@/hooks";
+import { ALL_STORES_SUMMED } from "@/constants/inventory";
 import type { Product } from "@/types";
 
 export function ProductsPage() {
@@ -29,7 +30,8 @@ export function ProductsPage() {
     const stores = storesData?.data ?? [];
 
     const { data: stockData } = useInventoryStock();
-    const { data: kitAvailabilityData } = useKitAvailability(storeId || undefined);
+    const isSpecificStore = !!storeId && storeId !== ALL_STORES_SUMMED;
+    const { data: kitAvailabilityData } = useKitAvailability(isSpecificStore ? storeId : undefined);
 
     const stockByProductId = useMemo(() => {
 
@@ -38,8 +40,23 @@ export function ProductsPage() {
         }
 
         const map: Record<string, string> = {};
+        const stockEntries = stockData?.data ?? [];
 
-        (stockData?.data ?? [])
+        if (storeId === ALL_STORES_SUMMED) {
+
+            // Suma la existencia de todas las tiendas y bodegas por producto. La
+            // disponibilidad de kits no se suma acá: un kit se arma con lo que
+            // haya en una tienda puntual, no repartido entre varias.
+            for (const item of stockEntries) {
+                const current = Number(map[item.product.id] ?? 0);
+                map[item.product.id] = String(current + Number(item.quantity));
+            }
+
+            return map;
+
+        }
+
+        stockEntries
             .filter(item => item.store.id === storeId)
             .forEach(item => {
                 map[item.product.id] = item.quantity;

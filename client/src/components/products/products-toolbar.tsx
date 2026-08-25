@@ -5,6 +5,7 @@ import { StoreSelector } from "@/components/selectors/store-selector";
 import { BarcodeScanButton } from "@/components/scanner";
 import { useAuth } from "@/hooks";
 import { ROLES } from "@/constants/roles";
+import { ALL_STORES_SUMMED } from "@/constants/inventory";
 import type { Store } from "@/types";
 
 type ProductsToolbarProps = {
@@ -58,6 +59,10 @@ export function ProductsToolbar(
                         label="Tienda"
                         placeholder="Ver existencias por tienda"
                         onChange={(value) => onStoreChange(value ?? "")}
+                        aggregateOption={{
+                            value: ALL_STORES_SUMMED,
+                            label: "Total (todas las tiendas)"
+                        }}
                     />
                 </div>
 

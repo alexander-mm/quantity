@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
 import { StoreSelector } from "@/components/selectors/store-selector";
 import { useInventoryStock, useLowStock, useStores } from "@/hooks";
+import { ALL_STORES_SUMMED } from "@/constants/inventory";
+import type { InventoryStock } from "@/types";
 
 export function InventoryStockPage() {
 
@@ -31,18 +33,50 @@ export function InventoryStockPage() {
         const list = data?.data ?? [];
         const term = search.toLowerCase();
 
-        return list.filter(item => {
+        const matchesSearch = (item: InventoryStock) =>
+            !term ||
+            item.product.name.toLowerCase().includes(term) ||
+            item.product.internalCode.toLowerCase().includes(term);
 
-            const matchesSearch =
-                !term ||
-                item.product.name.toLowerCase().includes(term) ||
-                item.product.internalCode.toLowerCase().includes(term);
+        if (storeId === ALL_STORES_SUMMED) {
+
+            // Un renglón por producto, con la existencia sumada de todas las
+            // tiendas y bodegas (no filtra por tienda: junta lo que haya en
+            // cualquiera de ellas).
+            const totals = new Map<string, InventoryStock>();
+
+            for (const item of list) {
+
+                if (!matchesSearch(item)) {
+                    continue;
+                }
+
+                const existing = totals.get(item.product.id);
+
+                if (existing) {
+                    existing.quantity = String(Number(existing.quantity) + Number(item.quantity));
+                } else {
+                    totals.set(item.product.id, {
+                        id: item.product.id,
+                        quantity: item.quantity,
+                        product: item.product,
+                        store: { id: ALL_STORES_SUMMED, name: "Todas las tiendas" }
+                    });
+                }
+
+            }
+
+            return Array.from(totals.values());
+
+        }
+
+        return list.filter(item => {
 
             const matchesStore =
                 !storeId ||
                 item.store.id === storeId;
 
-            return matchesSearch && matchesStore;
+            return matchesSearch(item) && matchesStore;
 
         });
 
@@ -73,6 +107,10 @@ export function InventoryStockPage() {
                             label="Tienda"
                             placeholder="Todas las tiendas"
                             onChange={(value) => setStoreId(value ?? "")}
+                            aggregateOption={{
+                                value: ALL_STORES_SUMMED,
+                                label: "Total (todas las tiendas)"
+                            }}
                         />
                     </div>
 
