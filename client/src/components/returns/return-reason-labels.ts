@@ -6,5 +6,6 @@ export const RETURN_REASON_LABELS: Record<ReturnReason, string> = {
     WRONG_ITEM: "Producto incorrecto",
     INCOMPATIBLE: "Incompatible",
     WARRANTY: "Garantía",
+    FACTORY_DEFECT: "Defecto de fábrica",
     OTHER: "Otro"
 };

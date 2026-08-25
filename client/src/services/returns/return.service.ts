@@ -16,7 +16,9 @@ export type CreateReturnRequest = {
     number: string;
     saleId?: string;
     saleDetailId?: string;
-    productId: string;
+    assemblyId?: string;
+    productId?: string;
+    partId?: string;
     storeId: string;
     quantity: number;
     reason: ReturnReason;

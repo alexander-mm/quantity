@@ -14,9 +14,11 @@ export const createReturnSchema = z.object({
 
     saleDetailId: z.string().optional(),
 
-    productId: z
-        .string()
-        .min(1, "El producto es obligatorio."),
+    assemblyId: z.string().optional(),
+
+    productId: z.string().optional(),
+
+    partId: z.string().optional(),
 
     storeId: z
         .string()
@@ -33,6 +35,7 @@ export const createReturnSchema = z.object({
         "WRONG_ITEM",
         "INCOMPATIBLE",
         "WARRANTY",
+        "FACTORY_DEFECT",
         "OTHER"
     ]),
 
@@ -46,7 +49,13 @@ export const createReturnSchema = z.object({
 
     disposition: z.enum(["RESTOCK", "DAMAGED"]).optional()
 
-});
+}).refine(
+    (data) => !!data.productId !== !!data.partId,
+    {
+        message: "Debes indicar exactamente un producto o una pieza a devolver.",
+        path: ["productId"]
+    }
+);
 
 export const resolveReturnSchema = z.object({
 

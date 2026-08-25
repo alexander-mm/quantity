@@ -9,6 +9,7 @@ import { UserRepository } from "../user/user.repository.js";
 import { ClientRepository } from "../client/client.repository.js";
 import { MovementTypeRepository } from "../movement-type/movement-type.repository.js";
 import { InventoryStockService } from "../inventory-stock/inventory-stock.service.js";
+import { DamagedStockService } from "../damaged-stock/damaged-stock.service.js";
 
 export class InventoryMovementService {
 
@@ -19,10 +20,12 @@ export class InventoryMovementService {
     private readonly movementTypeRepository = new MovementTypeRepository();
     private readonly repository: InventoryMovementRepository;
     private readonly inventoryStockService: InventoryStockService;
+    private readonly damagedStockService: DamagedStockService;
 
     constructor(
         repository?: InventoryMovementRepository,
-        inventoryStockService?: InventoryStockService
+        inventoryStockService?: InventoryStockService,
+        damagedStockService?: DamagedStockService
     ) {
         this.repository =
             repository ??
@@ -31,6 +34,10 @@ export class InventoryMovementService {
         this.inventoryStockService =
             inventoryStockService ??
             new InventoryStockService();
+
+        this.damagedStockService =
+            damagedStockService ??
+            new DamagedStockService();
     }
 
     async findAll() {
@@ -95,6 +102,16 @@ export class InventoryMovementService {
                         data.storeId,
                         data.quantity
                     );
+
+                    if (movementType.code === "DAMAGE_OUT") {
+
+                        await this.damagedStockService.increase(
+                            BigInt(data.productId),
+                            BigInt(data.storeId),
+                            new Prisma.Decimal(data.quantity)
+                        );
+
+                    }
 
                     break;
 
@@ -326,6 +343,16 @@ export class InventoryMovementService {
                             movement.quantity
                         );
 
+                        if (movementType.code === "DAMAGE_OUT") {
+
+                            await service.damagedStockService.increase(
+                                movement.productId,
+                                movement.storeId,
+                                movement.quantity
+                            );
+
+                        }
+
                         break;
 
                     case "NONE":
@@ -382,7 +409,8 @@ export class InventoryMovementService {
 
         return new InventoryMovementService(
             this.repository.withTransaction(tx),
-            this.inventoryStockService.withTransaction(tx)
+            this.inventoryStockService.withTransaction(tx),
+            this.damagedStockService.withTransaction(tx)
         );
 
     }

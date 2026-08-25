@@ -8,7 +8,11 @@ export const returnSchema = z.object({
 
     saleDetailId: z.string().optional(),
 
-    productId: z.string().min(1, "Selecciona el producto."),
+    assemblyId: z.string().optional(),
+
+    productId: z.string().optional(),
+
+    partId: z.string().optional(),
 
     storeId: z.string().min(1, "Selecciona la tienda."),
 
@@ -20,6 +24,7 @@ export const returnSchema = z.object({
         "WRONG_ITEM",
         "INCOMPATIBLE",
         "WARRANTY",
+        "FACTORY_DEFECT",
         "OTHER"
     ], { error: "Selecciona un motivo." }),
 
@@ -32,6 +37,12 @@ export const returnSchema = z.object({
         z.enum(["RESTOCK", "DAMAGED"]).optional()
     )
 
-});
+}).refine(
+    (data) => !!data.productId !== !!data.partId,
+    {
+        message: "Selecciona el ítem (producto o pieza) a devolver.",
+        path: ["productId"]
+    }
+);
 
 export type ReturnFormData = z.input<typeof returnSchema>;

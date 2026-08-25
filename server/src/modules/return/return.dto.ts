@@ -4,6 +4,7 @@ export type ReturnReason =
     | "WRONG_ITEM"
     | "INCOMPATIBLE"
     | "WARRANTY"
+    | "FACTORY_DEFECT"
     | "OTHER";
 
 export type ReturnDisposition = "RESTOCK" | "DAMAGED";
@@ -13,7 +14,9 @@ export interface CreateReturnDto {
     number: string;
     saleId?: string;
     saleDetailId?: string;
-    productId: string;
+    assemblyId?: string;
+    productId?: string;
+    partId?: string;
     storeId: string;
     quantity: number;
     reason: ReturnReason;

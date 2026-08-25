@@ -34,6 +34,8 @@ import equipmentPartRoutes from "../modules/equipment-part/equipment-part.routes
 import partCuttingOrderRoutes from "../modules/part-cutting-order/part-cutting-order.routes.js";
 import productPriceEntryRoutes from "../modules/product-price-entries/product-price-entry.routes.js";
 import returnRoutes from "../modules/return/return.routes.js";
+import damagedStockRoutes from "../modules/damaged-stock/damaged-stock.routes.js";
+import damagedPartRoutes from "../modules/damaged-part/damaged-part.routes.js";
 import partComponentRoutes from "../modules/part-component/part-component.routes.js";
 import partComponentProductRoutes from "../modules/part-component-product/part-component-product.routes.js";
 import partAssemblyRoutes from "../modules/part-assembly/part-assembly.routes.js";
@@ -121,6 +123,10 @@ router.use("/part-cutting-orders", partCuttingOrderRoutes);
 router.use("/product-price-entries", productPriceEntryRoutes);
 
 router.use("/returns", returnRoutes);
+
+router.use("/damaged-stock", damagedStockRoutes);
+
+router.use("/damaged-parts", damagedPartRoutes);
 
 router.use("/telegram", telegramRoutes);
 

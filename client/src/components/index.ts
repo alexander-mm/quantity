@@ -8,6 +8,7 @@ export * from "./inventory-adjustments";
 export * from "./part-adjustments";
 export * from "./raw-material-adjustments";
 export * from "./inventory-stock";
+export * from "./damaged-stock";
 export * from "./kardex";
 export * from "./selectors";
 export * from "./supplier";

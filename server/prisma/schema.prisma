@@ -39,6 +39,7 @@ model Store {
   updatedBy                 BigInt?
   inventoryMovements        InventoryMovement[]
   inventoryStocks           InventoryStock[]
+  damagedStocks             DamagedStock[]
   users                     User[]
   purchases                 Purchase[]
   sales                     Sale[]
@@ -176,6 +177,7 @@ model Product {
   updatedBy            BigInt?
   inventoryMovements   InventoryMovement[]
   inventoryStocks      InventoryStock[]
+  damagedStocks        DamagedStock[]
   brand                Brand                       @relation(fields: [brandId], references: [id])
   category             Category                    @relation(fields: [categoryId], references: [id])
   unitOfMeasure        UnitOfMeasure               @relation(fields: [unitOfMeasureId], references: [id])
@@ -467,6 +469,7 @@ enum ReturnReason {
   WRONG_ITEM
   INCOMPATIBLE
   WARRANTY
+  FACTORY_DEFECT
   OTHER
 }
 
@@ -487,7 +490,9 @@ model Return {
   number       String             @unique
   saleId       BigInt?
   saleDetailId BigInt?
-  productId    BigInt
+  assemblyId   BigInt?
+  productId    BigInt?
+  partId       BigInt?
   storeId      BigInt
   quantity     Decimal            @db.Decimal(12, 2)
   reason       ReturnReason
@@ -503,9 +508,11 @@ model Return {
   createdBy    BigInt?
   updatedBy    BigInt?
 
-  sale       Sale?       @relation(fields: [saleId], references: [id])
-  saleDetail SaleDetail? @relation(fields: [saleDetailId], references: [id])
-  product    Product     @relation(fields: [productId], references: [id])
+  sale       Sale?            @relation(fields: [saleId], references: [id])
+  saleDetail SaleDetail?      @relation(fields: [saleDetailId], references: [id])
+  assembly   ProductAssembly? @relation(fields: [assemblyId], references: [id])
+  product    Product?         @relation(fields: [productId], references: [id])
+  part       Part?            @relation(fields: [partId], references: [id])
   store      Store       @relation(fields: [storeId], references: [id])
   user       User        @relation("ReturnRegisteredBy", fields: [userId], references: [id])
   resolver   User?       @relation("ReturnResolvedBy", fields: [resolvedBy], references: [id])
@@ -589,6 +596,34 @@ model InventoryStock {
   @@unique([productId, storeId])
   @@index([productId])
   @@index([storeId])
+}
+
+model DamagedStock {
+  id        BigInt   @id @default(autoincrement())
+  uuid      String   @unique @default(uuid())
+  productId BigInt
+  storeId   BigInt
+  quantity  Decimal  @default(0) @db.Decimal(12, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id])
+  store   Store   @relation(fields: [storeId], references: [id])
+
+  @@unique([productId, storeId])
+  @@index([productId])
+  @@index([storeId])
+}
+
+model DamagedPart {
+  id        BigInt   @id @default(autoincrement())
+  uuid      String   @unique @default(uuid())
+  partId    BigInt   @unique
+  quantity  Decimal  @default(0) @db.Decimal(12, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  part Part @relation(fields: [partId], references: [id])
 }
 
 model StockTransfer {
@@ -741,6 +776,8 @@ model Part {
   productComponents PartComponentProduct[]
   assemblies        PartAssembly[]              @relation("PartAssemblies")
   usedInAssemblies  PartAssemblyDetail[]        @relation("PartAssemblyComponentUsage")
+  returns           Return[]
+  damagedPart       DamagedPart?
 
   @@index([isActive])
   @@index([categoryId])
@@ -818,6 +855,7 @@ model ProductAssembly {
   user        User                        @relation(fields: [userId], references: [id])
   details     ProductAssemblyDetail[]
   partDetails ProductAssemblyPartDetail[]
+  returns     Return[]
 
   @@index([productId])
   @@index([userId])

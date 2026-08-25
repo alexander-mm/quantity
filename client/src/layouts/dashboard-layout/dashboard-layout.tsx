@@ -132,6 +132,7 @@ export function DashboardLayout({
                 { to: "/inventory-stock", label: "Admin. de Inventario", visibility: "nonProduction" },
                 { to: "/inventory-movements", label: "Movimientos", visibility: "adminOnly" },
                 { to: "/inventory-adjustments", label: "Ajustes", visibility: "adminOnly" },
+                { to: "/damaged-inventory", label: "Inventario Dañado", visibility: "nonProduction" },
                 { to: "/kardex", label: "Kardex", visibility: "nonProduction" }
             ]
         },

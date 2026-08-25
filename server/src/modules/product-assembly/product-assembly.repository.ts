@@ -4,7 +4,7 @@ import { BaseRepository } from "../../repositories/base/BaseRepository.js";
 import { safeUserSelect } from "../../shared/constants/safe-user-select.js";
 import { CreateProductAssemblyDto, UpdateProductAssemblyDto } from "./product-assembly.dto.js";
 
-type ProductAssemblyWithRelations =
+export type ProductAssemblyWithRelations =
     Prisma.ProductAssemblyGetPayload<{
         include: {
             product: true;

@@ -78,6 +78,20 @@ const movementTypes = [
         description: "Ingreso por devolución de cliente (vuelve a stock vendible)",
         affectsStock: true,
         stockOperation: StockOperation.IN
+    },
+    {
+        code: "DAMAGE_OUT",
+        name: "Dañado",
+        description: "Salida de stock vendible por producto encontrado dañado (pasa a Inventario Dañado)",
+        affectsStock: true,
+        stockOperation: StockOperation.OUT
+    },
+    {
+        code: "RETURN_OUT",
+        name: "Salida por Devolución a Revisión",
+        description: "Salida de stock vendible al registrar una devolución directa de inventario que queda pendiente de revisión",
+        affectsStock: true,
+        stockOperation: StockOperation.OUT
     }
 ];
 

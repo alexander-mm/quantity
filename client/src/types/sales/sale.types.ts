@@ -74,6 +74,7 @@ export interface SaleDetail{
     product:{
         id:string;
         name:string;
+        assembleOnSale:boolean;
     };
 
 }

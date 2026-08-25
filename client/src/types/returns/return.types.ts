@@ -4,6 +4,7 @@ export type ReturnReason =
     | "WRONG_ITEM"
     | "INCOMPATIBLE"
     | "WARRANTY"
+    | "FACTORY_DEFECT"
     | "OTHER";
 
 export type ReturnStatus = "PENDING_REVIEW" | "RESOLVED";
@@ -22,7 +23,9 @@ export interface Return {
     createdAt: string;
     sale: { id: string; number: string } | null;
     saleDetail: { id: string; unitPrice: string } | null;
-    product: { id: string; internalCode: string; name: string };
+    assembly: { id: string; number: string; productId: string } | null;
+    product: { id: string; internalCode: string; name: string; assembleOnSale: boolean } | null;
+    part: { id: string; code: string; name: string } | null;
     store: { id: string; name: string };
     user: { id: string; firstName: string; lastName: string };
     resolver: { id: string; firstName: string; lastName: string } | null;

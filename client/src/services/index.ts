@@ -15,6 +15,8 @@ export * from "./movement-type";
 export * from "./user";
 export * from "./role";
 export * from "./inventory-stock";
+export * from "./damaged-stock";
+export * from "./damaged-part";
 export * from "./kardex";
 export * from "./supplier";
 export * from "./purchases";

@@ -21,6 +21,7 @@ import { ROLES } from "@/constants/roles";
 import { RolesPage } from "@/pages/roles";
 import { StockTransfersPage } from "@/pages/stock-transfers";
 import { ReturnsPage } from "@/pages/returns";
+import { DamagedInventoryPage } from "@/pages/damaged-inventory";
 import { PendingSyncPage } from "@/pages/pending-sync";
 import { PendingReceptionsPage } from "@/pages/pending-receptions";
 import { TransferIssuesPage } from "@/pages/transfer-issues";
@@ -247,6 +248,17 @@ const router = createBrowserRouter([
         <ProtectedRoute blockedRoles={[ROLES.PRODUCTION]}>
             <DashboardLayout>
                 <ReturnsPage />
+            </DashboardLayout>
+        </ProtectedRoute>
+    )
+},
+
+{
+    path: "/damaged-inventory",
+    element: (
+        <ProtectedRoute blockedRoles={[ROLES.PRODUCTION]}>
+            <DashboardLayout>
+                <DamagedInventoryPage />
             </DashboardLayout>
         </ProtectedRoute>
     )

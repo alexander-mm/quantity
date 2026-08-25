@@ -12,7 +12,18 @@ import { Combobox, ComboboxInput, ComboboxContent, ComboboxItem, ComboboxEmpty }
 import { BarcodeScanButton } from "@/components/scanner";
 import { returnSchema } from "@/validators";
 import type { ReturnFormData } from "@/validators";
-import { useSales, useProducts, useStores, useReturns, useCreateReturn, useOfflineCollection } from "@/hooks";
+import {
+    useSales,
+    useProducts,
+    useParts,
+    useStores,
+    useReturns,
+    useCreateReturn,
+    useOfflineCollection,
+    useProductAssemblies,
+    useProductComponents,
+    useEquipmentParts
+} from "@/hooks";
 import { generateOfflineId, getNextSequentialCode, matchProductByBarcode, offlineDb, todayLocalDateString } from "@/lib";
 import { RETURN_REASON_LABELS } from "./return-reason-labels";
 import type { ReturnDisposition } from "@/types";
@@ -27,9 +38,18 @@ type Props = {
     onSuccess?: () => void;
 };
 
+type ReturnOrigin = "sale" | "assembly" | "none";
+
+type ItemOption = {
+    kind: "product" | "part";
+    id: string;
+    label: string;
+};
+
 export function ReturnForm({ onSuccess }: Props) {
 
-    const [linkToSale, setLinkToSale] = useState(true);
+    const [origin, setOrigin] = useState<ReturnOrigin>("sale");
+    const [noneItemKind, setNoneItemKind] = useState<"product" | "part">("product");
 
     const { register, control, handleSubmit, reset, setValue, getValues, formState: { errors } } = useForm<ReturnFormData>({
         resolver: zodResolver(returnSchema),
@@ -37,7 +57,9 @@ export function ReturnForm({ onSuccess }: Props) {
             number: "",
             saleId: "",
             saleDetailId: "",
+            assemblyId: "",
             productId: "",
+            partId: "",
             storeId: "",
             quantity: undefined,
             reason: undefined,
@@ -48,19 +70,92 @@ export function ReturnForm({ onSuccess }: Props) {
     });
 
     const saleId = useWatch({ control, name: "saleId" });
+    const saleDetailId = useWatch({ control, name: "saleDetailId" });
+    const assemblyId = useWatch({ control, name: "assemblyId" });
+    const productId = useWatch({ control, name: "productId" });
+    const partId = useWatch({ control, name: "partId" });
 
     const { data: salesData } = useSales();
     const { data: productsData } = useProducts();
+    const { data: partsData } = useParts();
     const { data: storesData } = useStores();
     const { data: returnsData } = useReturns();
+    const { data: assembliesData } = useProductAssemblies();
     const createMutation = useCreateReturn();
 
     const sales = useOfflineCollection(salesData?.data, () => offlineDb.sales.toArray());
     const products = useOfflineCollection(productsData?.data, () => offlineDb.products.toArray());
     const stores = useOfflineCollection(storesData?.data, () => offlineDb.stores.toArray());
+    const parts = partsData?.data ?? [];
+    const assemblies = assembliesData?.data ?? [];
 
     const confirmedSales = sales.filter(sale => sale.status === "CONFIRMED");
     const selectedSale = confirmedSales.find(sale => sale.id === saleId);
+    const selectedSaleDetail = selectedSale?.details.find(d => d.id === saleDetailId);
+    const isKitSaleDetail = !!selectedSaleDetail?.product.assembleOnSale;
+
+    const confirmedAssemblies = assemblies.filter(assembly => assembly.status === "CONFIRMED");
+    const selectedAssembly = confirmedAssemblies.find(assembly => assembly.id === assemblyId);
+
+    const kitProductId = selectedSaleDetail?.product.id;
+    const { data: kitComponentsData } = useProductComponents(kitProductId);
+    const { data: kitPartsData } = useEquipmentParts(kitProductId);
+    const kitComponents = kitComponentsData?.data ?? [];
+    const kitParts = kitPartsData?.data ?? [];
+    const saleDetailHasRecipe = kitComponents.length > 0 || kitParts.length > 0;
+
+    const saleKitItemOptions: ItemOption[] = selectedSaleDetail
+        ? [
+            {
+                kind: "product",
+                id: selectedSaleDetail.product.id,
+                label: `${selectedSaleDetail.product.name} (producto armado)`
+            },
+            ...kitComponents.map(item => ({
+                kind: "product" as const,
+                id: item.componentProductId,
+                label: `${item.componentProduct.internalCode} - ${item.componentProduct.name} (componente)`
+            })),
+            ...kitParts.map(item => ({
+                kind: "part" as const,
+                id: item.partId,
+                label: `${item.part.code} - ${item.part.name} (pieza)`
+            }))
+        ]
+        : [];
+
+    const assemblyItemOptions: ItemOption[] = selectedAssembly
+        ? [
+            {
+                kind: "product",
+                id: selectedAssembly.productId,
+                label: `${selectedAssembly.product.name} (producto armado)`
+            },
+            ...selectedAssembly.details.map(item => ({
+                kind: "product" as const,
+                id: item.componentProductId,
+                label: `${item.componentProduct.internalCode} - ${item.componentProduct.name} (componente)`
+            })),
+            ...selectedAssembly.partDetails.map(item => ({
+                kind: "part" as const,
+                id: item.partId,
+                label: `${item.part.code} - ${item.part.name} (pieza)`
+            }))
+        ]
+        : [];
+
+    const selectItem = (item: ItemOption | null) => {
+        setValue("productId", item?.kind === "product" ? item.id : "");
+        setValue("partId", item?.kind === "part" ? item.id : "");
+    };
+
+    const clearOriginFields = () => {
+        setValue("saleId", "");
+        setValue("saleDetailId", "");
+        setValue("assemblyId", "");
+        setValue("productId", "");
+        setValue("partId", "");
+    };
 
     useEffect(() => {
 
@@ -85,9 +180,11 @@ export function ReturnForm({ onSuccess }: Props) {
         const payload = {
             clientUuid: generateOfflineId(),
             number: data.number,
-            saleId: linkToSale ? (data.saleId || undefined) : undefined,
-            saleDetailId: linkToSale ? (data.saleDetailId || undefined) : undefined,
-            productId: data.productId,
+            saleId: origin === "sale" ? (data.saleId || undefined) : undefined,
+            saleDetailId: origin === "sale" ? (data.saleDetailId || undefined) : undefined,
+            assemblyId: origin === "assembly" ? (data.assemblyId || undefined) : undefined,
+            productId: data.productId || undefined,
+            partId: data.partId || undefined,
             storeId: data.storeId,
             quantity: Number(data.quantity),
             reason: data.reason,
@@ -104,6 +201,8 @@ export function ReturnForm({ onSuccess }: Props) {
                     toast.success("Devolución registrada correctamente.");
                 }
                 reset();
+                setOrigin("sale");
+                setNoneItemKind("product");
                 onSuccess?.();
             },
             onError: (error) => {
@@ -136,22 +235,33 @@ export function ReturnForm({ onSuccess }: Props) {
 
             </div>
 
-            <div className="flex items-center gap-2">
-                <input
-                    type="checkbox"
-                    id="linkToSale"
-                    checked={linkToSale}
-                    onChange={(e) => {
-                        setLinkToSale(e.target.checked);
-                        setValue("saleId", "");
-                        setValue("saleDetailId", "");
-                        setValue("productId", "");
+            <div>
+                <Label className="mb-1">Origen de la devolución</Label>
+                <Select
+                    value={origin}
+                    onValueChange={(value) => {
+                        setOrigin(value as ReturnOrigin);
+                        clearOriginFields();
                     }}
-                />
-                <Label htmlFor="linkToSale">Viene de una venta registrada</Label>
+                >
+                    <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Seleccione">
+                            {(value: string | null) => {
+                                if (value === "assembly") return "Viene de una orden de ensamblaje";
+                                if (value === "none") return "Directo de inventario (sin venta ni ensamblaje)";
+                                return "Viene de una venta registrada";
+                            }}
+                        </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="sale">Viene de una venta registrada</SelectItem>
+                        <SelectItem value="assembly">Viene de una orden de ensamblaje</SelectItem>
+                        <SelectItem value="none">Directo de inventario (sin venta ni ensamblaje)</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
 
-            {linkToSale && (
+            {origin === "sale" && (
                 <div>
                     <Label className="mb-1">Venta</Label>
                     <Controller
@@ -174,6 +284,7 @@ export function ReturnForm({ onSuccess }: Props) {
                                         field.onChange(item ? item.value : "");
                                         setValue("saleDetailId", "");
                                         setValue("productId", "");
+                                        setValue("partId", "");
                                     }}
                                 >
                                     <ComboboxInput placeholder="Buscar venta por número..." />
@@ -189,7 +300,7 @@ export function ReturnForm({ onSuccess }: Props) {
                 </div>
             )}
 
-            {linkToSale && selectedSale && (
+            {origin === "sale" && selectedSale && (
                 <div>
                     <Label className="mb-1">Línea de la venta</Label>
                     <Controller
@@ -203,6 +314,7 @@ export function ReturnForm({ onSuccess }: Props) {
                                     const detail = selectedSale.details.find(d => d.id === value);
                                     if (detail) {
                                         setValue("productId", detail.product.id);
+                                        setValue("partId", "");
                                     }
                                 }}
                             >
@@ -230,7 +342,129 @@ export function ReturnForm({ onSuccess }: Props) {
                 </div>
             )}
 
-            {!linkToSale && (
+            {origin === "sale" && saleDetailHasRecipe && (
+                <div>
+                    <Label className="mb-1">Ítem a devolver</Label>
+                    {(() => {
+
+                        const selected = saleKitItemOptions.find(item =>
+                            (item.kind === "product" && item.id === productId) ||
+                            (item.kind === "part" && item.id === partId)
+                        ) ?? null;
+
+                        return (
+                            <Combobox
+                                items={saleKitItemOptions}
+                                value={selected}
+                                onValueChange={selectItem}
+                            >
+                                <ComboboxInput placeholder="Buscar ítem de la receta..." />
+                                <ComboboxContent>
+                                    {(item) => <ComboboxItem key={`${item.kind}-${item.id}`} value={item}>{item.label}</ComboboxItem>}
+                                </ComboboxContent>
+                                <ComboboxEmpty>No se encontraron ítems.</ComboboxEmpty>
+                            </Combobox>
+                        );
+
+                    })()}
+                    <p className="mt-1 text-xs text-muted-foreground">
+                        {isKitSaleDetail
+                            ? `"${selectedSaleDetail?.product.name}" es un kit que se arma al vender: no lleva stock propio. Elige si devuelves el producto armado o un componente/pieza puntual de su receta.`
+                            : `"${selectedSaleDetail?.product.name}" tiene una receta de componentes/piezas. Si eliges un componente o pieza en vez del producto, sale de su stock recién al registrar esta devolución (la venta no lo había descontado).`}
+                    </p>
+                </div>
+            )}
+
+            {origin === "assembly" && (
+                <div>
+                    <Label className="mb-1">Orden de ensamblaje</Label>
+                    <Controller
+                        control={control}
+                        name="assemblyId"
+                        render={({ field }) => {
+
+                            const items = confirmedAssemblies.map(assembly => ({
+                                value: assembly.id,
+                                label: `${assembly.number} - ${assembly.product.name} (x${Number(assembly.quantity)})`,
+                                productId: assembly.productId
+                            }));
+
+                            const selected = items.find(item => item.value === field.value) ?? null;
+
+                            return (
+                                <Combobox
+                                    items={items}
+                                    value={selected}
+                                    onValueChange={(item) => {
+                                        field.onChange(item ? item.value : "");
+                                        setValue("productId", item ? item.productId : "");
+                                        setValue("partId", "");
+                                    }}
+                                >
+                                    <ComboboxInput placeholder="Buscar orden de ensamblaje por número..." />
+                                    <ComboboxContent>
+                                        {(item) => <ComboboxItem key={item.value} value={item}>{item.label}</ComboboxItem>}
+                                    </ComboboxContent>
+                                    <ComboboxEmpty>No se encontraron órdenes de ensamblaje confirmadas.</ComboboxEmpty>
+                                </Combobox>
+                            );
+
+                        }}
+                    />
+                    <p className="text-sm text-red-500">{errors.assemblyId?.message}</p>
+                </div>
+            )}
+
+            {origin === "assembly" && selectedAssembly && (
+                <div>
+                    <Label className="mb-1">Ítem a devolver</Label>
+                    {(() => {
+
+                        const selected = assemblyItemOptions.find(item =>
+                            (item.kind === "product" && item.id === productId) ||
+                            (item.kind === "part" && item.id === partId)
+                        ) ?? null;
+
+                        return (
+                            <Combobox
+                                items={assemblyItemOptions}
+                                value={selected}
+                                onValueChange={selectItem}
+                            >
+                                <ComboboxInput placeholder="Buscar ítem de la receta..." />
+                                <ComboboxContent>
+                                    {(item) => <ComboboxItem key={`${item.kind}-${item.id}`} value={item}>{item.label}</ComboboxItem>}
+                                </ComboboxContent>
+                                <ComboboxEmpty>No se encontraron ítems.</ComboboxEmpty>
+                            </Combobox>
+                        );
+
+                    })()}
+                    <p className="mt-1 text-xs text-muted-foreground">
+                        Úsalo cuando algo salió defectuoso de fábrica en ese lote de ensamblaje: puede ser el
+                        producto armado completo o un componente/pieza puntual de su receta. El ítem elegido sale
+                        del stock vendible al registrar la devolución.
+                    </p>
+                </div>
+            )}
+
+            {origin === "none" && (
+                <div className="flex items-center gap-2">
+                    <input
+                        type="checkbox"
+                        id="noneIsPart"
+                        checked={noneItemKind === "part"}
+                        onChange={(e) => {
+                            setNoneItemKind(e.target.checked ? "part" : "product");
+                            setValue("productId", "");
+                            setValue("partId", "");
+                        }}
+                    />
+                    <Label htmlFor="noneIsPart">Es una pieza (no un producto)</Label>
+                </div>
+            )}
+
+            {origin === "none" && noneItemKind === "product" && (
                 <div>
                     <Label className="mb-1">Producto</Label>
                     <Controller
@@ -280,6 +514,45 @@ export function ReturnForm({ onSuccess }: Props) {
                         }}
                     />
                     <p className="text-sm text-red-500">{errors.productId?.message}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                        Úsalo para defectos de fábrica o productos dañados hallados directamente en inventario. El
+                        producto sale del stock vendible al registrar la devolución.
+                    </p>
+                </div>
+            )}
+
+            {origin === "none" && noneItemKind === "part" && (
+                <div>
+                    <Label className="mb-1">Pieza</Label>
+                    <Controller
+                        control={control}
+                        name="partId"
+                        render={({ field }) => {
+
+                            const items = parts.map(part => ({ value: part.id, label: `${part.code} - ${part.name}` }));
+                            const selected = items.find(item => item.value === field.value) ?? null;
+
+                            return (
+                                <Combobox
+                                    items={items}
+                                    value={selected}
+                                    onValueChange={(item) => field.onChange(item ? item.value : "")}
+                                >
+                                    <ComboboxInput placeholder="Buscar pieza..." />
+                                    <ComboboxContent>
+                                        {(item) => <ComboboxItem key={item.value} value={item}>{item.label}</ComboboxItem>}
+                                    </ComboboxContent>
+                                    <ComboboxEmpty>No se encontraron piezas.</ComboboxEmpty>
+                                </Combobox>
+                            );
+
+                        }}
+                    />
+                    <p className="text-sm text-red-500">{errors.partId?.message}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                        Úsalo para piezas dañadas o defectuosas halladas directamente en inventario. La pieza sale
+                        de su existencia al registrar la devolución.
+                    </p>
                 </div>
             )}
 

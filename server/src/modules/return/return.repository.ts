@@ -5,7 +5,9 @@ import { safeUserSelect } from "../../shared/constants/safe-user-select.js";
 const includeRelations = {
     sale: { select: { id: true, number: true } },
     saleDetail: { select: { id: true, unitPrice: true } },
+    assembly: { select: { id: true, number: true, productId: true } },
     product: true,
+    part: true,
     store: true,
     user: { select: safeUserSelect },
     resolver: { select: safeUserSelect }

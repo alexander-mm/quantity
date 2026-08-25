@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { useResolveReturn } from "@/hooks";
 import { RETURN_REASON_LABELS } from "./return-reason-labels";
+import { getReturnItemLabel } from "./return-item-label";
 import { ReturnStatusBadge } from "./return-status-badge";
 import type { Return } from "@/types";
 
@@ -40,7 +41,7 @@ export function ResolveReturnModal({ open, item, onOpenChange }: Props) {
                 <div className="space-y-4">
 
                     <div className="flex items-center justify-between text-sm">
-                        <p><strong>Producto:</strong> {item.product.internalCode} - {item.product.name}</p>
+                        <p><strong>Ítem:</strong> {getReturnItemLabel(item)}</p>
                         <ReturnStatusBadge status={item.status} />
                     </div>
 
@@ -48,6 +49,7 @@ export function ResolveReturnModal({ open, item, onOpenChange }: Props) {
                         <p><strong>Cantidad:</strong> {Number(item.quantity)}</p>
                         <p><strong>Motivo:</strong> {RETURN_REASON_LABELS[item.reason]}</p>
                         {item.sale && <p><strong>Venta:</strong> {item.sale.number}</p>}
+                        {item.assembly && <p><strong>Orden de ensamblaje:</strong> {item.assembly.number}</p>}
                         {item.notes && <p><strong>Notas:</strong> {item.notes}</p>}
                         {item.disposition && (
                             <p><strong>Destino:</strong> {item.disposition === "RESTOCK" ? "Vuelve a stock vendible" : "Dañado"}</p>

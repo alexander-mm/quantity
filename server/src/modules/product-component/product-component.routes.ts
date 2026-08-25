@@ -19,10 +19,12 @@ router.get(
     controller.findProductIdsWithRecipe.bind(controller)
 );
 
+// Lectura abierta a cualquier rol autenticado: el formulario de Devoluciones
+// necesita consultar la receta de un kit para dejar elegir qué componente
+// devolver, incluso desde el rol Tienda.
 router.get(
     "/:productId",
     authenticate,
-    authorize(ROLES.ADMIN, ROLES.PRODUCTION),
     controller.findByProduct.bind(controller)
 );
 
