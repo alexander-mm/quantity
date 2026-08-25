@@ -23,13 +23,15 @@ export function SuppliersPage() {
 
     const { data, isLoading, isError } = useSuppliers();
 
+    const supplierList = data?.data ?? [];
+
     const deleteSupplierMutation =
         useDeleteSupplier();
 
     const [search, setSearch] = useState("");
 
     const suppliers = useMemo(() => {
-        const list = data?.data ?? [];
+        const list = supplierList;
         if (!search) return list;
         const term = search.toLowerCase();
         return list.filter(s =>
@@ -37,7 +39,7 @@ export function SuppliersPage() {
             s.code.toLowerCase().includes(term) ||
             (s.contactName ?? "").toLowerCase().includes(term)
         );
-    }, [data, search]);
+    }, [supplierList, search]);
 
     const [open, setOpen] =
         useState(false);
@@ -63,7 +65,7 @@ export function SuppliersPage() {
 
                     <SuppliersToolbar
                         onNewSupplier={() => setOpen(true)}
-                        search={search}
+                        suppliers={supplierList}
                         onSearchChange={setSearch}
                     />
 
@@ -117,7 +119,7 @@ export function SuppliersPage() {
 
                 <SuppliersToolbar
                     onNewSupplier={() => setOpen(true)}
-                    search={search}
+                    suppliers={supplierList}
                     onSearchChange={setSearch}
                 />
 

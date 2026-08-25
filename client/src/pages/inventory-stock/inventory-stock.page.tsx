@@ -5,7 +5,7 @@ import {
     InventoryStockTable
 } from "@/components";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { StoreSelector } from "@/components/selectors/store-selector";
 import { useInventoryStock, useLowStock, useStores } from "@/hooks";
 
@@ -59,13 +59,12 @@ export function InventoryStockPage() {
 
                 <div className="flex flex-col gap-4 md:flex-1 md:flex-row md:items-end">
 
-                    <div className="w-full max-w-sm">
-                        <Input
-                            placeholder="Buscar producto..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                        />
-                    </div>
+                    <SearchInput
+                        placeholder="Buscar producto..."
+                        value={search}
+                        onChange={setSearch}
+                        className="max-w-sm"
+                    />
 
                     <div className="w-full max-w-xs">
                         <StoreSelector

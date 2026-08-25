@@ -1,6 +1,6 @@
-import { Plus, Search } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 
 type Props = {
     onNewRawMaterial: () => void;
@@ -11,15 +11,11 @@ type Props = {
 export function RawMaterialsToolbar({ onNewRawMaterial, search, onSearchChange }: Props) {
     return (
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="relative w-full max-w-md">
-                <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                    placeholder="Buscar materia prima..."
-                    className="pl-10"
-                    value={search}
-                    onChange={(e) => onSearchChange(e.target.value)}
-                />
-            </div>
+            <SearchInput
+                placeholder="Buscar materia prima..."
+                value={search}
+                onChange={onSearchChange}
+            />
             <Button onClick={onNewRawMaterial}>
                 <Plus size={18} />
                 Nueva materia prima

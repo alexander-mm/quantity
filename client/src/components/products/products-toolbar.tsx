@@ -1,6 +1,6 @@
-import { Search, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { StoreSelector } from "@/components/selectors/store-selector";
 import { BarcodeScanButton } from "@/components/scanner";
 import { useAuth } from "@/hooks";
@@ -41,19 +41,12 @@ export function ProductsToolbar(
             <div className="flex flex-col gap-4 md:flex-1 md:flex-row md:items-end">
 
                 <div className="flex w-full max-w-md items-center gap-2">
-                    <div className="relative flex-1">
-                        <Search
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                            size={18}
-                        />
-
-                        <Input
-                            placeholder="Buscar producto..."
-                            className="pl-10"
-                            value={search}
-                            onChange={(e) => onSearchChange(e.target.value)}
-                        />
-                    </div>
+                    <SearchInput
+                        placeholder="Buscar producto..."
+                        value={search}
+                        onChange={onSearchChange}
+                        className="flex-1"
+                    />
 
                     <BarcodeScanButton onScan={onSearchChange} />
                 </div>

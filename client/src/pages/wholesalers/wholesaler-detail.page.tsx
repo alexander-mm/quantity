@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
 import axios from "axios";
-import { ArrowLeft, Search } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import {
     PageContainer,
     PageHeader,
@@ -15,7 +15,7 @@ import {
     MarkPaidDialog,
     ConfirmSaleDialog
 } from "@/components";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import { getClientLabel } from "@/lib/client-label";
 import {
@@ -80,16 +80,12 @@ export function WholesalerDetailPage() {
                 description="Historial de cuentas de cobro, empezando por las más recientes."
             />
 
-            <div className="mt-6 max-w-md">
-                <div className="relative">
-                    <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                        placeholder="Buscar por número de cuenta de cobro..."
-                        className="pl-10"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                </div>
+            <div className="mt-6">
+                <SearchInput
+                    placeholder="Buscar por número de cuenta de cobro..."
+                    value={search}
+                    onChange={setSearch}
+                />
             </div>
 
             <div className="mt-6">
