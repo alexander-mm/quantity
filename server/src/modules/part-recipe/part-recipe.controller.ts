@@ -37,6 +37,35 @@ export class PartRecipeController {
 
     }
 
+    async remove(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+
+        try {
+
+            const { partId } = req.params;
+
+            if (!partId || Array.isArray(partId)) {
+                res.status(400).json(ApiResponse.error("Id de pieza inválido."));
+                return;
+            }
+
+            await this.service.remove(partId);
+
+            res.status(200).json(
+                ApiResponse.success("Receta de corte eliminada correctamente.", null)
+            );
+
+        } catch (error) {
+
+            next(error);
+
+        }
+
+    }
+
     async set(
         req: Request,
         res: Response,

@@ -100,6 +100,20 @@ export class PartRecipeRepository extends BaseRepository {
 
     }
 
+    async delete(
+        partId: bigint
+    ): Promise<void> {
+
+        await this.prisma.partRecipe.deleteMany({
+
+            where: {
+                partId
+            }
+
+        });
+
+    }
+
     withTransaction(
         tx: Prisma.TransactionClient
     ): PartRecipeRepository {

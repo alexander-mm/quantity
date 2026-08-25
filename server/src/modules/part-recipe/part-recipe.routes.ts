@@ -27,4 +27,11 @@ router.put(
     controller.set.bind(controller)
 );
 
+router.delete(
+    "/:partId",
+    authenticate,
+    authorize(ROLES.ADMIN, ROLES.PRODUCTION),
+    controller.remove.bind(controller)
+);
+
 export default router;

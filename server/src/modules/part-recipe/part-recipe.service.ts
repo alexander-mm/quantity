@@ -44,4 +44,24 @@ export class PartRecipeService {
 
     }
 
+    // La receta es opcional: si el usuario quita la materia prima de origen, se elimina en
+    // vez de dejarla "huérfana" en la base. El costo vuelve a depender solo de los costos
+    // adicionales de la pieza (soldadura / otro), ya que sin receta no hay costo de material.
+    async remove(partId: string): Promise<void> {
+
+        const part = await this.partRepository.findById(BigInt(partId));
+
+        if (!part) {
+            throw new NotFoundError("Pieza no encontrada.");
+        }
+
+        await this.repository.delete(BigInt(partId));
+
+        const weldingCost = part.weldingCost ? Number(part.weldingCost) : 0;
+        const otherCost = part.otherCostAmount ? Number(part.otherCostAmount) : 0;
+
+        await this.partRepository.update(BigInt(partId), { cost: weldingCost + otherCost });
+
+    }
+
 }
