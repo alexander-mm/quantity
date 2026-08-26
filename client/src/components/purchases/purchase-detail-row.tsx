@@ -139,7 +139,7 @@ export function PurchaseDetailRow({
 
                                 setValue(
                                     `details.${index}.unitCost`,
-                                    Number(product.costPrice)
+                                    Number(product.baseCostPrice)
                                 );
 
                             }).catch(error=>{
