@@ -43,11 +43,24 @@ export const createProductSchema = z.object({
         .string()
         .trim(),
 
-    costPrice: z
+    baseCostPrice: z
         .number({
             error: "El costo es obligatorio."
         })
         .nonnegative("El costo no puede ser negativo."),
+
+    additionalCosts: z
+        .array(z.object({
+            description: z
+                .string()
+                .trim()
+                .min(1, "La descripción del costo adicional es obligatoria.")
+                .max(150, "La descripción no puede superar los 150 caracteres."),
+            amount: z
+                .number({ error: "El monto es obligatorio." })
+                .nonnegative("El monto no puede ser negativo.")
+        }))
+        .optional(),
 
     pvp: z
         .number({

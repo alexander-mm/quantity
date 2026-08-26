@@ -41,7 +41,7 @@ export class RawMaterialAdjustmentRepository extends BaseRepository {
             },
 
             orderBy: {
-                movementDate: "desc"
+                id: "desc"
             }
 
         });

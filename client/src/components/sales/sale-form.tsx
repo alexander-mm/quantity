@@ -7,7 +7,7 @@ import { toast } from "react-hot-toast";
 import axios from "axios";
 import { saleSchema } from "@/validators";
 import type { SaleFormData } from "@/validators";
-import { useCreateSale, useUpdateSale, useUsers, useAuth, useNextSaleNumber } from "@/hooks";
+import { useCreateSale, useUpdateSale, useUsers, useAuth, useNextSaleNumber, useConvertQuote } from "@/hooks";
 import { generateOfflineId, todayLocalDateString } from "@/lib";
 import { SaleHeader } from "./sale-header";
 import { SalePaymentSection } from "./sale-payment-section";
@@ -15,8 +15,16 @@ import { SaleDetailsTable } from "./sale-details-table";
 import { SaleTotals } from "./sale-totals";
 import type { Sale } from "@/types";
 
+export type PrefillFromQuote = {
+    quoteId: string;
+    clientId: string;
+    currency: "USD" | "COP";
+    details: { productId: string; quantity: number; unitPrice: number; discount: number; tax: number }[];
+};
+
 type Props = {
     sale?: Sale | null;
+    prefill?: PrefillFromQuote;
     onSuccess?: () => void;
 };
 
@@ -54,6 +62,7 @@ function toFormData(sale: Sale): SaleFormData {
 
 export function SaleForm({
     sale,
+    prefill,
     onSuccess
 }: Props) {
 
@@ -70,9 +79,9 @@ export function SaleForm({
 
             defaultValues: sale ? toFormData(sale) : {
                 number: "",
-                clientId: "",
+                clientId: prefill?.clientId ?? "",
                 storeId: currentUser?.storeId ?? "",
-                currency: "USD",
+                currency: prefill?.currency ?? "USD",
                 saleDate: todayLocalDateString(),
                 reference: "",
                 observations: "",
@@ -91,7 +100,7 @@ export function SaleForm({
                 priceEntryKey: "",
                 // Solo controla el % de descuento que se reparte entre las líneas de esta venta.
                 totalDiscountPercentage: undefined,
-                details: []
+                details: prefill?.details ?? []
             }
         });
 
@@ -204,6 +213,9 @@ const total =
     const updateMutation =
         useUpdateSale();
 
+    const convertQuoteMutation =
+        useConvertQuote();
+
     const loading =
         createMutation.isPending || updateMutation.isPending;
 
@@ -260,6 +272,9 @@ const total =
                     toast.success( "Sin conexión: la venta quedó guardada y se sincronizará automáticamente." );
                 } else {
                     toast.success( "Venta registrada." );
+                    if (prefill?.quoteId && result.data?.id) {
+                        convertQuoteMutation.mutate({ id: prefill.quoteId, saleId: result.data.id });
+                    }
                 }
                 methods.reset();
                 onSuccess?.();

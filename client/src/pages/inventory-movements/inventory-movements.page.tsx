@@ -9,7 +9,8 @@ import {
     ConfirmInventoryMovementDialog,
     CancelInventoryMovementDialog
 } from "@/components";
-import { useInventoryMovements, useConfirmInventoryMovement, useCancelInventoryMovement, useStores } from "@/hooks";
+import { useInventoryMovements, useConfirmInventoryMovement, useCancelInventoryMovement, useStores, usePagination } from "@/hooks";
+import { PaginationControls } from "@/components/ui";
 import { toast } from "react-hot-toast";
 import { useState, useMemo } from "react";
 import type { InventoryMovement } from "@/types";
@@ -56,6 +57,8 @@ export function InventoryMovementsPage() {
         });
 
     }, [data, search, storeId]);
+
+    const { pageItems: pagedMovements, page, setPage, totalPages, totalItems, pageSize } = usePagination(movements);
 
     if (isLoading) {
 
@@ -118,15 +121,19 @@ export function InventoryMovementsPage() {
                         : (
                             <>
                                 <InventoryMovementsTable
-                                    movements={movements}
+                                    movements={pagedMovements}
                                     onView={(movement) => setMovementToView(movement)}
                                     onEdit={(movement) => setMovementToEdit(movement)}
                                     onConfirm={(movement) => setMovementToConfirm(movement)}
                                     onCancel={(movement) => setMovementToCancel(movement)}
                                 />
-                                <p className="mt-4 text-sm text-muted-foreground">
-                                    Mostrando {movements.length} movimientos
-                                </p>
+                                <PaginationControls
+                                    page={page}
+                                    totalPages={totalPages}
+                                    onPageChange={setPage}
+                                    totalItems={totalItems}
+                                    pageSize={pageSize}
+                                />
                             </>
                         )
                 }

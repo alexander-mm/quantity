@@ -54,7 +54,7 @@ export class SaleRepository extends BaseRepository {
         return this.prisma.sale.findMany({
             where: storeId ? { storeId } : undefined,
             orderBy: {
-                saleDate: "desc"
+                id: "desc"
             },
             include: saleIncludeRelations
         });

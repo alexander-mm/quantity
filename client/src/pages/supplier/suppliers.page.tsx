@@ -12,9 +12,12 @@ import {
 
 import { useState, useMemo } from "react";
 
+import { PaginationControls } from "@/components/ui";
+
 import {
     useSuppliers,
-    useDeleteSupplier
+    useDeleteSupplier,
+    usePagination
 } from "@/hooks";
 
 import type { Supplier } from "@/types";
@@ -40,6 +43,8 @@ export function SuppliersPage() {
             (s.contactName ?? "").toLowerCase().includes(term)
         );
     }, [supplierList, search]);
+
+    const { pageItems: pagedSuppliers, page, setPage, totalPages, totalItems, pageSize } = usePagination(suppliers);
 
     const [open, setOpen] =
         useState(false);
@@ -143,7 +148,7 @@ export function SuppliersPage() {
 
                                 <SuppliersTable
 
-                                    suppliers={suppliers}
+                                    suppliers={pagedSuppliers}
 
                                     onEdit={(supplier) => {
 
@@ -165,11 +170,13 @@ export function SuppliersPage() {
 
                                 />
 
-                                <p className="mt-4 text-sm text-muted-foreground">
-
-                                    Mostrando {suppliers.length} proveedores
-
-                                </p>
+                                <PaginationControls
+                                    page={page}
+                                    totalPages={totalPages}
+                                    onPageChange={setPage}
+                                    totalItems={totalItems}
+                                    pageSize={pageSize}
+                                />
 
                             </>
 

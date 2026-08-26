@@ -41,7 +41,7 @@ export class InventoryAdjustmentRepository extends BaseRepository {
             },
 
             orderBy: {
-                movementDate: "desc"
+                id: "desc"
             }
 
         });

@@ -292,7 +292,7 @@ async function main() {
                         brand,
                         categoryId,
                         unitOfMeasure,
-                        costPrice: Number(costPrice),
+                        baseCostPrice: Number(costPrice),
                         pvp: firstUsd.price,
                         pvpCop: firstCop?.price,
                         minimumStock: Number(minimumStock)

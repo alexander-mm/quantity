@@ -82,6 +82,7 @@ model User {
   returnsRegistered          Return[]              @relation("ReturnRegisteredBy")
   returnsResolved            Return[]              @relation("ReturnResolvedBy")
   refreshTokens              RefreshToken[]
+  quotes                     Quote[]
 
   @@index([isActive])
 }
@@ -162,7 +163,12 @@ model Product {
   brandId              BigInt
   categoryId           BigInt
   unitOfMeasureId      BigInt
+  // costPrice: costo TOTAL (baseCostPrice + suma de additionalCosts), calculado
+  // y guardado por el servicio — es lo que consume todo el resto del sistema
+  // (kardex, consumo de componentes en kits, etc.). baseCostPrice es el costo
+  // editable (manual o calculado desde los componentes de la receta).
   costPrice            Decimal                     @db.Decimal(12, 2)
+  baseCostPrice        Decimal                     @default(0) @db.Decimal(12, 2)
   pvp                  Decimal?                    @db.Decimal(12, 2)
   pvpCop               Decimal?                    @db.Decimal(14, 2)
   minimumStock         Decimal                     @db.Decimal(12, 2)
@@ -178,6 +184,7 @@ model Product {
   inventoryMovements   InventoryMovement[]
   inventoryStocks      InventoryStock[]
   damagedStocks        DamagedStock[]
+  additionalCosts      ProductAdditionalCost[]
   brand                Brand                       @relation(fields: [brandId], references: [id])
   category             Category                    @relation(fields: [categoryId], references: [id])
   unitOfMeasure        UnitOfMeasure               @relation(fields: [unitOfMeasureId], references: [id])
@@ -194,12 +201,27 @@ model Product {
   usedInPartComponents PartComponentProduct[]
   usedInPartAssemblies PartAssemblyProductDetail[]
   returns              Return[]
+  quoteDetails         QuoteDetail[]
 
   @@index([name])
   @@index([categoryId])
   @@index([brandId])
   @@index([unitOfMeasureId])
   @@index([isActive])
+}
+
+model ProductAdditionalCost {
+  id          BigInt   @id @default(autoincrement())
+  uuid        String   @unique @default(uuid())
+  productId   BigInt
+  description String
+  amount      Decimal  @db.Decimal(12, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([productId])
 }
 
 model MarginProfile {
@@ -262,6 +284,7 @@ model Client {
   inventoryMovements InventoryMovement[]
   sales              Sale[]
   accountsReceivable AccountReceivable[]
+  quotes             Quote[]
 
   @@index([firstName])
   @@index([lastName])
@@ -403,6 +426,7 @@ model Sale {
   details           SaleDetail[]
   accountReceivable AccountReceivable?
   returns           Return[]
+  convertedFromQuote Quote?
   transferVouchers  SaleTransferVoucher[]
 
   subtotal     Decimal @default(0) @db.Decimal(12, 2)
@@ -956,6 +980,52 @@ model AccountReceivablePaymentVoucher {
   payment AccountReceivablePayment @relation(fields: [paymentId], references: [id])
 
   @@index([paymentId])
+}
+
+model Quote {
+  id              BigInt    @id @default(autoincrement())
+  uuid            String    @unique @default(uuid())
+  number          String    @unique
+  clientId        BigInt
+  userId          BigInt
+  currency        Currency  @default(USD)
+  quoteDate       DateTime
+  validUntil      DateTime?
+  observations    String?
+  subtotal        Decimal   @default(0) @db.Decimal(12, 2)
+  discount        Decimal   @default(0) @db.Decimal(12, 2)
+  tax             Decimal   @default(0) @db.Decimal(12, 2)
+  total           Decimal   @default(0) @db.Decimal(12, 2)
+  convertedSaleId BigInt?   @unique
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  client        Client  @relation(fields: [clientId], references: [id])
+  user          User    @relation(fields: [userId], references: [id])
+  convertedSale Sale?   @relation(fields: [convertedSaleId], references: [id])
+  details       QuoteDetail[]
+
+  @@index([clientId])
+  @@index([userId])
+}
+
+model QuoteDetail {
+  id        BigInt  @id @default(autoincrement())
+  uuid      String  @unique @default(uuid())
+  quoteId   BigInt
+  productId BigInt
+
+  quantity  Decimal @db.Decimal(12, 2)
+  unitPrice Decimal @db.Decimal(12, 2)
+  discount  Decimal @default(0) @db.Decimal(12, 2)
+  tax       Decimal @default(0) @db.Decimal(12, 2)
+  lineTotal Decimal @db.Decimal(12, 2)
+
+  quote   Quote   @relation(fields: [quoteId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([quoteId])
+  @@index([productId])
 }
 
 model ProductAssemblyDetail {

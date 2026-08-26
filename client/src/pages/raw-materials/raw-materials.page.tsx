@@ -11,7 +11,8 @@ import {
     DeleteRawMaterialDialog
 } from "@/components";
 import { Button } from "@/components/ui/button";
-import { useRawMaterials, useLowStockRawMaterials, useDeleteRawMaterial } from "@/hooks";
+import { PaginationControls } from "@/components/ui";
+import { useRawMaterials, useLowStockRawMaterials, useDeleteRawMaterial, usePagination } from "@/hooks";
 import type { RawMaterial } from "@/types";
 
 export function RawMaterialsPage() {
@@ -66,6 +67,8 @@ export function RawMaterialsPage() {
 
     }, [data, search]);
 
+    const { pageItems: pagedRawMaterials, page, setPage, totalPages, totalItems, pageSize } = usePagination(rawMaterials);
+
     return (
         <PageContainer>
 
@@ -101,14 +104,23 @@ export function RawMaterialsPage() {
                     rawMaterials.length === 0
                         ? <RawMaterialsEmptyState />
                         : (
-                            <RawMaterialsTable
-                                rawMaterials={rawMaterials}
-                                onEdit={(item) => {
-                                    setSelected(item);
-                                    setOpen(true);
-                                }}
-                                onDelete={(item) => setToDelete(item)}
-                            />
+                            <>
+                                <RawMaterialsTable
+                                    rawMaterials={pagedRawMaterials}
+                                    onEdit={(item) => {
+                                        setSelected(item);
+                                        setOpen(true);
+                                    }}
+                                    onDelete={(item) => setToDelete(item)}
+                                />
+                                <PaginationControls
+                                    page={page}
+                                    totalPages={totalPages}
+                                    onPageChange={setPage}
+                                    totalItems={totalItems}
+                                    pageSize={pageSize}
+                                />
+                            </>
                         )
                 )}
             </div>

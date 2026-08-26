@@ -6,8 +6,9 @@ import {
 } from "@/components";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
+import { PaginationControls } from "@/components/ui";
 import { StoreSelector } from "@/components/selectors/store-selector";
-import { useInventoryStock, useLowStock, useStores } from "@/hooks";
+import { useInventoryStock, useLowStock, useStores, usePagination } from "@/hooks";
 import { ALL_STORES_SUMMED } from "@/constants/inventory";
 import type { InventoryStock } from "@/types";
 
@@ -82,6 +83,8 @@ export function InventoryStockPage() {
 
     }, [data, search, storeId]);
 
+    const { pageItems: pagedStock, page, setPage, totalPages, totalItems, pageSize } = usePagination(filteredStock);
+
     return (
         <PageContainer>
             <PageHeader
@@ -141,12 +144,16 @@ export function InventoryStockPage() {
                 <>
                     <div className="mt-6">
                         <InventoryStockTable
-                            stock={filteredStock}
+                            stock={pagedStock}
                         />
                     </div>
-                    <p className="mt-4 text-sm text-muted-foreground">
-                        Mostrando {filteredStock.length} registros
-                    </p>
+                    <PaginationControls
+                        page={page}
+                        totalPages={totalPages}
+                        onPageChange={setPage}
+                        totalItems={totalItems}
+                        pageSize={pageSize}
+                    />
                 </>
             )}
         </PageContainer>

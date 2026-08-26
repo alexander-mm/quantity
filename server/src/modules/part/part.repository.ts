@@ -31,7 +31,7 @@ export class PartRepository extends BaseRepository {
             },
 
             orderBy: {
-                createdAt: "desc"
+                id: "desc"
             }
 
         });
@@ -65,7 +65,7 @@ export class PartRepository extends BaseRepository {
             },
 
             orderBy: {
-                name: "asc"
+                id: "desc"
             }
 
         });
@@ -85,7 +85,7 @@ export class PartRepository extends BaseRepository {
             },
 
             orderBy: {
-                name: "asc"
+                id: "desc"
             }
 
         });

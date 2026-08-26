@@ -34,7 +34,7 @@ export class InventoryMovementRepository extends BaseRepository {
                 client: true
             },
             orderBy: {
-                movementDate: "desc"
+                id: "desc"
             }
         });
     }

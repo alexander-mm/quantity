@@ -1,6 +1,9 @@
 import { PageContainer, PageHeader, SalesToolbar, SalesTable, SaleModal, SaleViewModal } from "@/components";
-import { useSales, useStores } from "@/hooks";
-import { useMemo, useState } from "react";
+import type { PrefillFromQuote } from "@/components/sales/sale-form";
+import { PaginationControls } from "@/components/ui";
+import { useSales, useStores, usePagination } from "@/hooks";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import type { Sale } from "@/types";
 import { getClientLabel } from "@/lib/client-label";
 
@@ -17,6 +20,35 @@ export function SalesPage() {
 
     const [search, setSearch] = useState("");
     const [storeFilter, setStoreFilter] = useState("");
+
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [prefill, setPrefill] = useState<PrefillFromQuote | undefined>(undefined);
+
+    const [open, setOpen] =
+        useState(false);
+
+    const [
+        saleToView,
+        setSaleToView
+    ] = useState<Sale | null>(null);
+
+    const [
+        saleToEdit,
+        setSaleToEdit
+    ] = useState<Sale | null>(null);
+
+    useEffect(() => {
+
+        const state = location.state as { prefillFromQuote?: PrefillFromQuote } | null;
+
+        if (state?.prefillFromQuote) {
+            setPrefill(state.prefillFromQuote);
+            setOpen(true);
+            navigate(location.pathname, { replace: true, state: null });
+        }
+
+    }, [location, navigate]);
 
     const sales = useMemo(() => {
 
@@ -40,18 +72,7 @@ export function SalesPage() {
 
     }, [data, search, storeFilter]);
 
-    const [open, setOpen] =
-        useState(false);
-
-    const [
-        saleToView,
-        setSaleToView
-    ] = useState<Sale | null>(null);
-
-    const [
-        saleToEdit,
-        setSaleToEdit
-    ] = useState<Sale | null>(null);
+    const { pageItems: pagedSales, page, setPage, totalPages, totalItems, pageSize } = usePagination(sales);
 
     return (
 
@@ -107,7 +128,7 @@ export function SalesPage() {
                         : (
                             <>
                                 <SalesTable
-                                    sales={sales}
+                                    sales={pagedSales}
                                     onView={(sale) => {
 
                                         setSaleToView(
@@ -124,9 +145,13 @@ export function SalesPage() {
                                     }}
                                 />
 
-                                <p className="mt-4 text-sm text-muted-foreground">
-                                    Mostrando {sales.length} ventas
-                                </p>
+                                <PaginationControls
+                                    page={page}
+                                    totalPages={totalPages}
+                                    onPageChange={setPage}
+                                    totalItems={totalItems}
+                                    pageSize={pageSize}
+                                />
                             </>
                         )
 
@@ -136,7 +161,13 @@ export function SalesPage() {
 
             <SaleModal
                 open={open}
-                onOpenChange={setOpen}
+                prefill={prefill}
+                onOpenChange={(value) => {
+                    setOpen(value);
+                    if (!value) {
+                        setPrefill(undefined);
+                    }
+                }}
             />
 
             <SaleModal

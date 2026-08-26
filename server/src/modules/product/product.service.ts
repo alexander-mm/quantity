@@ -139,7 +139,7 @@ export class ProductService {
     async syncPricingFromPurchase(
         id: bigint,
         data: {
-            costPrice: number;
+            baseCostPrice: number;
             pvp?: number;
             pvpCop?: number;
         },
@@ -150,7 +150,22 @@ export class ProductService {
         const marginRepository = this.marginRepository.withTransaction(tx);
         const productPriceRepository = this.productPriceRepository.withTransaction(tx);
 
-        await repository.updatePricing(id, data);
+        // El costo base cambia con cada compra, pero los costos adicionales
+        // (flete, empaque, etc.) ya guardados se mantienen y se vuelven a sumar
+        // sobre el nuevo costo base.
+        const product = await repository.findById(id);
+
+        const additionalCostsTotal = (product?.additionalCosts ?? []).reduce(
+            (sum, item) => sum + Number(item.amount),
+            0
+        );
+
+        await repository.updatePricing(id, {
+            baseCostPrice: data.baseCostPrice,
+            costPrice: data.baseCostPrice + additionalCostsTotal,
+            pvp: data.pvp,
+            pvpCop: data.pvpCop
+        });
 
         await this.recalculatePrices(
             id,
@@ -172,11 +187,12 @@ export class ProductService {
             brand: string;
             categoryId: bigint;
             unitOfMeasure: string;
-            costPrice: number;
+            baseCostPrice: number;
             pvp: number;
             pvpCop?: number;
             minimumStock: number;
             assembleOnSale?: boolean;
+            additionalCosts?: { description: string; amount: number }[];
         }
     ): Promise<Product> {
 
@@ -269,6 +285,11 @@ export class ProductService {
                 });
             }
 
+            const additionalCostsTotal = (data.additionalCosts ?? []).reduce(
+                (sum, item) => sum + item.amount,
+                0
+            );
+
             const updatedProduct =
                 await repository.update(
                     BigInt(id),
@@ -280,11 +301,13 @@ export class ProductService {
                         brandId: brand.id,
                         categoryId: data.categoryId,
                         unitOfMeasureId: unit.id,
-                        costPrice: data.costPrice,
+                        baseCostPrice: data.baseCostPrice,
+                        costPrice: data.baseCostPrice + additionalCostsTotal,
                         pvp: data.pvp,
                         pvpCop: data.pvpCop,
                         minimumStock: data.minimumStock,
-                        assembleOnSale: data.assembleOnSale
+                        assembleOnSale: data.assembleOnSale,
+                        additionalCosts: data.additionalCosts
                     }
                 );
 
@@ -310,11 +333,12 @@ export class ProductService {
         brand: string;
         categoryId: bigint;
         unitOfMeasure: string;
-        costPrice: number;
+        baseCostPrice: number;
         pvp: number;
         pvpCop?: number;
         minimumStock: number;
         assembleOnSale?: boolean;
+        additionalCosts?: { description: string; amount: number }[];
     }): Promise<Product> {
 
         const productRepository = this.repository;
@@ -384,6 +408,11 @@ export class ProductService {
         }
 
 
+        const additionalCostsTotal = (data.additionalCosts ?? []).reduce(
+            (sum, item) => sum + item.amount,
+            0
+        );
+
         const product = await this.repository.create({
 
             internalCode: data.internalCode,
@@ -393,11 +422,13 @@ export class ProductService {
             brandId: brand.id,
             categoryId: data.categoryId,
             unitOfMeasureId: unit.id,
-            costPrice: data.costPrice,
+            baseCostPrice: data.baseCostPrice,
+            costPrice: data.baseCostPrice + additionalCostsTotal,
             pvp: data.pvp,
             pvpCop: data.pvpCop,
             minimumStock: data.minimumStock,
-            assembleOnSale: data.assembleOnSale
+            assembleOnSale: data.assembleOnSale,
+            additionalCosts: data.additionalCosts
         });
 
         await this.recalculatePrices(

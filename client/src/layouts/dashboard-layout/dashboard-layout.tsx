@@ -97,6 +97,7 @@ export function DashboardLayout({
             icon: ShoppingCart,
             items: [
                 { to: "/clients", label: "Admin. de Clientes", visibility: "nonProduction" },
+                { to: "/quotes", label: "Cotizaciones", visibility: "nonProduction" },
                 { to: "/sales", label: "Ventas", visibility: "nonProduction" },
                 { to: "/pending-sync", label: "Mis pendientes", visibility: "nonProduction", badge: pendingSyncSalesCount },
                 { to: "/returns", label: "Devoluciones", visibility: "nonProduction" },

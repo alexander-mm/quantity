@@ -46,11 +46,12 @@ export type CreateProductRequest = {
     brand: string;
     categoryId: string;
     unitOfMeasure: string;
-    costPrice: number;
+    baseCostPrice: number;
     pvp: number;
     pvpCop?: number;
     minimumStock: number;
     assembleOnSale?: boolean;
+    additionalCosts?: { description: string; amount: number }[];
 };
 
 export async function createProduct(
@@ -79,11 +80,12 @@ export type UpdateProductRequest = {
     brand: string;
     categoryId: string;
     unitOfMeasure: string;
-    costPrice: number;
+    baseCostPrice: number;
     pvp: number;
     pvpCop?: number;
     minimumStock: number;
     assembleOnSale?: boolean;
+    additionalCosts?: { description: string; amount: number }[];
 };
 
 export async function updateProduct(

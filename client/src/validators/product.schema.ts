@@ -16,7 +16,12 @@ export const productSchema = z.object({
 
     unitOfMeasure: z.string().min(1, "Ingrese una unidad de medida"),
 
-    costPrice: z.coerce.number({ error: "El costo es obligatorio." }).min(0),
+    baseCostPrice: z.coerce.number({ error: "El costo es obligatorio." }).min(0),
+
+    additionalCosts: z.array(z.object({
+        description: z.string().trim().min(1, "Ingrese una descripción."),
+        amount: z.coerce.number({ error: "El monto es obligatorio." }).min(0, "El monto no puede ser negativo.")
+    })).optional(),
 
     pvp: z.coerce.number({ error: "El PVP es obligatorio." }).positive("El PVP debe ser mayor que cero."),
 

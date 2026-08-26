@@ -6,17 +6,20 @@ import {
 } from "@/components/ui/dialog";
 
 import { SaleForm } from "./sale-form";
+import type { PrefillFromQuote } from "./sale-form";
 import type { Sale } from "@/types";
 
 type Props={
     open:boolean;
     sale?: Sale | null;
+    prefill?: PrefillFromQuote;
     onOpenChange:(open:boolean)=>void;
 };
 
 export function SaleModal({
     open,
     sale,
+    prefill,
     onOpenChange
 }:Props){
 
@@ -40,6 +43,7 @@ export function SaleModal({
                 <SaleForm
                     key={sale?.id ?? "new"}
                     sale={sale}
+                    prefill={prefill}
                     onSuccess={()=>{
                         onOpenChange(false);
                     }}

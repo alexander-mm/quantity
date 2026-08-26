@@ -13,14 +13,17 @@ import {
 import {
     usePartAssemblies,
     useConfirmPartAssembly,
-    useDeletePartAssembly
+    useDeletePartAssembly,
+    usePagination
 } from "@/hooks";
+import { PaginationControls } from "@/components/ui";
 import type { PartAssembly } from "@/types";
 
 export function PartAssemblySection() {
 
     const { data, isLoading, isError } = usePartAssemblies();
     const assemblies = data?.data ?? [];
+    const { pageItems: pagedAssemblies, page, setPage, totalPages, totalItems, pageSize } = usePagination(assemblies);
 
     const [open, setOpen] = useState(false);
     const [selectedAssembly, setSelectedAssembly] = useState<PartAssembly | null>(null);
@@ -44,16 +47,25 @@ export function PartAssemblySection() {
                     assemblies.length === 0
                         ? <PartAssembliesEmptyState />
                         : (
-                            <PartAssembliesTable
-                                assemblies={assemblies}
-                                onView={(assembly) => setAssemblyToView(assembly)}
-                                onEdit={(assembly) => {
-                                    setSelectedAssembly(assembly);
-                                    setOpen(true);
-                                }}
-                                onConfirm={(assembly) => setAssemblyToConfirm(assembly)}
-                                onDelete={(assembly) => setAssemblyToDelete(assembly)}
-                            />
+                            <>
+                                <PartAssembliesTable
+                                    assemblies={pagedAssemblies}
+                                    onView={(assembly) => setAssemblyToView(assembly)}
+                                    onEdit={(assembly) => {
+                                        setSelectedAssembly(assembly);
+                                        setOpen(true);
+                                    }}
+                                    onConfirm={(assembly) => setAssemblyToConfirm(assembly)}
+                                    onDelete={(assembly) => setAssemblyToDelete(assembly)}
+                                />
+                                <PaginationControls
+                                    page={page}
+                                    totalPages={totalPages}
+                                    onPageChange={setPage}
+                                    totalItems={totalItems}
+                                    pageSize={pageSize}
+                                />
+                            </>
                         )
                 )}
             </div>

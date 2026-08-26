@@ -7,12 +7,14 @@ import {
     PartAdjustmentsEmptyState,
     PartAdjustmentModal
 } from "@/components";
-import { usePartAdjustments } from "@/hooks";
+import { PaginationControls } from "@/components/ui";
+import { usePartAdjustments, usePagination } from "@/hooks";
 
 export function PartAdjustmentsPage() {
 
     const { data, isLoading, isError } = usePartAdjustments();
     const adjustments = data?.data ?? [];
+    const { pageItems: pagedAdjustments, page, setPage, totalPages, totalItems, pageSize } = usePagination(adjustments);
     const [open, setOpen] = useState(false);
 
     return (
@@ -33,7 +35,18 @@ export function PartAdjustmentsPage() {
                 {!isLoading && !isError && (
                     adjustments.length === 0
                         ? <PartAdjustmentsEmptyState />
-                        : <PartAdjustmentsTable adjustments={adjustments} />
+                        : (
+                            <>
+                                <PartAdjustmentsTable adjustments={pagedAdjustments} />
+                                <PaginationControls
+                                    page={page}
+                                    totalPages={totalPages}
+                                    onPageChange={setPage}
+                                    totalItems={totalItems}
+                                    pageSize={pageSize}
+                                />
+                            </>
+                        )
                 )}
             </div>
 

@@ -53,7 +53,7 @@ export class ProductQueryRepository extends BaseRepository {
                 }
             },
             orderBy: {
-                name: "asc"
+                id: "desc"
             }
         });
 
@@ -81,6 +81,7 @@ export class ProductQueryRepository extends BaseRepository {
                 name: true,
                 description: true,
                 costPrice: true,
+                baseCostPrice: true,
                 pvp: true,
                 pvpCop: true,
                 minimumStock: true,
@@ -95,6 +96,14 @@ export class ProductQueryRepository extends BaseRepository {
                 unitOfMeasure: {
                     select: {
                         name: true
+                    }
+                },
+
+                additionalCosts: {
+                    select: {
+                        id: true,
+                        description: true,
+                        amount: true
                     }
                 }
             }
@@ -114,9 +123,11 @@ export class ProductQueryRepository extends BaseRepository {
             categoryId: product.categoryId,
             unitOfMeasure: product.unitOfMeasure.name,
             costPrice: product.costPrice,
+            baseCostPrice: product.baseCostPrice,
             pvp: product.pvp,
             pvpCop: product.pvpCop,
-            minimumStock: product.minimumStock
+            minimumStock: product.minimumStock,
+            additionalCosts: product.additionalCosts
         };
     }
 }

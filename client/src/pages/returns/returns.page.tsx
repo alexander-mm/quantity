@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { PageContainer, PageHeader, ReturnsTable, ReturnModal, ResolveReturnModal } from "@/components";
 import { Button } from "@/components/ui/button";
-import { useReturns } from "@/hooks";
+import { PaginationControls } from "@/components/ui";
+import { useReturns, usePagination } from "@/hooks";
 import type { Return } from "@/types";
 
 export function ReturnsPage() {
@@ -16,6 +17,8 @@ export function ReturnsPage() {
 
     const damagedCount = allReturns.filter(item => item.disposition === "DAMAGED").length;
     const returns = onlyDamaged ? allReturns.filter(item => item.disposition === "DAMAGED") : allReturns;
+
+    const { pageItems: pagedReturns, page, setPage, totalPages, totalItems, pageSize } = usePagination(returns);
 
     return (
         <PageContainer>
@@ -46,7 +49,18 @@ export function ReturnsPage() {
                 {!isLoading && !isError && (
                     returns.length === 0
                         ? <p className="text-muted-foreground">No hay devoluciones {onlyDamaged ? "dañadas" : "registradas"}.</p>
-                        : <ReturnsTable returns={returns} onView={(item) => setItemToView(item)} />
+                        : (
+                            <>
+                                <ReturnsTable returns={pagedReturns} onView={(item) => setItemToView(item)} />
+                                <PaginationControls
+                                    page={page}
+                                    totalPages={totalPages}
+                                    onPageChange={setPage}
+                                    totalItems={totalItems}
+                                    pageSize={pageSize}
+                                />
+                            </>
+                        )
                 )}
             </div>
 

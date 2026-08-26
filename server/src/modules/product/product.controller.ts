@@ -6,9 +6,9 @@ import { ProductKitAvailabilityService } from "./product-kit-availability.servic
 import { AuthenticatedRequest } from "../../middleware/authenticate.js";
 import { ROLES } from "../../shared/constants/roles.js";
 
-function hideCostPrice<T extends { costPrice?: unknown }>(product: T) {
+function hideCostPrice<T extends { costPrice?: unknown; baseCostPrice?: unknown; additionalCosts?: unknown }>(product: T) {
 
-    const { costPrice, ...rest } = product;
+    const { costPrice, baseCostPrice, additionalCosts, ...rest } = product;
 
     return rest;
 

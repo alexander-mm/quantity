@@ -204,7 +204,7 @@ export class PurchaseService {
                 await this.productService.syncPricingFromPurchase(
                     detail.productId,
                     {
-                        costPrice: Number(detail.unitCost),
+                        baseCostPrice: Number(detail.unitCost),
                         pvp: detail.pvp !== null ? Number(detail.pvp) : undefined,
                         pvpCop: detail.pvpCop !== null ? Number(detail.pvpCop) : undefined
                     },

@@ -19,7 +19,7 @@ export class ClientRepository extends BaseRepository {
             },
 
             orderBy: {
-                createdAt: "desc"
+                id: "desc"
             }
 
         });

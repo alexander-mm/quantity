@@ -1,7 +1,10 @@
+import { Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PrintArea, usePrintDocument } from "@/components/print";
 import { formatCurrency } from "@/lib/format-currency";
 import { formatDateOnly } from "@/lib/format-date";
 import { AccountReceivableStatusBadge } from "./account-receivable-status-badge";
+import { AccountReceivablePrintView } from "./account-receivable-print-view";
 import type { AccountReceivable } from "@/types";
 
 type Props = {
@@ -10,6 +13,9 @@ type Props = {
 };
 
 export function AccountReceivableView({ accountReceivable, onClose }: Props) {
+
+    const { print } = usePrintDocument();
+
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
@@ -129,11 +135,19 @@ export function AccountReceivableView({ accountReceivable, onClose }: Props) {
                 </div>
             )}
 
-            <div className="flex justify-end">
+            <div className="flex justify-between">
+                <Button type="button" variant="outline" onClick={() => print("account-receivable-print-area")}>
+                    <Printer size={18} />
+                    Imprimir
+                </Button>
                 <Button type="button" variant="outline" onClick={onClose}>
                     Cerrar
                 </Button>
             </div>
+
+            <PrintArea id="account-receivable-print-area">
+                <AccountReceivablePrintView accountReceivable={accountReceivable} />
+            </PrintArea>
         </div>
     );
 }

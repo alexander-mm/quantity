@@ -91,16 +91,10 @@ export function KardexPage() {
                                     <KardexEmptyState />
                                 )
                                 : (
-                                    <>
-                                        <KardexTable
-                                            movements={movements}
-                                            currentStock={currentStock}
-                                        />
-
-                                        <p className="mt-4 text-sm text-muted-foreground">
-                                            Mostrando {movements.length} movimientos
-                                        </p>
-                                    </>
+                                    <KardexTable
+                                        movements={movements}
+                                        currentStock={currentStock}
+                                    />
                                 )
                 }
 

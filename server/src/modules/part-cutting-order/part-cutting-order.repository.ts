@@ -32,7 +32,7 @@ export class PartCuttingOrderRepository extends BaseRepository {
         return this.prisma.partCuttingOrder.findMany({
 
             orderBy: {
-                cuttingDate: "desc"
+                id: "desc"
             },
 
             include: this.include

@@ -7,12 +7,14 @@ import {
     InventoryAdjustmentsEmptyState,
     InventoryAdjustmentModal
 } from "@/components";
-import { useInventoryAdjustments } from "@/hooks";
+import { PaginationControls } from "@/components/ui";
+import { useInventoryAdjustments, usePagination } from "@/hooks";
 
 export function InventoryAdjustmentsPage() {
 
     const { data, isLoading, isError } = useInventoryAdjustments();
     const adjustments = data?.data ?? [];
+    const { pageItems: pagedAdjustments, page, setPage, totalPages, totalItems, pageSize } = usePagination(adjustments);
     const [open, setOpen] = useState(false);
 
     return (
@@ -33,7 +35,18 @@ export function InventoryAdjustmentsPage() {
                 {!isLoading && !isError && (
                     adjustments.length === 0
                         ? <InventoryAdjustmentsEmptyState />
-                        : <InventoryAdjustmentsTable adjustments={adjustments} />
+                        : (
+                            <>
+                                <InventoryAdjustmentsTable adjustments={pagedAdjustments} />
+                                <PaginationControls
+                                    page={page}
+                                    totalPages={totalPages}
+                                    onPageChange={setPage}
+                                    totalItems={totalItems}
+                                    pageSize={pageSize}
+                                />
+                            </>
+                        )
                 )}
             </div>
 

@@ -16,7 +16,7 @@ export class SupplierRepository extends BaseRepository {
                 isActive: true
             },
             orderBy: {
-                createdAt: "desc"
+                id: "desc"
             }
         });
     }

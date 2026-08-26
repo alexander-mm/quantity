@@ -2,7 +2,8 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageContainer, PageHeader } from "@/components";
 import { WholesalersTable, WholesalersEmptyState } from "@/components";
-import { useClients, useAccountsReceivable, useAccountReceivableSummary } from "@/hooks";
+import { PaginationControls } from "@/components/ui";
+import { useClients, useAccountsReceivable, useAccountReceivableSummary, usePagination } from "@/hooks";
 import type { Client } from "@/types";
 
 export function WholesalersPage() {
@@ -25,6 +26,8 @@ export function WholesalersPage() {
 
     const summary = summaryData?.data ?? [];
 
+    const { pageItems: pagedWholesalers, page, setPage, totalPages, totalItems, pageSize } = usePagination(clientsWithAccounts);
+
     return (
         <PageContainer>
 
@@ -40,11 +43,20 @@ export function WholesalersPage() {
                     clientsWithAccounts.length === 0
                         ? <WholesalersEmptyState />
                         : (
-                            <WholesalersTable
-                                wholesalers={clientsWithAccounts}
-                                summary={summary}
-                                onView={(client) => navigate(`/wholesalers/${client.id}`)}
-                            />
+                            <>
+                                <WholesalersTable
+                                    wholesalers={pagedWholesalers}
+                                    summary={summary}
+                                    onView={(client) => navigate(`/wholesalers/${client.id}`)}
+                                />
+                                <PaginationControls
+                                    page={page}
+                                    totalPages={totalPages}
+                                    onPageChange={setPage}
+                                    totalItems={totalItems}
+                                    pageSize={pageSize}
+                                />
+                            </>
                         )
                 )}
             </div>

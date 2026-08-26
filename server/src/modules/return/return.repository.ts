@@ -26,7 +26,7 @@ export class ReturnRepository extends BaseRepository {
     async findAll(): Promise<ReturnWithRelations[]> {
         return this.prisma.return.findMany({
             include: includeRelations,
-            orderBy: { returnDate: "desc" }
+            orderBy: { id: "desc" }
         });
     }
 

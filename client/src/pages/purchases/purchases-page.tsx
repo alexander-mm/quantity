@@ -1,5 +1,6 @@
 import { PageContainer, PageHeader, PurchasesToolbar, PurchasesTable, PurchaseModal, PurchaseViewModal } from "@/components";
-import { usePurchases } from "@/hooks";
+import { PaginationControls } from "@/components/ui";
+import { usePurchases, usePagination } from "@/hooks";
 import { useState, useMemo } from "react";
 import type { Purchase } from "@/types";
 
@@ -23,6 +24,8 @@ export function PurchasesPage() {
             p.store.name.toLowerCase().includes(term)
         );
     }, [data, search]);
+
+    const { pageItems: pagedPurchases, page, setPage, totalPages, totalItems, pageSize } = usePagination(purchases);
 
     const [open, setOpen] =
         useState(false);
@@ -118,7 +121,7 @@ export function PurchasesPage() {
                         : (
                             <>
                                 <PurchasesTable
-                                    purchases={purchases}
+                                    purchases={pagedPurchases}
                                     onView={(purchase) => {
 
                                         setPurchaseToView(
@@ -135,9 +138,13 @@ export function PurchasesPage() {
                                     }}
                                 />
 
-                                <p className="mt-4 text-sm text-muted-foreground">
-                                    Mostrando {purchases.length} compras
-                                </p>
+                                <PaginationControls
+                                    page={page}
+                                    totalPages={totalPages}
+                                    onPageChange={setPage}
+                                    totalItems={totalItems}
+                                    pageSize={pageSize}
+                                />
                             </>
                         )
                 }

@@ -4,6 +4,12 @@ export interface Product {
     barcode: string | null;
     name: string;
     costPrice: string | null;
+    baseCostPrice?: string;
+    additionalCosts?: {
+        id: string;
+        description: string;
+        amount: string;
+    }[];
     price: string | null;
     pvp: string | null;
     pvpCop: string | null;

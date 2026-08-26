@@ -11,7 +11,8 @@ import {
     ProductViewModal
 } from "@/components";
 import { useMemo, useState } from "react";
-import { useProducts, useDeleteProduct, useStores, useInventoryStock, useKitAvailability } from "@/hooks";
+import { useProducts, useDeleteProduct, useStores, useInventoryStock, useKitAvailability, usePagination } from "@/hooks";
+import { PaginationControls } from "@/components/ui";
 import { ALL_STORES_SUMMED } from "@/constants/inventory";
 import type { Product } from "@/types";
 
@@ -88,6 +89,8 @@ export function ProductsPage() {
 
     }, [data, search]);
 
+    const { pageItems: pagedProducts, page, setPage, totalPages, totalItems, pageSize } = usePagination(filteredProducts);
+
     if (isLoading) {
         return (
             <PageContainer>
@@ -150,7 +153,7 @@ export function ProductsPage() {
                         : (
                             <>
                                 <ProductsTable
-                                    products={filteredProducts}
+                                    products={pagedProducts}
                                     stockByProductId={stockByProductId}
                                     onView={(product) => setProductToView(product)}
                                     onEdit={(product) => {
@@ -163,9 +166,13 @@ export function ProductsPage() {
                                         setProductToDelete(product);
                                     }}
                                 />
-                                <p className="mt-4 text-sm text-muted-foreground">
-                                    Mostrando {filteredProducts.length} productos
-                                </p>
+                                <PaginationControls
+                                    page={page}
+                                    totalPages={totalPages}
+                                    onPageChange={setPage}
+                                    totalItems={totalItems}
+                                    pageSize={pageSize}
+                                />
                             </>
                         )
                 }

@@ -41,7 +41,7 @@ export class PurchaseRepository extends BaseRepository {
     async findAll(): Promise<PurchaseWithRelations[]> {
         return this.prisma.purchase.findMany({
             orderBy: {
-                purchaseDate: "desc"
+                id: "desc"
             },
             include: this.include
         });

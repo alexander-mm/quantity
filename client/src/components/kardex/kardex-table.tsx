@@ -1,4 +1,5 @@
-import { EntityTable } from "@/components/ui";
+import { EntityTable, PaginationControls } from "@/components/ui";
+import { usePagination } from "@/hooks";
 import type { KardexMovement } from "@/types";
 
 type Props = {
@@ -39,6 +40,9 @@ export function KardexTable({
     // El saldo se ancla al stock real actual (fuente de verdad) y se reconstruye
     // hacia atrás, en vez de asumir que la lista de movimientos arranca en cero.
     // Así se evita mostrar saldos negativos por movimientos inactivos/no listados.
+    // El cálculo necesita el orden cronológico real (el que ya entrega el
+    // servidor); el más reciente primero es solo para mostrar, así que se
+    // invierte recién al final, ya con cada saldo calculado y pegado a su fila.
     const totalDelta = movements.reduce(
         (total, movement) => total + getDelta(movement),
         0
@@ -52,7 +56,14 @@ export function KardexTable({
         return acc;
     }, []);
 
+    const rows = movements
+        .map((movement, index) => ({ movement, balance: balances[index] }))
+        .reverse();
+
+    const { pageItems: pagedRows, page, setPage, totalPages, totalItems, pageSize } = usePagination(rows);
+
     return (
+        <>
         <EntityTable
             headers={[
                 "Fecha",
@@ -67,7 +78,7 @@ export function KardexTable({
             ]}
         >
             {
-                movements.map((movement, index) => {
+                pagedRows.map(({ movement, balance }) => {
 
                     const quantity = Number(
                         movement.quantity
@@ -107,7 +118,7 @@ export function KardexTable({
                             </td>
 
                             <td className="px-6 py-4 font-semibold">
-                                {balances[index]}
+                                {balance}
                             </td>
 
                             <td className="px-6 py-4">
@@ -135,6 +146,14 @@ export function KardexTable({
                 })
             }
         </EntityTable>
+        <PaginationControls
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            totalItems={totalItems}
+            pageSize={pageSize}
+        />
+        </>
     );
 
 }

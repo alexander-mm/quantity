@@ -8,7 +8,8 @@ import {
     ClientModal,
     DeleteClientDialog
 } from "@/components";
-import { useClients, useDeleteClient } from "@/hooks";
+import { PaginationControls } from "@/components/ui";
+import { useClients, useDeleteClient, usePagination } from "@/hooks";
 import type { Client } from "@/types";
 
 function getClientLabel(client: Client) {
@@ -43,6 +44,8 @@ export function ClientsPage() {
 
     }, [data, search]);
 
+    const { pageItems: pagedClients, page, setPage, totalPages, totalItems, pageSize } = usePagination(clients);
+
     return (
         <PageContainer>
 
@@ -66,14 +69,23 @@ export function ClientsPage() {
                     clients.length === 0
                         ? <ClientsEmptyState />
                         : (
-                            <ClientsTable
-                                clients={clients}
-                                onEdit={(client) => {
-                                    setSelectedClient(client);
-                                    setOpen(true);
-                                }}
-                                onDelete={(client) => setClientToDelete(client)}
-                            />
+                            <>
+                                <ClientsTable
+                                    clients={pagedClients}
+                                    onEdit={(client) => {
+                                        setSelectedClient(client);
+                                        setOpen(true);
+                                    }}
+                                    onDelete={(client) => setClientToDelete(client)}
+                                />
+                                <PaginationControls
+                                    page={page}
+                                    totalPages={totalPages}
+                                    onPageChange={setPage}
+                                    totalItems={totalItems}
+                                    pageSize={pageSize}
+                                />
+                            </>
                         )
                 )}
             </div>

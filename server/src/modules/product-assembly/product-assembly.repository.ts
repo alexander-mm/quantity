@@ -50,7 +50,7 @@ export class ProductAssemblyRepository extends BaseRepository {
         return this.prisma.productAssembly.findMany({
 
             orderBy: {
-                assemblyDate: "desc"
+                id: "desc"
             },
 
             include: this.include

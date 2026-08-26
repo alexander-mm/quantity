@@ -15,8 +15,10 @@ import {
 import {
     usePartCuttingOrders,
     useConfirmPartCuttingOrder,
-    useDeletePartCuttingOrder
+    useDeletePartCuttingOrder,
+    usePagination
 } from "@/hooks";
+import { PaginationControls } from "@/components/ui";
 import type { PartCuttingOrder } from "@/types";
 
 function getErrorMessage(error: unknown, fallback: string) {
@@ -29,6 +31,7 @@ export function PartCuttingOrdersPage() {
 
     const { data, isLoading, isError } = usePartCuttingOrders();
     const orders = data?.data ?? [];
+    const { pageItems: pagedOrders, page, setPage, totalPages, totalItems, pageSize } = usePagination(orders);
 
     const [open, setOpen] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<PartCuttingOrder | null>(null);
@@ -58,16 +61,25 @@ export function PartCuttingOrdersPage() {
                     orders.length === 0
                         ? <CuttingOrdersEmptyState />
                         : (
-                            <CuttingOrdersTable
-                                orders={orders}
-                                onView={(order) => setOrderToView(order)}
-                                onEdit={(order) => {
-                                    setSelectedOrder(order);
-                                    setOpen(true);
-                                }}
-                                onConfirm={(order) => setOrderToConfirm(order)}
-                                onDelete={(order) => setOrderToDelete(order)}
-                            />
+                            <>
+                                <CuttingOrdersTable
+                                    orders={pagedOrders}
+                                    onView={(order) => setOrderToView(order)}
+                                    onEdit={(order) => {
+                                        setSelectedOrder(order);
+                                        setOpen(true);
+                                    }}
+                                    onConfirm={(order) => setOrderToConfirm(order)}
+                                    onDelete={(order) => setOrderToDelete(order)}
+                                />
+                                <PaginationControls
+                                    page={page}
+                                    totalPages={totalPages}
+                                    onPageChange={setPage}
+                                    totalItems={totalItems}
+                                    pageSize={pageSize}
+                                />
+                            </>
                         )
                 )}
             </div>

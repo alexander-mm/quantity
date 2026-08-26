@@ -20,7 +20,7 @@ export class RawMaterialRepository extends BaseRepository {
             },
 
             orderBy: {
-                name: "asc"
+                id: "desc"
             }
 
         });
@@ -50,7 +50,7 @@ export class RawMaterialRepository extends BaseRepository {
             },
 
             orderBy: {
-                name: "asc"
+                id: "desc"
             }
 
         });
@@ -70,7 +70,7 @@ export class RawMaterialRepository extends BaseRepository {
             },
 
             orderBy: {
-                name: "asc"
+                id: "desc"
             }
 
         });

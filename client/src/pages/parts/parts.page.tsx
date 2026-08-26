@@ -12,7 +12,8 @@ import {
     DeletePartDialog
 } from "@/components";
 import { Button } from "@/components/ui/button";
-import { useParts, useLowStockParts, useDeletePart, usePartCategories } from "@/hooks";
+import { PaginationControls } from "@/components/ui";
+import { useParts, useLowStockParts, useDeletePart, usePartCategories, usePagination } from "@/hooks";
 import type { Part } from "@/types";
 
 export function PartsPage() {
@@ -74,6 +75,8 @@ export function PartsPage() {
 
     }, [data, search, categoryFilter]);
 
+    const { pageItems: pagedParts, page, setPage, totalPages, totalItems, pageSize } = usePagination(parts);
+
     return (
         <PageContainer>
 
@@ -112,15 +115,24 @@ export function PartsPage() {
                     parts.length === 0
                         ? <PartsEmptyState />
                         : (
-                            <PartsTable
-                                parts={parts}
-                                onView={(part) => setPartToView(part)}
-                                onEdit={(part) => {
-                                    setSelectedPart(part);
-                                    setOpen(true);
-                                }}
-                                onDelete={(part) => setPartToDelete(part)}
-                            />
+                            <>
+                                <PartsTable
+                                    parts={pagedParts}
+                                    onView={(part) => setPartToView(part)}
+                                    onEdit={(part) => {
+                                        setSelectedPart(part);
+                                        setOpen(true);
+                                    }}
+                                    onDelete={(part) => setPartToDelete(part)}
+                                />
+                                <PaginationControls
+                                    page={page}
+                                    totalPages={totalPages}
+                                    onPageChange={setPage}
+                                    totalItems={totalItems}
+                                    pageSize={pageSize}
+                                />
+                            </>
                         )
                 )}
             </div>

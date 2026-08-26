@@ -29,7 +29,7 @@ export class PartMovementRepository extends BaseRepository {
         return this.prisma.partMovement.findMany({
 
             orderBy: {
-                movementDate: "desc"
+                id: "desc"
             },
 
             include: {

@@ -66,18 +66,20 @@ export function ProductForm({
             brand: "",
             categoryId: "",
             unitOfMeasure: "",
-            costPrice: undefined,
+            baseCostPrice: undefined,
             pvp: 0,
             pvpCop: 0,
             minimumStock: undefined,
             assembleOnSale: false,
             components: [],
-            priceEntries: []
+            priceEntries: [],
+            additionalCosts: []
         }
     });
 
     const { fields, append, remove } = useFieldArray({ control, name: "components" });
     const { fields: priceEntryFields, append: appendPriceEntry, remove: removePriceEntry } = useFieldArray({ control, name: "priceEntries" });
+    const { fields: additionalCostFields, append: appendAdditionalCost, remove: removeAdditionalCost } = useFieldArray({ control, name: "additionalCosts" });
 
     const { data: categoriesData } = useCategories();
     const { data: productsData } = useProducts();
@@ -113,7 +115,16 @@ export function ProductForm({
 
     const watchedComponents = useWatch({ control, name: "components" }) ?? [];
     const watchedPriceEntries = useWatch({ control, name: "priceEntries" }) ?? [];
+    const watchedAdditionalCosts = useWatch({ control, name: "additionalCosts" }) ?? [];
+    const watchedBaseCostPrice = useWatch({ control, name: "baseCostPrice" });
     const validComponents = watchedComponents.filter(item => item?.refId);
+
+    const additionalCostsTotal = watchedAdditionalCosts.reduce(
+        (sum, item) => sum + (Number(item?.amount) || 0),
+        0
+    );
+
+    const totalCostPrice = (Number(watchedBaseCostPrice) || 0) + additionalCostsTotal;
 
     useEffect(() => {
 
@@ -131,7 +142,7 @@ export function ProductForm({
 
         }, 0);
 
-        setValue("costPrice", total);
+        setValue("baseCostPrice", total);
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [JSON.stringify(validComponents), parts, products]);
@@ -165,7 +176,7 @@ export function ProductForm({
             brand: productData.data.brand,
             categoryId: productData.data.categoryId,
             unitOfMeasure: productData.data.unitOfMeasure,
-            costPrice: Number(productData.data.costPrice),
+            baseCostPrice: Number(productData.data.baseCostPrice),
             pvp: Number(productData.data.pvp),
             pvpCop: productData.data.pvpCop ? Number(productData.data.pvpCop) : 0,
             minimumStock: Number(productData.data.minimumStock),
@@ -185,6 +196,10 @@ export function ProductForm({
             priceEntries: (productPriceEntriesData?.data ?? []).map(item => ({
                 currency: item.currency,
                 price: Number(item.price)
+            })),
+            additionalCosts: (productData.data.additionalCosts ?? []).map(item => ({
+                description: item.description,
+                amount: Number(item.amount)
             }))
         });
     }, [
@@ -248,14 +263,20 @@ export function ProductForm({
 
     async function onSubmit(data: ProductFormData) {
 
-        const { components, priceEntries, ...productData } = data;
+        const { components, priceEntries, additionalCosts, ...productData } = data;
 
         const payload = {
             ...productData,
-            costPrice: Number(productData.costPrice),
+            baseCostPrice: Number(productData.baseCostPrice),
             pvp: Number(productData.pvp),
             pvpCop: Number(productData.pvpCop) || undefined,
-            minimumStock: Number(productData.minimumStock)
+            minimumStock: Number(productData.minimumStock),
+            additionalCosts: (additionalCosts ?? [])
+                .filter(item => item.description.trim() !== "")
+                .map(item => ({
+                    description: item.description,
+                    amount: Number(item.amount)
+                }))
         };
 
         if (mode === "create") {
@@ -617,12 +638,12 @@ export function ProductForm({
     
                 <div className="mb-6">
                     <Label className="mb-1">
-                        Precio de Costo
+                        Precio de Costo (base)
                     </Label>
                     <Input
                         type="number"
                         placeholder="0"
-                        {...register("costPrice", {
+                        {...register("baseCostPrice", {
                             setValueAs: (v) => (v === "" ? undefined : Number(v))
                         })}
                     />
@@ -632,9 +653,70 @@ export function ProductForm({
                         </p>
                     )}
                     <p className="text-sm text-red-500">
-                        {errors.costPrice?.message}
+                        {errors.baseCostPrice?.message}
                     </p>
                 </div>
+
+            <div className="space-y-3 rounded-lg border p-3 mb-6">
+
+                <div>
+                    <Label className="mb-1">Costos adicionales (opcional)</Label>
+                    <p className="text-xs text-muted-foreground">
+                        Agrega los costos extra que aplican a este producto (flete, empaque, aranceles, etc.).
+                        Se suman al costo base para calcular el costo total del producto.
+                    </p>
+                </div>
+
+                {additionalCostFields.map((field, index) => (
+
+                    <div key={field.id} className="flex items-end gap-2 rounded-md border p-2">
+
+                        <div className="flex-1">
+                            <Label className="mb-1">Descripción</Label>
+                            <Input
+                                placeholder="Ej. Flete, empaque..."
+                                {...register(`additionalCosts.${index}.description`)}
+                            />
+                        </div>
+
+                        <div className="w-32">
+                            <Label className="mb-1">Monto</Label>
+                            <Input
+                                type="number"
+                                min={0}
+                                step="0.01"
+                                placeholder="0"
+                                {...register(`additionalCosts.${index}.amount`, {
+                                    setValueAs: (v) => (v === "" ? undefined : Number(v))
+                                })}
+                            />
+                        </div>
+
+                        <Button type="button" variant="ghost" size="icon" onClick={() => removeAdditionalCost(index)}>
+                            <Trash2 size={18} className="text-red-500" />
+                        </Button>
+
+                    </div>
+
+                ))}
+
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => appendAdditionalCost({ description: "", amount: undefined })}
+                >
+                    <Plus size={18} />
+                    Agregar costo adicional
+                </Button>
+
+                {additionalCostFields.length > 0 && (
+                    <p className="text-sm font-medium">
+                        Costo total del producto: {totalCostPrice.toFixed(2)}
+                    </p>
+                )}
+
+            </div>
+
             <div className="space-y-3 rounded-lg border p-3 mb-6">
 
                 <div>

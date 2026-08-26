@@ -30,14 +30,9 @@ export class InventoryStockRepository extends BaseRepository {
                 product: true,
                 store: true
             },
-            orderBy: [
-                {
-                    storeId: "asc"
-                },
-                {
-                    productId: "asc"
-                }
-            ]
+            orderBy: {
+                id: "desc"
+            }
         });
     }
 
@@ -113,10 +108,9 @@ export class InventoryStockRepository extends BaseRepository {
                     { store: { type: "MAIN_WAREHOUSE" } }
                 ]
             },
-            orderBy: [
-                { storeId: "asc" },
-                { productId: "asc" }
-            ]
+            orderBy: {
+                id: "desc"
+            }
         });
     }
 

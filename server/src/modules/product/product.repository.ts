@@ -1,6 +1,15 @@
 import { Product, PrismaClient, Prisma } from "@prisma/client";
 import { BaseRepository } from "../../repositories/base/BaseRepository.js";
 
+type AdditionalCostInput = {
+    description: string;
+    amount: number;
+};
+
+export type ProductWithAdditionalCosts = Prisma.ProductGetPayload<{
+    include: { additionalCosts: true };
+}>;
+
 export class ProductRepository extends BaseRepository {
 
     constructor(prismaClient?: PrismaClient | Prisma.TransactionClient) {
@@ -13,17 +22,20 @@ export class ProductRepository extends BaseRepository {
                 isActive: true
             },
             orderBy: {
-                createdAt: "desc"
+                id: "desc"
             }
         });
     }
 
     async findById(
         id: bigint
-    ): Promise<Product | null> {
+    ): Promise<ProductWithAdditionalCosts | null> {
         return this.prisma.product.findUnique({
             where: {
                 id
+            },
+            include: {
+                additionalCosts: true
             }
         });
     }
@@ -66,13 +78,23 @@ export class ProductRepository extends BaseRepository {
         categoryId: bigint;
         unitOfMeasureId: bigint;
         costPrice: number;
+        baseCostPrice: number;
         pvp: number;
         pvpCop?: number;
         minimumStock: number;
         assembleOnSale?: boolean;
+        additionalCosts?: AdditionalCostInput[];
     }): Promise<Product> {
+
+        const { additionalCosts, ...rest } = data;
+
         return this.prisma.product.create({
-            data
+            data: {
+                ...rest,
+                additionalCosts: additionalCosts && additionalCosts.length > 0
+                    ? { create: additionalCosts }
+                    : undefined
+            }
         });
     }
 
@@ -105,18 +127,28 @@ export class ProductRepository extends BaseRepository {
             categoryId: bigint;
             unitOfMeasureId: bigint;
             costPrice: number;
+            baseCostPrice: number;
             pvp: number;
             pvpCop?: number;
             minimumStock: number;
             assembleOnSale?: boolean;
+            additionalCosts?: AdditionalCostInput[];
         }
     ): Promise<Product> {
+
+        const { additionalCosts, ...rest } = data;
 
         return this.prisma.product.update({
             where: {
                 id
             },
-            data
+            data: {
+                ...rest,
+                additionalCosts: {
+                    deleteMany: {},
+                    create: additionalCosts ?? []
+                }
+            }
         });
     }
 
@@ -148,6 +180,7 @@ export class ProductRepository extends BaseRepository {
         id: bigint,
         data: {
             costPrice?: number;
+            baseCostPrice?: number;
             pvp?: number;
             pvpCop?: number;
         }

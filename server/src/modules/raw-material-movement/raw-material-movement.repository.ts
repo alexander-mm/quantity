@@ -29,7 +29,7 @@ export class RawMaterialMovementRepository extends BaseRepository {
         return this.prisma.rawMaterialMovement.findMany({
 
             orderBy: {
-                movementDate: "desc"
+                id: "desc"
             },
 
             include: {

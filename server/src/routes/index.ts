@@ -36,6 +36,7 @@ import productPriceEntryRoutes from "../modules/product-price-entries/product-pr
 import returnRoutes from "../modules/return/return.routes.js";
 import damagedStockRoutes from "../modules/damaged-stock/damaged-stock.routes.js";
 import damagedPartRoutes from "../modules/damaged-part/damaged-part.routes.js";
+import quoteRoutes from "../modules/quote/quote.routes.js";
 import partComponentRoutes from "../modules/part-component/part-component.routes.js";
 import partComponentProductRoutes from "../modules/part-component-product/part-component-product.routes.js";
 import partAssemblyRoutes from "../modules/part-assembly/part-assembly.routes.js";
@@ -127,6 +128,8 @@ router.use("/returns", returnRoutes);
 router.use("/damaged-stock", damagedStockRoutes);
 
 router.use("/damaged-parts", damagedPartRoutes);
+
+router.use("/quotes", quoteRoutes);
 
 router.use("/telegram", telegramRoutes);
 

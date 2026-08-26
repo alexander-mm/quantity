@@ -41,7 +41,7 @@ export class PartAdjustmentRepository extends BaseRepository {
             },
 
             orderBy: {
-                movementDate: "desc"
+                id: "desc"
             }
 
         });

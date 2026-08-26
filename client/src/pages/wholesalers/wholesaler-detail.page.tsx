@@ -17,12 +17,14 @@ import {
 } from "@/components";
 import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
+import { PaginationControls } from "@/components/ui";
 import { getClientLabel } from "@/lib/client-label";
 import {
     useClient,
     useAccountsReceivableByClient,
     useConfirmSale,
-    useMarkAccountReceivablePaid
+    useMarkAccountReceivablePaid,
+    usePagination
 } from "@/hooks";
 import type { AccountReceivable } from "@/types";
 
@@ -58,6 +60,8 @@ export function WholesalerDetailPage() {
         return list.filter(item => item.number.toLowerCase().includes(term));
 
     }, [data, search]);
+
+    const { pageItems: pagedAccountsReceivable, page, setPage, totalPages, totalItems, pageSize } = usePagination(accountsReceivable);
 
     const client = clientData?.data;
 
@@ -95,14 +99,23 @@ export function WholesalerDetailPage() {
                     accountsReceivable.length === 0
                         ? <AccountsReceivableEmptyState />
                         : (
-                            <AccountsReceivableTable
-                                accountsReceivable={accountsReceivable}
-                                onView={(item) => setItemToView(item)}
-                                onEdit={(item) => setItemToEdit(item)}
-                                onConfirmSale={(item) => setItemToConfirm(item)}
-                                onMakePayment={(item) => setItemToPay(item)}
-                                onMarkPaid={(item) => setItemToMarkPaid(item)}
-                            />
+                            <>
+                                <AccountsReceivableTable
+                                    accountsReceivable={pagedAccountsReceivable}
+                                    onView={(item) => setItemToView(item)}
+                                    onEdit={(item) => setItemToEdit(item)}
+                                    onConfirmSale={(item) => setItemToConfirm(item)}
+                                    onMakePayment={(item) => setItemToPay(item)}
+                                    onMarkPaid={(item) => setItemToMarkPaid(item)}
+                                />
+                                <PaginationControls
+                                    page={page}
+                                    totalPages={totalPages}
+                                    onPageChange={setPage}
+                                    totalItems={totalItems}
+                                    pageSize={pageSize}
+                                />
+                            </>
                         )
                 )}
             </div>

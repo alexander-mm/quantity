@@ -8,13 +8,15 @@ import {
     PartMovementModal,
     PartMovementViewModal
 } from "@/components";
-import { usePartMovements } from "@/hooks";
+import { PaginationControls } from "@/components/ui";
+import { usePartMovements, usePagination } from "@/hooks";
 import type { PartMovement } from "@/types";
 
 export function PartMovementsPage() {
 
     const { data, isLoading, isError } = usePartMovements();
     const movements = data?.data ?? [];
+    const { pageItems: pagedMovements, page, setPage, totalPages, totalItems, pageSize } = usePagination(movements);
     const [open, setOpen] = useState(false);
     const [movementToView, setMovementToView] = useState<PartMovement | null>(null);
 
@@ -37,10 +39,19 @@ export function PartMovementsPage() {
                     movements.length === 0
                         ? <PartMovementsEmptyState />
                         : (
-                            <PartMovementsTable
-                                movements={movements}
-                                onView={(movement) => setMovementToView(movement)}
-                            />
+                            <>
+                                <PartMovementsTable
+                                    movements={pagedMovements}
+                                    onView={(movement) => setMovementToView(movement)}
+                                />
+                                <PaginationControls
+                                    page={page}
+                                    totalPages={totalPages}
+                                    onPageChange={setPage}
+                                    totalItems={totalItems}
+                                    pageSize={pageSize}
+                                />
+                            </>
                         )
                 )}
             </div>

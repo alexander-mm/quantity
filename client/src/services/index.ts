@@ -30,6 +30,7 @@ export * from "./part-components";
 export * from "./part-component-products";
 export * from "./part-assembly";
 export * from "./account-receivable";
+export * from "./quotes";
 export * from "./raw-materials";
 export * from "./raw-material-movements";
 export * from "./part-recipes";

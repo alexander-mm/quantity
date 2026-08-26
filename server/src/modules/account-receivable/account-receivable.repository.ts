@@ -66,7 +66,7 @@ export class AccountReceivableRepository extends BaseRepository {
         return this.prisma.accountReceivable.findMany({
 
             orderBy: {
-                createdAt: "desc"
+                id: "desc"
             },
 
             include: includeRelations
@@ -86,7 +86,7 @@ export class AccountReceivableRepository extends BaseRepository {
             },
 
             orderBy: {
-                createdAt: "desc"
+                id: "desc"
             },
 
             include: includeRelations

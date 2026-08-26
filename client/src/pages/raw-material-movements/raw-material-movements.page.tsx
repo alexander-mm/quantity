@@ -8,13 +8,15 @@ import {
     RawMaterialMovementModal,
     RawMaterialMovementViewModal
 } from "@/components";
-import { useRawMaterialMovements } from "@/hooks";
+import { PaginationControls } from "@/components/ui";
+import { useRawMaterialMovements, usePagination } from "@/hooks";
 import type { RawMaterialMovement } from "@/types";
 
 export function RawMaterialMovementsPage() {
 
     const { data, isLoading, isError } = useRawMaterialMovements();
     const movements = data?.data ?? [];
+    const { pageItems: pagedMovements, page, setPage, totalPages, totalItems, pageSize } = usePagination(movements);
     const [open, setOpen] = useState(false);
     const [movementToView, setMovementToView] = useState<RawMaterialMovement | null>(null);
 
@@ -37,10 +39,19 @@ export function RawMaterialMovementsPage() {
                     movements.length === 0
                         ? <RawMaterialMovementsEmptyState />
                         : (
-                            <RawMaterialMovementsTable
-                                movements={movements}
-                                onView={(movement) => setMovementToView(movement)}
-                            />
+                            <>
+                                <RawMaterialMovementsTable
+                                    movements={pagedMovements}
+                                    onView={(movement) => setMovementToView(movement)}
+                                />
+                                <PaginationControls
+                                    page={page}
+                                    totalPages={totalPages}
+                                    onPageChange={setPage}
+                                    totalItems={totalItems}
+                                    pageSize={pageSize}
+                                />
+                            </>
                         )
                 )}
             </div>
