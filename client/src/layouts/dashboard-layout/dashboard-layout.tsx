@@ -101,7 +101,7 @@ export function DashboardLayout({
                 { to: "/sales", label: "Ventas", visibility: "nonProduction" },
                 { to: "/pending-sync", label: "Mis pendientes", visibility: "nonProduction", badge: pendingSyncSalesCount },
                 { to: "/returns", label: "Devoluciones", visibility: "nonProduction" },
-                { to: "/wholesalers", label: "Cuentas de Cobro", visibility: "adminOnly" }
+                { to: "/wholesalers", label: "Cuentas de Cobro", visibility: "nonProduction" }
             ]
         },
         {

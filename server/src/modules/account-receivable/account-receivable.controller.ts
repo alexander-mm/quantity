@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Response } from "express";
 
 import { ApiResponse } from "../../shared/responses/index.js";
 import { AuthenticatedRequest } from "../../middleware/authenticate.js";
@@ -10,14 +10,14 @@ export class AccountReceivableController {
     private readonly service = new AccountReceivableService();
 
     async findAll(
-        _req: Request,
+        req: AuthenticatedRequest,
         res: Response,
         next: NextFunction
     ): Promise<void> {
 
         try {
 
-            const accountsReceivable = await this.service.findAll();
+            const accountsReceivable = await this.service.findAll(req.user);
 
             res.status(200).json(
                 ApiResponse.success("Cuentas de cobro obtenidas correctamente.", accountsReceivable)
@@ -32,7 +32,7 @@ export class AccountReceivableController {
     }
 
     async findByClient(
-        req: Request,
+        req: AuthenticatedRequest,
         res: Response,
         next: NextFunction
     ): Promise<void> {
@@ -46,7 +46,7 @@ export class AccountReceivableController {
                 return;
             }
 
-            const accountsReceivable = await this.service.findByClient(clientId);
+            const accountsReceivable = await this.service.findByClient(clientId, req.user);
 
             res.status(200).json(
                 ApiResponse.success("Cuentas de cobro obtenidas correctamente.", accountsReceivable)
@@ -61,7 +61,7 @@ export class AccountReceivableController {
     }
 
     async findById(
-        req: Request,
+        req: AuthenticatedRequest,
         res: Response,
         next: NextFunction
     ): Promise<void> {
@@ -90,14 +90,14 @@ export class AccountReceivableController {
     }
 
     async summary(
-        _req: Request,
+        req: AuthenticatedRequest,
         res: Response,
         next: NextFunction
     ): Promise<void> {
 
         try {
 
-            const summary = await this.service.getSummary();
+            const summary = await this.service.getSummary(req.user);
 
             res.status(200).json(
                 ApiResponse.success("Resumen obtenido correctamente.", summary)
@@ -112,7 +112,7 @@ export class AccountReceivableController {
     }
 
     async update(
-        req: Request,
+        req: AuthenticatedRequest,
         res: Response,
         next: NextFunction
     ): Promise<void> {
@@ -126,7 +126,7 @@ export class AccountReceivableController {
                 return;
             }
 
-            const accountReceivable = await this.service.update(id, req.body);
+            const accountReceivable = await this.service.update(id, req.body, req.user);
 
             res.status(200).json(
                 ApiResponse.success("Cuenta de cobro actualizada correctamente.", accountReceivable)
@@ -158,7 +158,8 @@ export class AccountReceivableController {
             const accountReceivable = await this.service.createPayment(
                 id,
                 req.body,
-                req.user?.userId
+                req.user?.userId,
+                req.user
             );
 
             res.status(200).json(
@@ -174,7 +175,7 @@ export class AccountReceivableController {
     }
 
     async markPaid(
-        req: Request,
+        req: AuthenticatedRequest,
         res: Response,
         next: NextFunction
     ): Promise<void> {
@@ -188,7 +189,7 @@ export class AccountReceivableController {
                 return;
             }
 
-            const accountReceivable = await this.service.markPaid(id);
+            const accountReceivable = await this.service.markPaid(id, req.user);
 
             res.status(200).json(
                 ApiResponse.success("Cuenta de cobro marcada como pagada.", accountReceivable)

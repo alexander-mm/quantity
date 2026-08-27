@@ -422,7 +422,7 @@ const router = createBrowserRouter([
     {
         path: "/wholesalers",
         element: (
-            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+            <ProtectedRoute blockedRoles={[ROLES.PRODUCTION]}>
                 <DashboardLayout>
                     <WholesalersPage />
                 </DashboardLayout>
@@ -433,7 +433,7 @@ const router = createBrowserRouter([
     {
         path: "/wholesalers/:clientId",
         element: (
-            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+            <ProtectedRoute blockedRoles={[ROLES.PRODUCTION]}>
                 <DashboardLayout>
                     <WholesalerDetailPage />
                 </DashboardLayout>

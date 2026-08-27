@@ -61,9 +61,13 @@ export class AccountReceivableRepository extends BaseRepository {
         super(prismaClient);
     }
 
-    async findAll(): Promise<AccountReceivableWithRelations[]> {
+    async findAll(
+        storeId?: bigint
+    ): Promise<AccountReceivableWithRelations[]> {
 
         return this.prisma.accountReceivable.findMany({
+
+            where: storeId ? { sale: { storeId } } : undefined,
 
             orderBy: {
                 id: "desc"
@@ -76,13 +80,15 @@ export class AccountReceivableRepository extends BaseRepository {
     }
 
     async findByClient(
-        clientId: bigint
+        clientId: bigint,
+        storeId?: bigint
     ): Promise<AccountReceivableWithRelations[]> {
 
         return this.prisma.accountReceivable.findMany({
 
             where: {
-                clientId
+                clientId,
+                sale: storeId ? { storeId } : undefined
             },
 
             orderBy: {
