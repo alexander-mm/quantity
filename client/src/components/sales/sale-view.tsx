@@ -32,7 +32,7 @@ export function SaleView({
     return (
 
         <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                     <p className="text-sm text-muted-foreground">
                         Número
@@ -117,62 +117,64 @@ export function SaleView({
                 </div>
             </div>
 
-            <table className="w-full border rounded-lg">
-                <thead>
-                    <tr className="border-b bg-muted">
-                        <th className="p-2 text-left">
-                            Producto
-                        </th>
-                        <th className="p-2">
-                            Cantidad
-                        </th>
-                        <th className="p-2">
-                            Precio
-                        </th>
-                        <th className="p-2">
-                            Desc.
-                        </th>
-                        <th className="p-2">
-                            IVA
-                        </th>
-                        <th className="p-2">
-                            Total
-                        </th>
-                    </tr>
-                </thead>
+            <div className="overflow-x-auto rounded-lg border">
+                <table className="w-full min-w-[560px]">
+                    <thead>
+                        <tr className="border-b bg-muted">
+                            <th className="p-2 text-left">
+                                Producto
+                            </th>
+                            <th className="p-2">
+                                Cantidad
+                            </th>
+                            <th className="p-2">
+                                Precio
+                            </th>
+                            <th className="p-2">
+                                Desc.
+                            </th>
+                            <th className="p-2">
+                                IVA
+                            </th>
+                            <th className="p-2">
+                                Total
+                            </th>
+                        </tr>
+                    </thead>
 
-                <tbody>
-                    {
-                        sale.details.map(detail => (
-                            <tr
-                                key={detail.id}
-                                className="border-b"
-                            >
-                                <td className="p-2">
-                                    {detail.product.name}
-                                </td>
-                                <td className="p-2 text-center">
-                                    {detail.quantity}
-                                </td>
-                                <td className="p-2 text-center">
-                                    {formatCurrency(detail.unitPrice, sale.currency)}
-                                </td>
-                                <td className="p-2 text-center">
-                                    {formatCurrency(detail.discount, sale.currency)}
-                                </td>
-                                <td className="p-2 text-center">
-                                    {formatCurrency(detail.tax, sale.currency)}
-                                </td>
-                                <td className="p-2 text-center">
-                                    {formatCurrency(detail.lineTotal, sale.currency)}
-                                </td>
-                            </tr>
-                        ))
-                    }
-                </tbody>
-            </table>
+                    <tbody>
+                        {
+                            sale.details.map(detail => (
+                                <tr
+                                    key={detail.id}
+                                    className="border-b"
+                                >
+                                    <td className="p-2 whitespace-nowrap">
+                                        {detail.product.name}
+                                    </td>
+                                    <td className="p-2 text-center">
+                                        {detail.quantity}
+                                    </td>
+                                    <td className="p-2 text-center whitespace-nowrap">
+                                        {formatCurrency(detail.unitPrice, sale.currency)}
+                                    </td>
+                                    <td className="p-2 text-center whitespace-nowrap">
+                                        {formatCurrency(detail.discount, sale.currency)}
+                                    </td>
+                                    <td className="p-2 text-center whitespace-nowrap">
+                                        {formatCurrency(detail.tax, sale.currency)}
+                                    </td>
+                                    <td className="p-2 text-center whitespace-nowrap">
+                                        {formatCurrency(detail.lineTotal, sale.currency)}
+                                    </td>
+                                </tr>
+                            ))
+                        }
+                    </tbody>
+                </table>
+            </div>
 
-            <div className="ml-auto w-80 space-y-2">
+            <div className="w-full space-y-2 sm:ml-auto sm:w-80">
                 <div className="flex justify-between">
                     <span>
                         Subtotal
