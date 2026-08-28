@@ -12,9 +12,25 @@ registerSW({
   immediate: true,
   onRegisteredSW(_swUrl, registration) {
     if (!registration) return;
+
     setInterval(() => {
       registration.update();
     }, SW_UPDATE_CHECK_INTERVAL_MS);
+
+    // En Android, Chrome suspende los timers de una pestaña/PWA en segundo plano
+    // (el intervalo de arriba deja de dispararse) — por eso una app que queda
+    // minimizada por horas/días se queda con el bundle viejo y termina hablando
+    // con un backend que ya cambió de forma. Forzamos el chequeo apenas la app
+    // vuelve a primer plano, que es exactamente cuando el usuario va a usarla.
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        registration.update();
+      }
+    });
+
+    window.addEventListener("focus", () => {
+      registration.update();
+    });
   }
 });
 
