@@ -122,7 +122,7 @@ export function CategoryForm({ onSuccess, mode = "create", categoryId }: Props) 
                 <p className="text-sm text-red-500">{errors.stockMultiplier?.message}</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 rounded-lg border p-3">
+            <div className="grid grid-cols-1 gap-4 rounded-lg border p-3 sm:grid-cols-2">
 
                 <div>
                     <Label className="mb-1">Stock mínimo (registrado)</Label>

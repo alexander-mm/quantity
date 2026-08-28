@@ -10,7 +10,7 @@ type Props = {
 export function CuttingOrderView({ order, onClose }: Props) {
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                     <p className="text-sm text-muted-foreground">Número</p>
                     <p className="font-medium">{order.number}</p>

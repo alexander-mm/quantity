@@ -30,7 +30,7 @@ export function PartViewModal({ part, open, onOpenChange }: Props) {
 
                 <div className="space-y-4">
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
                             <p className="text-sm text-muted-foreground">Código</p>
                             <p className="font-medium">{part.code}</p>
