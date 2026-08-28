@@ -10,7 +10,7 @@ type Props = {
 export function PartAssemblyView({ assembly, onClose }: Props) {
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                     <p className="text-sm text-muted-foreground">Número</p>
                     <p className="font-medium">{assembly.number}</p>
@@ -42,41 +42,45 @@ export function PartAssemblyView({ assembly, onClose }: Props) {
             </div>
 
             {assembly.details.length > 0 && (
-                <table className="w-full border rounded-lg">
-                    <thead>
-                        <tr className="border-b bg-muted">
-                            <th className="p-2 text-left">Pieza consumida</th>
-                            <th className="p-2">Cantidad</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {assembly.details.map(detail => (
-                            <tr key={detail.id} className="border-b">
-                                <td className="p-2">{detail.componentPart.code} - {detail.componentPart.name}</td>
-                                <td className="p-2 text-center">{Number(detail.quantity)}</td>
+                <div className="overflow-x-auto rounded-lg border">
+                    <table className="w-full">
+                        <thead>
+                            <tr className="border-b bg-muted">
+                                <th className="p-2 text-left">Pieza consumida</th>
+                                <th className="p-2">Cantidad</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {assembly.details.map(detail => (
+                                <tr key={detail.id} className="border-b">
+                                    <td className="p-2 whitespace-nowrap">{detail.componentPart.code} - {detail.componentPart.name}</td>
+                                    <td className="p-2 text-center">{Number(detail.quantity)}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             )}
 
             {assembly.productDetails.length > 0 && (
-                <table className="w-full border rounded-lg">
-                    <thead>
-                        <tr className="border-b bg-muted">
-                            <th className="p-2 text-left">Producto consumido</th>
-                            <th className="p-2">Cantidad</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {assembly.productDetails.map(detail => (
-                            <tr key={detail.id} className="border-b">
-                                <td className="p-2">{detail.componentProduct.internalCode} - {detail.componentProduct.name}</td>
-                                <td className="p-2 text-center">{Number(detail.quantity)}</td>
+                <div className="overflow-x-auto rounded-lg border">
+                    <table className="w-full">
+                        <thead>
+                            <tr className="border-b bg-muted">
+                                <th className="p-2 text-left">Producto consumido</th>
+                                <th className="p-2">Cantidad</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {assembly.productDetails.map(detail => (
+                                <tr key={detail.id} className="border-b">
+                                    <td className="p-2 whitespace-nowrap">{detail.componentProduct.internalCode} - {detail.componentProduct.name}</td>
+                                    <td className="p-2 text-center">{Number(detail.quantity)}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             )}
 
             <div className="flex justify-end">

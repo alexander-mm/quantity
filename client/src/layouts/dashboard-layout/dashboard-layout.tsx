@@ -320,7 +320,7 @@ export function DashboardLayout({
 
             </aside>
 
-            <div>
+            <div className="min-w-0">
                 <header
                     style={{
                         padding: "20px",
@@ -346,6 +346,7 @@ export function DashboardLayout({
                     style={{
                         padding: "24px"
                     }}
+                    className="overflow-x-hidden"
                 >
                     {children}
                 </main>

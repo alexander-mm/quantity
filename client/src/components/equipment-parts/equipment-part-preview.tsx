@@ -40,58 +40,62 @@ export function EquipmentPartPreviewPanel({ preview, loading }: Props) {
 
             <div>
                 <p className="mb-2 font-medium">Piezas necesarias</p>
-                <table className="w-full border rounded-lg text-sm">
-                    <thead>
-                        <tr className="border-b bg-muted">
-                            <th className="p-2 text-left">Pieza</th>
-                            <th className="p-2">Requerido</th>
-                            <th className="p-2">Disponible</th>
-                            <th className="p-2">Faltante</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {preview.parts.map(item => (
-                            <tr key={item.partId} className="border-b last:border-b-0">
-                                <td className="p-2">{item.partName}</td>
-                                <td className="p-2 text-center">{item.requiredQuantity}</td>
-                                <td className="p-2 text-center">{item.available}</td>
-                                <td className={`p-2 text-center ${item.sufficient ? "text-muted-foreground" : "font-medium text-red-500"}`}>
-                                    {item.missing}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-
-            {preview.parts.some(item => item.rawMaterial) && (
-                <div>
-                    <p className="mb-2 font-medium">Materia prima necesaria para las piezas faltantes</p>
-                    <table className="w-full border rounded-lg text-sm">
+                <div className="overflow-x-auto rounded-lg border">
+                    <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b bg-muted">
-                                <th className="p-2 text-left">Materia prima</th>
-                                <th className="p-2">Unidades requeridas</th>
+                                <th className="p-2 text-left">Pieza</th>
+                                <th className="p-2">Requerido</th>
                                 <th className="p-2">Disponible</th>
                                 <th className="p-2">Faltante</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {preview.parts.filter(item => item.rawMaterial).map(item => (
+                            {preview.parts.map(item => (
                                 <tr key={item.partId} className="border-b last:border-b-0">
-                                    <td className="p-2">
-                                        {item.rawMaterial!.rawMaterialName}
-                                        <span className="block text-xs text-muted-foreground">para {item.partName}</span>
-                                    </td>
-                                    <td className="p-2 text-center">{roundUnits(item.rawMaterial!.unitsRequired)}</td>
-                                    <td className="p-2 text-center">{roundUnits(item.rawMaterial!.unitsAvailable)}</td>
-                                    <td className={`p-2 text-center ${item.rawMaterial!.unitsMissing === 0 ? "text-muted-foreground" : "font-medium text-red-500"}`}>
-                                        {roundUnits(item.rawMaterial!.unitsMissing)}
+                                    <td className="p-2 whitespace-nowrap">{item.partName}</td>
+                                    <td className="p-2 text-center">{item.requiredQuantity}</td>
+                                    <td className="p-2 text-center">{item.available}</td>
+                                    <td className={`p-2 text-center ${item.sufficient ? "text-muted-foreground" : "font-medium text-red-500"}`}>
+                                        {item.missing}
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            {preview.parts.some(item => item.rawMaterial) && (
+                <div>
+                    <p className="mb-2 font-medium">Materia prima necesaria para las piezas faltantes</p>
+                    <div className="overflow-x-auto rounded-lg border">
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="border-b bg-muted">
+                                    <th className="p-2 text-left">Materia prima</th>
+                                    <th className="p-2">Unidades requeridas</th>
+                                    <th className="p-2">Disponible</th>
+                                    <th className="p-2">Faltante</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {preview.parts.filter(item => item.rawMaterial).map(item => (
+                                    <tr key={item.partId} className="border-b last:border-b-0">
+                                        <td className="p-2 whitespace-nowrap">
+                                            {item.rawMaterial!.rawMaterialName}
+                                            <span className="block text-xs text-muted-foreground">para {item.partName}</span>
+                                        </td>
+                                        <td className="p-2 text-center">{roundUnits(item.rawMaterial!.unitsRequired)}</td>
+                                        <td className="p-2 text-center">{roundUnits(item.rawMaterial!.unitsAvailable)}</td>
+                                        <td className={`p-2 text-center ${item.rawMaterial!.unitsMissing === 0 ? "text-muted-foreground" : "font-medium text-red-500"}`}>
+                                            {roundUnits(item.rawMaterial!.unitsMissing)}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             )}
 

@@ -18,7 +18,7 @@ export function AccountReceivableView({ accountReceivable, onClose }: Props) {
 
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                     <p className="text-sm text-muted-foreground">N° cuenta de cobro</p>
                     <p className="font-medium">{accountReceivable.number}</p>
@@ -80,58 +80,62 @@ export function AccountReceivableView({ accountReceivable, onClose }: Props) {
                 </div>
             </div>
 
-            <table className="w-full border rounded-lg">
-                <thead>
-                    <tr className="border-b bg-muted">
-                        <th className="p-2 text-left">Producto</th>
-                        <th className="p-2">Cantidad</th>
-                        <th className="p-2">Total línea</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {accountReceivable.sale.details.map(detail => (
-                        <tr key={detail.id} className="border-b">
-                            <td className="p-2">{detail.product.name}</td>
-                            <td className="p-2 text-center">{Number(detail.quantity)}</td>
-                            <td className="p-2 text-center">
-                                {formatCurrency(detail.lineTotal, accountReceivable.currency)}
-                            </td>
+            <div className="overflow-x-auto rounded-lg border">
+                <table className="w-full">
+                    <thead>
+                        <tr className="border-b bg-muted">
+                            <th className="p-2 text-left">Producto</th>
+                            <th className="p-2">Cantidad</th>
+                            <th className="p-2">Total línea</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {accountReceivable.sale.details.map(detail => (
+                            <tr key={detail.id} className="border-b">
+                                <td className="p-2 whitespace-nowrap">{detail.product.name}</td>
+                                <td className="p-2 text-center">{Number(detail.quantity)}</td>
+                                <td className="p-2 text-center whitespace-nowrap">
+                                    {formatCurrency(detail.lineTotal, accountReceivable.currency)}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
 
             {accountReceivable.payments.length > 0 && (
                 <div>
                     <p className="mb-2 text-sm text-muted-foreground">Abonos registrados</p>
-                    <table className="w-full border rounded-lg">
-                        <thead>
-                            <tr className="border-b bg-muted">
-                                <th className="p-2 text-left">Fecha</th>
-                                <th className="p-2 text-left">Forma de pago</th>
-                                <th className="p-2 text-left">Comprobantes</th>
-                                <th className="p-2 text-right">Monto</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {accountReceivable.payments.map(payment => (
-                                <tr key={payment.id} className="border-b">
-                                    <td className="p-2">{formatDateOnly(payment.paymentDate)}</td>
-                                    <td className="p-2">
-                                        {payment.paymentMethod === "TRANSFER" ? "Transferencia" : "Efectivo"}
-                                    </td>
-                                    <td className="p-2">
-                                        {payment.vouchers.length > 0
-                                            ? payment.vouchers.map(v => v.number).join(", ")
-                                            : "-"}
-                                    </td>
-                                    <td className="p-2 text-right">
-                                        {formatCurrency(payment.amount, accountReceivable.currency)}
-                                    </td>
+                    <div className="overflow-x-auto rounded-lg border">
+                        <table className="w-full">
+                            <thead>
+                                <tr className="border-b bg-muted">
+                                    <th className="p-2 text-left">Fecha</th>
+                                    <th className="p-2 text-left">Forma de pago</th>
+                                    <th className="p-2 text-left">Comprobantes</th>
+                                    <th className="p-2 text-right">Monto</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {accountReceivable.payments.map(payment => (
+                                    <tr key={payment.id} className="border-b">
+                                        <td className="p-2 whitespace-nowrap">{formatDateOnly(payment.paymentDate)}</td>
+                                        <td className="p-2 whitespace-nowrap">
+                                            {payment.paymentMethod === "TRANSFER" ? "Transferencia" : "Efectivo"}
+                                        </td>
+                                        <td className="p-2">
+                                            {payment.vouchers.length > 0
+                                                ? payment.vouchers.map(v => v.number).join(", ")
+                                                : "-"}
+                                        </td>
+                                        <td className="p-2 text-right whitespace-nowrap">
+                                            {formatCurrency(payment.amount, accountReceivable.currency)}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             )}
 

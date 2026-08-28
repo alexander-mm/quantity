@@ -11,7 +11,7 @@ type Props = {
 export function PartMovementView({ movement, onClose }: Props) {
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                     <p className="text-sm text-muted-foreground">Número</p>
                     <p className="font-medium">{movement.number}</p>
@@ -34,22 +34,24 @@ export function PartMovementView({ movement, onClose }: Props) {
                 </div>
             </div>
 
-            <table className="w-full border rounded-lg">
-                <thead>
-                    <tr className="border-b bg-muted">
-                        <th className="p-2 text-left">Pieza</th>
-                        <th className="p-2">Cantidad</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {movement.details.map(detail => (
-                        <tr key={detail.id} className="border-b">
-                            <td className="p-2">{detail.part.code} - {detail.part.name}</td>
-                            <td className="p-2 text-center">{Number(detail.quantity)}</td>
+            <div className="overflow-x-auto rounded-lg border">
+                <table className="w-full">
+                    <thead>
+                        <tr className="border-b bg-muted">
+                            <th className="p-2 text-left">Pieza</th>
+                            <th className="p-2">Cantidad</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {movement.details.map(detail => (
+                            <tr key={detail.id} className="border-b">
+                                <td className="p-2 whitespace-nowrap">{detail.part.code} - {detail.part.name}</td>
+                                <td className="p-2 text-center">{Number(detail.quantity)}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
 
             <div className="flex justify-end">
                 <Button type="button" variant="outline" onClick={onClose}>

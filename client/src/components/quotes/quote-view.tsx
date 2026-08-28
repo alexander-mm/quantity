@@ -56,7 +56,7 @@ export function QuoteView({ quote, onClose }: Props) {
     return (
         <div className="space-y-6">
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                     <p className="text-sm text-muted-foreground">N° cotización</p>
                     <p className="font-medium">{quote.number}</p>
@@ -83,26 +83,28 @@ export function QuoteView({ quote, onClose }: Props) {
                 </div>
             </div>
 
-            <table className="w-full border rounded-lg">
-                <thead>
-                    <tr className="border-b bg-muted">
-                        <th className="p-2 text-left">Producto</th>
-                        <th className="p-2">Cantidad</th>
-                        <th className="p-2">Precio unit.</th>
-                        <th className="p-2">Total línea</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {quote.details.map(detail => (
-                        <tr key={detail.id} className="border-b">
-                            <td className="p-2">{detail.product.internalCode} - {detail.product.name}</td>
-                            <td className="p-2 text-center">{Number(detail.quantity)}</td>
-                            <td className="p-2 text-center">{formatCurrency(detail.unitPrice, quote.currency)}</td>
-                            <td className="p-2 text-center">{formatCurrency(detail.lineTotal, quote.currency)}</td>
+            <div className="overflow-x-auto rounded-lg border">
+                <table className="w-full">
+                    <thead>
+                        <tr className="border-b bg-muted">
+                            <th className="p-2 text-left">Producto</th>
+                            <th className="p-2">Cantidad</th>
+                            <th className="p-2">Precio unit.</th>
+                            <th className="p-2">Total línea</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {quote.details.map(detail => (
+                            <tr key={detail.id} className="border-b">
+                                <td className="p-2 whitespace-nowrap">{detail.product.internalCode} - {detail.product.name}</td>
+                                <td className="p-2 text-center">{Number(detail.quantity)}</td>
+                                <td className="p-2 text-center whitespace-nowrap">{formatCurrency(detail.unitPrice, quote.currency)}</td>
+                                <td className="p-2 text-center whitespace-nowrap">{formatCurrency(detail.lineTotal, quote.currency)}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
 
             <div className="flex flex-wrap justify-between gap-2">
 
