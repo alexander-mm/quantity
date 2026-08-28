@@ -117,8 +117,9 @@ export function SaleView({
                 </div>
             </div>
 
-            <div className="overflow-x-auto rounded-lg border">
-                <table className="w-full min-w-[560px]">
+            {/* Tabla: solo desde md en adelante, donde 6 columnas entran sin apretar. */}
+            <div className="hidden overflow-x-auto rounded-lg border md:block">
+                <table className="w-full">
                     <thead>
                         <tr className="border-b bg-muted">
                             <th className="p-2 text-left">
@@ -149,7 +150,7 @@ export function SaleView({
                                     key={detail.id}
                                     className="border-b"
                                 >
-                                    <td className="p-2 whitespace-nowrap">
+                                    <td className="p-2">
                                         {detail.product.name}
                                     </td>
                                     <td className="p-2 text-center">
@@ -172,6 +173,46 @@ export function SaleView({
                         }
                     </tbody>
                 </table>
+            </div>
+
+            {/* Tarjetas: por debajo de md, en vez de forzar una tabla angosta a scrollear. */}
+            <div className="space-y-3 md:hidden">
+                {
+                    sale.details.map(detail => (
+                        <div
+                            key={detail.id}
+                            className="rounded-lg border p-3"
+                        >
+                            <p className="font-medium">
+                                {detail.product.name}
+                            </p>
+
+                            <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                                <div className="flex justify-between gap-2">
+                                    <span className="text-muted-foreground">Cantidad</span>
+                                    <span>{detail.quantity}</span>
+                                </div>
+                                <div className="flex justify-between gap-2">
+                                    <span className="text-muted-foreground">Precio</span>
+                                    <span>{formatCurrency(detail.unitPrice, sale.currency)}</span>
+                                </div>
+                                <div className="flex justify-between gap-2">
+                                    <span className="text-muted-foreground">Desc.</span>
+                                    <span>{formatCurrency(detail.discount, sale.currency)}</span>
+                                </div>
+                                <div className="flex justify-between gap-2">
+                                    <span className="text-muted-foreground">IVA</span>
+                                    <span>{formatCurrency(detail.tax, sale.currency)}</span>
+                                </div>
+                            </div>
+
+                            <div className="mt-2 flex justify-between border-t pt-2 font-semibold">
+                                <span>Total</span>
+                                <span>{formatCurrency(detail.lineTotal, sale.currency)}</span>
+                            </div>
+                        </div>
+                    ))
+                }
             </div>
 
             <div className="w-full space-y-2 sm:ml-auto sm:w-80">

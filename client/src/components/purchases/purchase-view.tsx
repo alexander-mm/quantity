@@ -80,8 +80,9 @@ export function PurchaseView({
                 </div>
             </div>
 
-            <div className="overflow-x-auto rounded-lg border">
-                <table className="w-full min-w-[720px]">
+            {/* Tabla: solo desde md en adelante, donde 8 columnas entran sin apretar. */}
+            <div className="hidden overflow-x-auto rounded-lg border md:block">
+                <table className="w-full">
                     <thead>
                         <tr className="border-b bg-muted">
                             <th className="p-2 text-left">
@@ -128,7 +129,7 @@ export function PurchaseView({
                                         key={detail.id}
                                         className="border-b"
                                     >
-                                        <td className="p-2 whitespace-nowrap">
+                                        <td className="p-2">
                                             {detail.product.name}
                                         </td>
                                         <td className="p-2 text-center">
@@ -175,6 +176,73 @@ export function PurchaseView({
                         }
                     </tbody>
                 </table>
+            </div>
+
+            {/* Tarjetas: por debajo de md, en vez de forzar una tabla de 8 columnas a scrollear. */}
+            <div className="space-y-3 md:hidden">
+                {
+                    purchase.details.map(detail => {
+
+                        const usdEntries = detail.priceEntries
+                            .filter(entry => entry.currency === "USD")
+                            .sort((a, b) => a.sequence - b.sequence);
+
+                        const copEntries = detail.priceEntries
+                            .filter(entry => entry.currency === "COP")
+                            .sort((a, b) => a.sequence - b.sequence);
+
+                        return (
+                            <div
+                                key={detail.id}
+                                className="rounded-lg border p-3"
+                            >
+                                <p className="font-medium">
+                                    {detail.product.name}
+                                </p>
+
+                                <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                                    <div className="flex justify-between gap-2">
+                                        <span className="text-muted-foreground">Cantidad</span>
+                                        <span>{detail.quantity}</span>
+                                    </div>
+                                    <div className="flex justify-between gap-2">
+                                        <span className="text-muted-foreground">Costo</span>
+                                        <span>${Number(detail.unitCost).toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between gap-2">
+                                        <span className="text-muted-foreground">Desc.</span>
+                                        <span>${Number(detail.discount).toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between gap-2">
+                                        <span className="text-muted-foreground">IVA</span>
+                                        <span>${Number(detail.tax).toFixed(2)}</span>
+                                    </div>
+                                </div>
+
+                                {(usdEntries.length > 0 || copEntries.length > 0) && (
+                                    <div className="mt-2 flex flex-col gap-0.5 border-t pt-2 text-sm text-muted-foreground">
+                                        {usdEntries.map(entry => (
+                                            <span key={entry.id}>
+                                                PVP USD {entry.sequence}: ${Number(entry.price).toFixed(2)}
+                                            </span>
+                                        ))}
+                                        {copEntries.map(entry => (
+                                            <span key={entry.id}>
+                                                PVP COP {entry.sequence}: {Number(entry.price).toLocaleString("es-CO")}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+
+                                <div className="mt-2 flex justify-between border-t pt-2 font-semibold">
+                                    <span>Total</span>
+                                    <span>${Number(detail.lineTotal).toFixed(2)}</span>
+                                </div>
+                            </div>
+                        );
+
+                    })
+                }
             </div>
 
             <div className="w-full space-y-2 sm:ml-auto sm:w-80">
