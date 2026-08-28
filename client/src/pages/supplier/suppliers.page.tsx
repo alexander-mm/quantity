@@ -7,6 +7,7 @@ import {
     SuppliersErrorState,
     SuppliersEmptyState,
     SupplierFormModal,
+    SupplierViewModal,
     DeleteSupplierDialog,
 } from "@/components";
 
@@ -53,6 +54,9 @@ export function SuppliersPage() {
         useState<Supplier | null>(null);
 
     const [supplierToDelete, setSupplierToDelete] =
+        useState<Supplier | null>(null);
+
+    const [supplierToView, setSupplierToView] =
         useState<Supplier | null>(null);
 
     if (isLoading) {
@@ -150,6 +154,14 @@ export function SuppliersPage() {
 
                                     suppliers={pagedSuppliers}
 
+                                    onView={(supplier) => {
+
+                                        setSupplierToView(
+                                            supplier
+                                        );
+
+                                    }}
+
                                     onEdit={(supplier) => {
 
                                         setSelectedSupplier(
@@ -209,6 +221,24 @@ export function SuppliersPage() {
                 }
 
                 supplierId={selectedSupplier?.id}
+
+            />
+
+            <SupplierViewModal
+
+                open={!!supplierToView}
+
+                supplier={supplierToView}
+
+                onOpenChange={(value) => {
+
+                    if (!value) {
+
+                        setSupplierToView(null);
+
+                    }
+
+                }}
 
             />
 

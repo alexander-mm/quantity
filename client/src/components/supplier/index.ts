@@ -1,4 +1,6 @@
 export * from "./supplier-form";
+export * from "./supplier-view";
+export * from "./supplier-view-modal";
 export * from "./supplier-table";
 export * from "./suppliers-toolbar";
 export * from "./supplier-form-modal";

@@ -556,9 +556,9 @@ export function ProductForm({
 
                     return (
 
-                        <div key={field.id} className="flex items-end gap-2 rounded-md border p-2">
+                        <div key={field.id} className="flex flex-col gap-2 rounded-md border p-2 sm:flex-row sm:items-end">
 
-                            <div className="flex-1">
+                            <div className="min-w-0 flex-1">
                                 <Label className="mb-1">{isPart ? "Pieza" : "Producto componente"}</Label>
                                 <Controller
                                     control={control}
@@ -591,22 +591,24 @@ export function ProductForm({
                                 />
                             </div>
 
-                            <div className="w-28">
-                                <Label className="mb-1">Cantidad</Label>
-                                <Input
-                                    type="number"
-                                    min={0}
-                                    step="1"
-                                    placeholder="0"
-                                    {...register(`components.${index}.quantity`, {
-                                        setValueAs: (v) => (v === "" ? undefined : Number(v))
-                                    })}
-                                />
-                            </div>
+                            <div className="flex items-end gap-2">
+                                <div className="w-28">
+                                    <Label className="mb-1">Cantidad</Label>
+                                    <Input
+                                        type="number"
+                                        min={0}
+                                        step="1"
+                                        placeholder="0"
+                                        {...register(`components.${index}.quantity`, {
+                                            setValueAs: (v) => (v === "" ? undefined : Number(v))
+                                        })}
+                                    />
+                                </div>
 
-                            <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
-                                <Trash2 size={18} className="text-red-500" />
-                            </Button>
+                                <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                                    <Trash2 size={18} className="text-red-500" />
+                                </Button>
+                            </div>
 
                         </div>
 
@@ -669,9 +671,9 @@ export function ProductForm({
 
                 {additionalCostFields.map((field, index) => (
 
-                    <div key={field.id} className="flex items-end gap-2 rounded-md border p-2">
+                    <div key={field.id} className="flex flex-col gap-2 rounded-md border p-2 sm:flex-row sm:items-end">
 
-                        <div className="flex-1">
+                        <div className="min-w-0 flex-1">
                             <Label className="mb-1">Descripción</Label>
                             <Input
                                 placeholder="Ej. Flete, empaque..."
@@ -679,22 +681,24 @@ export function ProductForm({
                             />
                         </div>
 
-                        <div className="w-32">
-                            <Label className="mb-1">Monto</Label>
-                            <Input
-                                type="number"
-                                min={0}
-                                step="0.01"
-                                placeholder="0"
-                                {...register(`additionalCosts.${index}.amount`, {
-                                    setValueAs: (v) => (v === "" ? undefined : Number(v))
-                                })}
-                            />
-                        </div>
+                        <div className="flex items-end gap-2">
+                            <div className="w-32">
+                                <Label className="mb-1">Monto</Label>
+                                <Input
+                                    type="number"
+                                    min={0}
+                                    step="0.01"
+                                    placeholder="0"
+                                    {...register(`additionalCosts.${index}.amount`, {
+                                        setValueAs: (v) => (v === "" ? undefined : Number(v))
+                                    })}
+                                />
+                            </div>
 
-                        <Button type="button" variant="ghost" size="icon" onClick={() => removeAdditionalCost(index)}>
-                            <Trash2 size={18} className="text-red-500" />
-                        </Button>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => removeAdditionalCost(index)}>
+                                <Trash2 size={18} className="text-red-500" />
+                            </Button>
+                        </div>
 
                     </div>
 
@@ -739,7 +743,7 @@ export function ProductForm({
 
                     return (
 
-                        <div key={field.id} className="flex items-end gap-2 rounded-md border p-2">
+                        <div key={field.id} className="flex flex-wrap items-end gap-2 rounded-md border p-2">
 
                             <div className="w-24">
                                 <Label className="mb-1">Etiqueta</Label>

@@ -4,6 +4,7 @@ import type { Supplier } from "@/types";
 
 type Props = {
     suppliers: Supplier[];
+    onView: (supplier: Supplier) => void;
     onEdit: (supplier: Supplier) => void;
     onDelete: (supplier: Supplier) => void;
 };
@@ -11,6 +12,7 @@ type Props = {
 export function SuppliersTable({
 
     suppliers,
+    onView,
     onEdit,
     onDelete
 
@@ -59,6 +61,7 @@ export function SuppliersTable({
                                 <Eye
                                     size={18}
                                     className="cursor-pointer text-slate-500 hover:text-primary"
+                                    onClick={() => onView(supplier)}
                                 />
                                 <Pencil
                                     size={18}
