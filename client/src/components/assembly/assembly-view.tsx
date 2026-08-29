@@ -35,7 +35,7 @@ export function AssemblyView({ assembly, onClose }: Props) {
                     <p className="text-sm text-muted-foreground">Registrado por</p>
                     <p>{assembly.user.firstName} {assembly.user.lastName}</p>
                 </div>
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
                     <p className="text-sm text-muted-foreground">Observaciones</p>
                     <p>{assembly.observations ?? "-"}</p>
                 </div>

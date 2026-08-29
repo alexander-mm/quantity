@@ -74,7 +74,7 @@ export function AccountReceivableView({ accountReceivable, onClose }: Props) {
                         <p>{new Date(accountReceivable.paidAt).toLocaleDateString()}</p>
                     </div>
                 )}
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
                     <p className="text-sm text-muted-foreground">Observaciones</p>
                     <p>{accountReceivable.observations ?? "-"}</p>
                 </div>

@@ -61,7 +61,7 @@ export function InventoryMovementView({ movement, onClose }: Props) {
                         <p>{clientLabel}</p>
                     </div>
                 )}
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
                     <p className="text-sm text-muted-foreground">Observaciones</p>
                     <p>{movement.observations ?? "-"}</p>
                 </div>

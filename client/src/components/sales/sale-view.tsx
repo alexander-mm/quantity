@@ -107,7 +107,7 @@ export function SaleView({
                         {sale.reference ?? "-"}
                     </p>
                 </div>
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
                     <p className="text-sm text-muted-foreground">
                         Observaciones
                     </p>

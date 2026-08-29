@@ -28,7 +28,7 @@ export function PartMovementView({ movement, onClose }: Props) {
                     <p className="text-sm text-muted-foreground">Registrado por</p>
                     <p>{movement.user.firstName} {movement.user.lastName}</p>
                 </div>
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
                     <p className="text-sm text-muted-foreground">Observaciones</p>
                     <p>{movement.observations ?? "-"}</p>
                 </div>
