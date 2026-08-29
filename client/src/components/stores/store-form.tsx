@@ -177,10 +177,14 @@ export function StoreForm({ onSuccess, mode = "create", storeId }: Props) {
             {typeWatch === "STORE" && (
                 <div>
                     <Label className="mb-1">IP para reloj checador (opcional)</Label>
-                    <Input {...register("attendanceIp")} placeholder="Ej. 190.90.1.2" />
+                    <Input {...register("attendanceIp")} placeholder="Ej. 190.90.1.2, 45.6.200.12, 200.1.50.3" />
                     <p className="text-xs text-muted-foreground">
                         Solo se puede marcar entrada/salida en "/asistencia" desde un equipo que salga a
-                        internet con esta IP pública. Dejalo vacío para desactivar el reloj checador en
+                        internet con alguna de estas IPs. Si el proveedor de internet de la tienda rota entre
+                        varias IPs fijas (típico de CGNAT), poné todas separadas por coma — con que la IP del
+                        momento coincida con una de la lista, alcanza. Si en cambio la IP cambia dentro de un
+                        mismo bloque, terminá esa entrada en un punto (ej. <strong>190.90.1.</strong>) para
+                        aceptar cualquier IP de ese bloque. Dejalo vacío para desactivar el reloj checador en
                         esta tienda.
                     </p>
                     <p className="text-sm text-red-500">{errors.attendanceIp?.message}</p>

@@ -11,12 +11,31 @@ export class AttendanceRepository extends BaseRepository {
 
     async findStoreByIp(ip: string) {
 
-        return this.prisma.store.findFirst({
+        // Algunos proveedores de internet (sobre todo con CGNAT) rotan la IP pública entre un
+        // puñado de direcciones fijas en vez de una sola. Por eso el campo admite varias IPs
+        // separadas por coma. Además, si una entrada termina en "." (ej. "190.90.1."), se
+        // compara como prefijo de bloque en vez de exigir la IP completa exacta.
+        const stores = await this.prisma.store.findMany({
             where: {
-                attendanceIp: ip,
-                isActive: true
+                isActive: true,
+                attendanceIp: { not: null }
             }
         });
+
+        return stores.find(store => {
+
+            const candidates = (store.attendanceIp as string)
+                .split(",")
+                .map(candidate => candidate.trim())
+                .filter(Boolean);
+
+            return candidates.some(configured =>
+                (configured.endsWith(".") || configured.endsWith(":"))
+                    ? ip.startsWith(configured)
+                    : ip === configured
+            );
+
+        }) ?? null;
 
     }
 
