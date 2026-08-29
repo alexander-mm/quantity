@@ -3,8 +3,13 @@ import { ForbiddenError, NotFoundError } from "../../shared/errors/index.js";
 import { AttendanceRepository } from "./attendance.repository.js";
 import { AttendanceFiltersDto } from "./attendance.dto.js";
 
-const DEVICE_NOT_AUTHORIZED_MESSAGE =
-    "Este equipo no está autorizado para marcar asistencia.";
+function buildNotAuthorizedMessage(ip: string): string {
+    // Se incluye la IP tal como la detectó el servidor (después de pasar por el proxy de
+    // Render) a propósito: es la única forma exacta de saber qué valor registrar en la
+    // tienda — buscar "cuál es mi IP" desde otro dispositivo/red puede dar un valor distinto
+    // (IPv6 vs IPv4, NAT, otro proxy, etc.) al que realmente le llega a este servidor.
+    return `Este equipo no está autorizado para marcar asistencia. IP detectada: ${ip || "desconocida"}. Pedile al administrador que la registre en la tienda correspondiente.`;
+}
 
 export class AttendanceService {
 
@@ -15,7 +20,7 @@ export class AttendanceService {
         const store = await this.repository.findStoreByIp(ip);
 
         if (!store) {
-            throw new ForbiddenError(DEVICE_NOT_AUTHORIZED_MESSAGE);
+            throw new ForbiddenError(buildNotAuthorizedMessage(ip));
         }
 
         const [employees, openAttendances] = await Promise.all([
@@ -50,7 +55,7 @@ export class AttendanceService {
         const store = await this.repository.findStoreByIp(ip);
 
         if (!store) {
-            throw new ForbiddenError(DEVICE_NOT_AUTHORIZED_MESSAGE);
+            throw new ForbiddenError(buildNotAuthorizedMessage(ip));
         }
 
         const employee = await this.repository.findEmployeeInStore(
