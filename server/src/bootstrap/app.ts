@@ -10,10 +10,13 @@ export function createApp() {
 
     const app = express();
 
-    // Render (y Vercel) ponen la app detrás de un proxy — sin esto, req.ip
-    // devuelve la IP interna del proxy en vez de la IP real del cliente,
-    // lo cual rompe la restricción por IP del reloj checador de asistencia.
-    app.set("trust proxy", 1);
+    // Render (y Vercel) ponen la app detrás de más de un salto de proxy interno — con
+    // "trust proxy": 1 (confiar solo en el salto más cercano) req.ip terminaba devolviendo
+    // la IP de la propia infraestructura de Render (un puñado fijo de direcciones), no la
+    // IP real del cliente, por eso cualquier tienda terminaba autorizada. Con "true" se
+    // confía en toda la cadena y se toma el primer valor de X-Forwarded-For (el original),
+    // que es lo correcto acá porque a la app solo se puede llegar a través de Render.
+    app.set("trust proxy", true);
 
     app.use(cors());
 
