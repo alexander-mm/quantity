@@ -10,6 +10,7 @@ import {
 } from "@/components";
 import { useBrands, useDeleteBrand } from "@/hooks";
 import type { Brand } from "@/types";
+import { LoadingState } from "@/components/ui/spinner";
 
 export function BrandsPage() {
 
@@ -32,7 +33,7 @@ export function BrandsPage() {
             </div>
 
             <div className="mt-6">
-                {isLoading && <p>Cargando...</p>}
+                {isLoading && <LoadingState />}
                 {isError && <p>Error al cargar las marcas.</p>}
                 {!isLoading && !isError && (
                     brands.length === 0

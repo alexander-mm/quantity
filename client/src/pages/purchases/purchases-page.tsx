@@ -1,5 +1,5 @@
 import { PageContainer, PageHeader, PurchasesToolbar, PurchasesTable, PurchaseModal, PurchaseViewModal } from "@/components";
-import { PaginationControls } from "@/components/ui";
+import { PaginationControls, LoadingState } from "@/components/ui";
 import { usePurchases, usePagination } from "@/hooks";
 import { useState, useMemo } from "react";
 import type { Purchase } from "@/types";
@@ -51,9 +51,7 @@ export function PurchasesPage() {
                     description="Administra las compras del inventario."
                 />
 
-                <p className="mt-6">
-                    Cargando...
-                </p>
+                <LoadingState className="mt-6" />
 
             </PageContainer>
 

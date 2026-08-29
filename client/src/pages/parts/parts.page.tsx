@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { PaginationControls } from "@/components/ui";
 import { useParts, useLowStockParts, useDeletePart, usePartCategories, usePagination } from "@/hooks";
 import type { Part } from "@/types";
+import { LoadingState } from "@/components/ui/spinner";
 
 export function PartsPage() {
 
@@ -109,7 +110,7 @@ export function PartsPage() {
             </div>
 
             <div className="mt-6">
-                {isLoading && <p>Cargando...</p>}
+                {isLoading && <LoadingState />}
                 {isError && <p>Error al cargar las piezas.</p>}
                 {!isLoading && !isError && (
                     parts.length === 0

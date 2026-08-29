@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { PaginationControls } from "@/components/ui";
 import { StoreSelector } from "@/components/selectors/store-selector";
 import { useAttendanceHistory, useStores, usePagination } from "@/hooks";
+import { LoadingState } from "@/components/ui/spinner";
 
 export function AttendanceHistoryPage() {
 
@@ -56,7 +57,7 @@ export function AttendanceHistoryPage() {
             </div>
 
             <div className="mt-6">
-                {isLoading && <p>Cargando...</p>}
+                {isLoading && <LoadingState />}
                 {isError && <p>Error al cargar el historial de asistencia.</p>}
                 {!isLoading && !isError && (
                     records.length === 0

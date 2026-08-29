@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { LoadingState } from "@/components/ui/spinner";
 import {
     PageContainer,
     PageHeader,
@@ -30,7 +31,7 @@ export function RawMaterialAdjustmentsPage() {
             </div>
 
             <div className="mt-6">
-                {isLoading && <p>Cargando...</p>}
+                {isLoading && <LoadingState />}
                 {isError && <p>Error al cargar los ajustes.</p>}
                 {!isLoading && !isError && (
                     adjustments.length === 0

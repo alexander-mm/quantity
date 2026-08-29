@@ -10,6 +10,7 @@ import {
 } from "@/components";
 import { useStores, useDeleteStore } from "@/hooks";
 import type { Store } from "@/types";
+import { LoadingState } from "@/components/ui/spinner";
 
 export function StoresPage() {
 
@@ -33,7 +34,7 @@ export function StoresPage() {
             </div>
 
             <div className="mt-6">
-                {isLoading && <p>Cargando...</p>}
+                {isLoading && <LoadingState />}
                 {isError && <p>Error al cargar las tiendas.</p>}
                 {!isLoading && !isError && (
                     stores.length === 0

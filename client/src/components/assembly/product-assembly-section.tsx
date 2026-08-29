@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { LoadingState } from "@/components/ui/spinner";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import {
@@ -42,7 +43,7 @@ export function ProductAssemblySection() {
             </div>
 
             <div className="mt-6">
-                {isLoading && <p>Cargando...</p>}
+                {isLoading && <LoadingState />}
                 {isError && <p>Error al cargar los ensamblajes.</p>}
                 {!isLoading && !isError && (
                     assemblies.length === 0

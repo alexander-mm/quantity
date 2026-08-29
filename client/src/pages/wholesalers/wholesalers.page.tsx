@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { LoadingState } from "@/components/ui/spinner";
 import { useNavigate } from "react-router-dom";
 import { PageContainer, PageHeader } from "@/components";
 import { WholesalersTable, WholesalersEmptyState } from "@/components";
@@ -37,7 +38,7 @@ export function WholesalersPage() {
             />
 
             <div className="mt-6">
-                {isLoading && <p>Cargando...</p>}
+                {isLoading && <LoadingState />}
                 {isError && <p>Error al cargar los clientes.</p>}
                 {!isLoading && !isError && (
                     clientsWithAccounts.length === 0

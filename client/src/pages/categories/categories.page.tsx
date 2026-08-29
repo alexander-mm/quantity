@@ -10,6 +10,7 @@ import {
 } from "@/components";
 import { useCategories, useDeleteCategory } from "@/hooks";
 import type { Category } from "@/types";
+import { LoadingState } from "@/components/ui/spinner";
 
 export function CategoriesPage() {
 
@@ -33,7 +34,7 @@ export function CategoriesPage() {
             </div>
 
             <div className="mt-6">
-                {isLoading && <p>Cargando...</p>}
+                {isLoading && <LoadingState />}
                 {isError && <p>Error al cargar las categorías.</p>}
                 {!isLoading && !isError && (
                     categories.length === 0

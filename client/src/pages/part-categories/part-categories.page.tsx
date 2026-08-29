@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { LoadingState } from "@/components/ui/spinner";
 import {
     PageContainer,
     PageHeader,
@@ -32,7 +33,7 @@ export function PartCategoriesPage() {
             </div>
 
             <div className="mt-6">
-                {isLoading && <p>Cargando...</p>}
+                {isLoading && <LoadingState />}
                 {isError && <p>Error al cargar las categorías.</p>}
                 {!isLoading && !isError && (
                     categories.length === 0

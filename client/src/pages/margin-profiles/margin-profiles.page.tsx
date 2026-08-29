@@ -10,6 +10,7 @@ import {
 } from "@/components";
 import { useMarginProfiles, useDeleteMarginProfile } from "@/hooks";
 import type { MarginProfile } from "@/types";
+import { LoadingState } from "@/components/ui/spinner";
 
 export function MarginProfilesPage() {
 
@@ -33,7 +34,7 @@ export function MarginProfilesPage() {
             </div>
 
             <div className="mt-6">
-                {isLoading && <p>Cargando...</p>}
+                {isLoading && <LoadingState />}
                 {isError && <p>Error al cargar los perfiles de margen.</p>}
                 {!isLoading && !isError && (
                     profiles.length === 0

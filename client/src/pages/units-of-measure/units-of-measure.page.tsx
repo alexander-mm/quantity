@@ -8,6 +8,7 @@ import {
     UnitOfMeasureModal
 } from "@/components";
 import { useUnitsOfMeasure } from "@/hooks";
+import { LoadingState } from "@/components/ui/spinner";
 
 export function UnitsOfMeasurePage() {
 
@@ -28,7 +29,7 @@ export function UnitsOfMeasurePage() {
             </div>
 
             <div className="mt-6">
-                {isLoading && <p>Cargando...</p>}
+                {isLoading && <LoadingState />}
                 {isError && <p>Error al cargar las unidades de medida.</p>}
                 {!isLoading && !isError && (
                     units.length === 0

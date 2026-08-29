@@ -11,6 +11,7 @@ import {
 import { PaginationControls } from "@/components/ui";
 import { useClients, useDeleteClient, usePagination } from "@/hooks";
 import type { Client } from "@/types";
+import { LoadingState } from "@/components/ui/spinner";
 
 function getClientLabel(client: Client) {
     return client.companyName
@@ -63,7 +64,7 @@ export function ClientsPage() {
             </div>
 
             <div className="mt-6">
-                {isLoading && <p>Cargando...</p>}
+                {isLoading && <LoadingState />}
                 {isError && <p>Error al cargar los clientes.</p>}
                 {!isLoading && !isError && (
                     clients.length === 0

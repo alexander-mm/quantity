@@ -20,6 +20,7 @@ import {
 } from "@/hooks";
 import { PaginationControls } from "@/components/ui";
 import type { PartCuttingOrder } from "@/types";
+import { LoadingState } from "@/components/ui/spinner";
 
 function getErrorMessage(error: unknown, fallback: string) {
     return axios.isAxiosError<{ message?: string }>(error) && error.response?.data?.message
@@ -55,7 +56,7 @@ export function PartCuttingOrdersPage() {
             </div>
 
             <div className="mt-6">
-                {isLoading && <p>Cargando...</p>}
+                {isLoading && <LoadingState />}
                 {isError && <p>Error al cargar las órdenes de corte.</p>}
                 {!isLoading && !isError && (
                     orders.length === 0

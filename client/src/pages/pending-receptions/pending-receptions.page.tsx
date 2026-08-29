@@ -2,6 +2,7 @@ import { useState } from "react";
 import { PageContainer, PageHeader, StockTransfersTable, ReceiveTransferModal } from "@/components";
 import { useStockTransfers, useAuth } from "@/hooks";
 import type { StockTransfer } from "@/types";
+import { LoadingState } from "@/components/ui/spinner";
 
 export function PendingReceptionsPage() {
 
@@ -22,7 +23,7 @@ const pending = (data?.data ?? []).filter(t =>
             <PageHeader title="Recepciones pendientes" description="Confirma o reporta novedades de los envíos que llegaron a tu tienda." />
 
             <div className="mt-6">
-                {isLoading && <p>Cargando...</p>}
+                {isLoading && <LoadingState />}
                 {isError && <p>Error al cargar las recepciones.</p>}
                 {!isLoading && !isError && (
                     pending.length === 0

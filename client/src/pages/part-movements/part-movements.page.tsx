@@ -11,6 +11,7 @@ import {
 import { PaginationControls } from "@/components/ui";
 import { usePartMovements, usePagination } from "@/hooks";
 import type { PartMovement } from "@/types";
+import { LoadingState } from "@/components/ui/spinner";
 
 export function PartMovementsPage() {
 
@@ -33,7 +34,7 @@ export function PartMovementsPage() {
             </div>
 
             <div className="mt-6">
-                {isLoading && <p>Cargando...</p>}
+                {isLoading && <LoadingState />}
                 {isError && <p>Error al cargar los movimientos.</p>}
                 {!isLoading && !isError && (
                     movements.length === 0

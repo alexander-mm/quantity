@@ -9,6 +9,7 @@ import {
 import { useStockTransfers, useAuth } from "@/hooks";
 import { ROLES } from "@/constants/roles";
 import type { StockTransfer } from "@/types";
+import { LoadingState } from "@/components/ui/spinner";
 
 export function TransferIssuesPage() {
 
@@ -38,7 +39,7 @@ export function TransferIssuesPage() {
             />
 
             <div className="mt-6">
-                {isLoading && <p>Cargando...</p>}
+                {isLoading && <LoadingState />}
                 {isError && <p>Error al cargar las novedades.</p>}
                 {!isLoading && !isError && (
                     issues.length === 0

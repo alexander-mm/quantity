@@ -10,7 +10,7 @@ import {
     CancelInventoryMovementDialog
 } from "@/components";
 import { useInventoryMovements, useConfirmInventoryMovement, useCancelInventoryMovement, useStores, usePagination } from "@/hooks";
-import { PaginationControls } from "@/components/ui";
+import { PaginationControls, LoadingState } from "@/components/ui";
 import { toast } from "react-hot-toast";
 import { useState, useMemo } from "react";
 import type { InventoryMovement } from "@/types";
@@ -69,7 +69,7 @@ export function InventoryMovementsPage() {
                     description="Administra los movimientos del inventario."
                 />
 
-                Cargando...
+                <LoadingState />
 
             </PageContainer>
         );

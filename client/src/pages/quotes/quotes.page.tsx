@@ -4,6 +4,7 @@ import { PaginationControls } from "@/components/ui";
 import { useQuotes, usePagination } from "@/hooks";
 import { getClientLabel } from "@/lib/client-label";
 import type { Quote } from "@/types";
+import { LoadingState } from "@/components/ui/spinner";
 
 export function QuotesPage() {
 
@@ -48,7 +49,7 @@ export function QuotesPage() {
             </div>
 
             <div className="mt-6">
-                {isLoading && <p>Cargando...</p>}
+                {isLoading && <LoadingState />}
                 {isError && <p className="text-red-500">Error al cargar las cotizaciones.</p>}
                 {!isLoading && !isError && (
                     quotes.length === 0

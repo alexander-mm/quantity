@@ -1,6 +1,6 @@
 import { PageContainer, PageHeader, SalesToolbar, SalesTable, SaleModal, SaleViewModal } from "@/components";
 import type { PrefillFromQuote } from "@/components/sales/sale-form";
-import { PaginationControls } from "@/components/ui";
+import { PaginationControls, LoadingState } from "@/components/ui";
 import { useSales, useStores, usePagination } from "@/hooks";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -100,9 +100,7 @@ export function SalesPage() {
 
             <div className="mt-6">
 
-                {isLoading && (
-                    <p>Cargando...</p>
-                )}
+                {isLoading && <LoadingState />}
 
                 {!isLoading && isError && (
                     <p>

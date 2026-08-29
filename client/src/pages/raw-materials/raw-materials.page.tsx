@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { PaginationControls } from "@/components/ui";
 import { useRawMaterials, useLowStockRawMaterials, useDeleteRawMaterial, usePagination } from "@/hooks";
 import type { RawMaterial } from "@/types";
+import { LoadingState } from "@/components/ui/spinner";
 
 export function RawMaterialsPage() {
 
@@ -98,7 +99,7 @@ export function RawMaterialsPage() {
             </div>
 
             <div className="mt-6">
-                {isLoading && <p>Cargando...</p>}
+                {isLoading && <LoadingState />}
                 {isError && <p>Error al cargar la materia prima.</p>}
                 {!isLoading && !isError && (
                     rawMaterials.length === 0

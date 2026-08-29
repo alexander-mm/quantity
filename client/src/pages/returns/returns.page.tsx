@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { PaginationControls } from "@/components/ui";
 import { useReturns, usePagination } from "@/hooks";
 import type { Return } from "@/types";
+import { LoadingState } from "@/components/ui/spinner";
 
 export function ReturnsPage() {
 
@@ -44,7 +45,7 @@ export function ReturnsPage() {
             </div>
 
             <div className="mt-6">
-                {isLoading && <p>Cargando...</p>}
+                {isLoading && <LoadingState />}
                 {isError && <p>Error al cargar las devoluciones.</p>}
                 {!isLoading && !isError && (
                     returns.length === 0

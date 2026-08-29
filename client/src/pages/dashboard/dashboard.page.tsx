@@ -7,6 +7,7 @@ import {
     PageContainer,
     PageHeader
 } from "@/components";
+import { LoadingState } from "@/components/ui/spinner";
 
 export function DashboardPage() {
 
@@ -18,7 +19,7 @@ export function DashboardPage() {
 
     if (isLoading) {
 
-        return <h2>Cargando dashboard...</h2>;
+        return <LoadingState label="Cargando dashboard..." />;
 
     }
 

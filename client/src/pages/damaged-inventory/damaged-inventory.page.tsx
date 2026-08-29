@@ -7,6 +7,7 @@ import { getReturnItemLabel } from "@/components/returns/return-item-label";
 import { formatDateOnly } from "@/lib/format-date";
 import { useDamagedStock, useDamagedParts, useReturns } from "@/hooks";
 import type { Return } from "@/types";
+import { LoadingState } from "@/components/ui/spinner";
 
 export function DamagedInventoryPage() {
 
@@ -30,7 +31,7 @@ export function DamagedInventoryPage() {
 
             <div className="mt-8">
                 <h2 className="mb-3 text-lg font-medium">Stock dañado</h2>
-                {isLoadingStock && <p>Cargando...</p>}
+                {isLoadingStock && <LoadingState />}
                 {isErrorStock && <p className="text-red-500">Error al cargar el inventario dañado.</p>}
                 {!isLoadingStock && !isErrorStock && (
                     damagedStock.length === 0
@@ -41,7 +42,7 @@ export function DamagedInventoryPage() {
 
             <div className="mt-10">
                 <h2 className="mb-3 text-lg font-medium">Piezas dañadas</h2>
-                {isLoadingParts && <p>Cargando...</p>}
+                {isLoadingParts && <LoadingState />}
                 {isErrorParts && <p className="text-red-500">Error al cargar las piezas dañadas.</p>}
                 {!isLoadingParts && !isErrorParts && (
                     damagedParts.length === 0
@@ -54,7 +55,7 @@ export function DamagedInventoryPage() {
                 <h2 className="mb-3 text-lg font-medium">
                     Pendientes de revisión {pendingReturns.length > 0 ? `(${pendingReturns.length})` : ""}
                 </h2>
-                {isLoadingReturns && <p>Cargando...</p>}
+                {isLoadingReturns && <LoadingState />}
                 {isErrorReturns && <p className="text-red-500">Error al cargar las devoluciones.</p>}
                 {!isLoadingReturns && !isErrorReturns && (
                     pendingReturns.length === 0

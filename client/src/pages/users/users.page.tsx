@@ -11,6 +11,7 @@ import {
 } from "@/components";
 import { useUsers, useDeleteUser } from "@/hooks";
 import type { User } from "@/types";
+import { LoadingState } from "@/components/ui/spinner";
 
 export function UsersPage() {
 
@@ -35,7 +36,7 @@ export function UsersPage() {
             </div>
 
             <div className="mt-6">
-                {isLoading && <p>Cargando...</p>}
+                {isLoading && <LoadingState />}
                 {isError && <p>Error al cargar los usuarios.</p>}
                 {!isLoading && !isError && (
                     users.length === 0

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { LoadingState } from "@/components/ui/spinner";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
@@ -93,7 +94,7 @@ export function WholesalerDetailPage() {
             </div>
 
             <div className="mt-6">
-                {isLoading && <p>Cargando...</p>}
+                {isLoading && <LoadingState />}
                 {isError && <p>Error al cargar las cuentas de cobro.</p>}
                 {!isLoading && !isError && (
                     accountsReceivable.length === 0

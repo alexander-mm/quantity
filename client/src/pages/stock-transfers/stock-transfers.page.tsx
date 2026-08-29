@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { LoadingState } from "@/components/ui/spinner";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import {
@@ -33,7 +34,7 @@ export function StockTransfersPage() {
             </div>
 
             <div className="mt-6">
-                {isLoading && <p>Cargando...</p>}
+                {isLoading && <LoadingState />}
                 {isError && <p>Error al cargar los envíos.</p>}
                 {!isLoading && !isError && (
                     transfers.length === 0

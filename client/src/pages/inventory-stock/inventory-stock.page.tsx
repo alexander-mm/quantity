@@ -6,7 +6,7 @@ import {
 } from "@/components";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
-import { PaginationControls } from "@/components/ui";
+import { PaginationControls, LoadingState } from "@/components/ui";
 import { StoreSelector } from "@/components/selectors/store-selector";
 import { useInventoryStock, useLowStock, useStores, usePagination } from "@/hooks";
 import { ALL_STORES_SUMMED } from "@/constants/inventory";
@@ -128,11 +128,7 @@ export function InventoryStockPage() {
 
             </div>
 
-            {isLoading && (
-                <p className="mt-6">
-                    Cargando inventario...
-                </p>
-            )}
+            {isLoading && <LoadingState label="Cargando inventario..." className="mt-6" />}
 
             {isError && (
                 <p className="mt-6 text-red-500">

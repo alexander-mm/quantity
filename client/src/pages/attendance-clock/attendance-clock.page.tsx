@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import { LogIn, LogOut, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { LoadingState } from "@/components/ui/spinner";
 import { useKioskContext, useClockAttendance } from "@/hooks";
 import type { KioskEmployee } from "@/types";
 
@@ -11,10 +12,27 @@ function formatTime(iso: string) {
     return new Date(iso).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" });
 }
 
+function useLiveClock() {
+
+    const [now, setNow] = useState(() => new Date());
+
+    useEffect(() => {
+
+        const interval = setInterval(() => setNow(new Date()), 1000);
+
+        return () => clearInterval(interval);
+
+    }, []);
+
+    return now;
+
+}
+
 export function AttendanceClockPage() {
 
     const { data, isLoading, isError, error } = useKioskContext();
     const clockMutation = useClockAttendance();
+    const now = useLiveClock();
 
     const [selectedEmployee, setSelectedEmployee] = useState<KioskEmployee | null>(null);
     const [pin, setPin] = useState("");
@@ -59,11 +77,15 @@ export function AttendanceClockPage() {
                     {context && (
                         <p className="mt-1 text-muted-foreground">{context.store.name}</p>
                     )}
+                    <p className="mt-3 text-4xl font-semibold tabular-nums text-[#0170B8]">
+                        {now.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                    </p>
+                    <p className="text-sm capitalize text-muted-foreground">
+                        {now.toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                    </p>
                 </div>
 
-                {isLoading && (
-                    <p className="text-center text-muted-foreground">Cargando...</p>
-                )}
+                {isLoading && <LoadingState />}
 
                 {isError && (
                     <p className="rounded-lg border border-red-200 bg-red-50 p-4 text-center text-red-600">
