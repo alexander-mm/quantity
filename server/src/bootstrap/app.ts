@@ -10,6 +10,11 @@ export function createApp() {
 
     const app = express();
 
+    // Render (y Vercel) ponen la app detrás de un proxy — sin esto, req.ip
+    // devuelve la IP interna del proxy en vez de la IP real del cliente,
+    // lo cual rompe la restricción por IP del reloj checador de asistencia.
+    app.set("trust proxy", 1);
+
     app.use(cors());
 
     app.use(helmet());

@@ -32,6 +32,9 @@ model Store {
   phone                     String?
   email                     String?
   manager                   String?
+  // IP pública desde la que se permite marcar asistencia para esta tienda (reloj checador).
+  // Se configura una sola vez por sucursal; si el ISP la cambia, el admin la actualiza acá.
+  attendanceIp              String?
   isActive                  Boolean             @default(true)
   createdAt                 DateTime            @default(now())
   updatedAt                 DateTime            @updatedAt
@@ -46,9 +49,11 @@ model Store {
   stockTransfersOrigin      StockTransfer[]     @relation("TransferOrigin")
   stockTransfersDestination StockTransfer[]     @relation("TransferDestination")
   returns                   Return[]
+  attendances               Attendance[]
 
   @@index([type])
   @@index([isActive])
+  @@index([attendanceIp])
 }
 
 model User {
@@ -62,6 +67,9 @@ model User {
   phone                      String?
   roleId                     BigInt
   storeId                    BigInt
+  // PIN de 4 dígitos (hasheado) para marcar asistencia en el reloj checador de su tienda.
+  // Solo aplica a usuarios con rol Tienda — null hasta que el admin lo configure.
+  attendancePin              String?
   isActive                   Boolean               @default(true)
   createdAt                  DateTime              @default(now())
   updatedAt                  DateTime              @updatedAt
@@ -83,8 +91,25 @@ model User {
   returnsResolved            Return[]              @relation("ReturnResolvedBy")
   refreshTokens              RefreshToken[]
   quotes                     Quote[]
+  attendances                Attendance[]
 
   @@index([isActive])
+}
+
+model Attendance {
+  id        BigInt    @id @default(autoincrement())
+  uuid      String    @unique @default(uuid())
+  userId    BigInt
+  storeId   BigInt
+  clockIn   DateTime
+  clockOut  DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id])
+  store     Store     @relation(fields: [storeId], references: [id])
+
+  @@index([userId])
+  @@index([storeId])
+  @@index([clockIn])
 }
 
 model RefreshToken {

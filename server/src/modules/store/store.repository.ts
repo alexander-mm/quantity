@@ -78,6 +78,7 @@ export class StoreRepository extends BaseRepository {
         phone?: string;
         email?: string;
         manager?: string;
+        attendanceIp?: string;
     }): Promise<Store> {
 
         return this.prisma.store.create({
@@ -96,6 +97,7 @@ export class StoreRepository extends BaseRepository {
             phone?: string;
             email?: string;
             manager?: string;
+            attendanceIp?: string;
         }
     ): Promise<Store> {
 

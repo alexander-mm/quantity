@@ -43,6 +43,7 @@ import partAssemblyRoutes from "../modules/part-assembly/part-assembly.routes.js
 import partProductionRoutes from "../modules/part-production/part-production.routes.js";
 import telegramRoutes from "../modules/telegram/telegram.routes.js";
 import jobsRoutes from "../modules/jobs/jobs.routes.js";
+import attendanceRoutes from "../modules/attendance/attendance.routes.js";
 
 
 const router = Router();
@@ -134,5 +135,7 @@ router.use("/quotes", quoteRoutes);
 router.use("/telegram", telegramRoutes);
 
 router.use("/jobs", jobsRoutes);
+
+router.use("/attendance", attendanceRoutes);
 
 export default router;

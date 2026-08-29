@@ -35,6 +35,7 @@ export class StoreService {
         phone?: string;
         email?: string;
         manager?: string;
+        attendanceIp?: string;
 
     }): Promise<Store> {
         const existingCode =
@@ -70,6 +71,7 @@ export class StoreService {
             phone?: string;
             email?: string;
             manager?: string;
+            attendanceIp?: string;
         }
     ): Promise<Store> {
         const store =

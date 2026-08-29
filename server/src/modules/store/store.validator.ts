@@ -49,6 +49,12 @@ export const createStoreSchema = z.object({
         .string()
         .trim()
         .max(100, "El responsable no puede superar los 100 caracteres.")
+        .optional(),
+
+    attendanceIp: z
+        .string()
+        .trim()
+        .max(45, "La IP no puede superar los 45 caracteres.")
         .optional()
 
 });
