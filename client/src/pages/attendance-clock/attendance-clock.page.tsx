@@ -55,7 +55,7 @@ export function AttendanceClockPage() {
             <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-lg sm:p-8">
 
                 <div className="mb-6 text-center">
-                    <h1 className="text-2xl font-bold tracking-tight">Reloj checador</h1>
+                    <h1 className="text-2xl font-bold tracking-tight">Check In -Check Out</h1>
                     {context && (
                         <p className="mt-1 text-muted-foreground">{context.store.name}</p>
                     )}
