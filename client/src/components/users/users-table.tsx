@@ -23,12 +23,13 @@ export function UsersTable({ users, onEdit, onDelete, onSetPin }: Props) {
                     <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                             {user.store.type === "STORE" && (
-                                <KeyRound
-                                    size={18}
-                                    className="cursor-pointer text-slate-500 hover:text-primary"
-                                    title="PIN de asistencia"
-                                    onClick={() => onSetPin(user)}
-                                />
+                                <span title="PIN de asistencia">
+                                    <KeyRound
+                                        size={18}
+                                        className="cursor-pointer text-slate-500 hover:text-primary"
+                                        onClick={() => onSetPin(user)}
+                                    />
+                                </span>
                             )}
                             <Pencil
                                 size={18}
