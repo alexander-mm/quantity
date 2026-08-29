@@ -97,14 +97,16 @@ model User {
 }
 
 model Attendance {
-  id        BigInt    @id @default(autoincrement())
-  uuid      String    @unique @default(uuid())
-  userId    BigInt
-  storeId   BigInt
-  clockIn   DateTime
-  clockOut  DateTime?
-  createdAt DateTime  @default(now())
-  user      User      @relation(fields: [userId], references: [id])
+  id              BigInt    @id @default(autoincrement())
+  uuid            String    @unique @default(uuid())
+  userId          BigInt
+  storeId         BigInt
+  clockIn         DateTime
+  clockInReason   String?
+  clockOut        DateTime?
+  clockOutReason  String?
+  createdAt       DateTime  @default(now())
+  user            User      @relation(fields: [userId], references: [id])
   store     Store     @relation(fields: [storeId], references: [id])
 
   @@index([userId])

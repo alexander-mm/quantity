@@ -4,6 +4,7 @@ import axios from "axios";
 import { LogIn, LogOut, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { LoadingState } from "@/components/ui/spinner";
 import { useKioskContext, useClockAttendance } from "@/hooks";
 import type { KioskEmployee } from "@/types";
@@ -36,6 +37,7 @@ export function AttendanceClockPage() {
 
     const [selectedEmployee, setSelectedEmployee] = useState<KioskEmployee | null>(null);
     const [pin, setPin] = useState("");
+    const [reason, setReason] = useState("");
 
     const context = data?.data;
     const employees = context?.employees ?? [];
@@ -46,7 +48,7 @@ export function AttendanceClockPage() {
             return;
         }
 
-        clockMutation.mutate({ userId: selectedEmployee.id, pin }, {
+        clockMutation.mutate({ userId: selectedEmployee.id, pin, reason: reason.trim() || undefined }, {
             onSuccess: (response) => {
                 const timestamp = response.data.action === "clock-in"
                     ? response.data.record.clockIn
@@ -55,6 +57,7 @@ export function AttendanceClockPage() {
                 toast.success(`${response.message} (${selectedEmployee.firstName} ${selectedEmployee.lastName}, ${time})`);
                 setSelectedEmployee(null);
                 setPin("");
+                setReason("");
             },
             onError: (err) => {
                 const message =
@@ -126,7 +129,7 @@ export function AttendanceClockPage() {
 
                         <button
                             type="button"
-                            onClick={() => { setSelectedEmployee(null); setPin(""); }}
+                            onClick={() => { setSelectedEmployee(null); setPin(""); setReason(""); }}
                             className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                         >
                             <ArrowLeft size={16} />
@@ -152,6 +155,22 @@ export function AttendanceClockPage() {
                                 className="text-center text-2xl tracking-[0.5em]"
                                 value={pin}
                                 onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" && pin.length === 4) {
+                                        handleClock();
+                                    }
+                                }}
+                            />
+                        </div>
+
+                        <div>
+                            <Label className="mb-1">
+                                Motivo de {selectedEmployee.clockedIn ? "la salida" : "la entrada"} (opcional)
+                            </Label>
+                            <Input
+                                placeholder="Ej. Permiso médico, hora de almuerzo..."
+                                value={reason}
+                                onChange={(e) => setReason(e.target.value)}
                                 onKeyDown={(e) => {
                                     if (e.key === "Enter" && pin.length === 4) {
                                         handleClock();

@@ -136,14 +136,15 @@ export class AttendanceRepository extends BaseRepository {
 
     }
 
-    async clockIn(userId: bigint, storeId: bigint) {
+    async clockIn(userId: bigint, storeId: bigint, reason?: string) {
 
         return this.prisma.attendance.create({
 
             data: {
                 userId,
                 storeId,
-                clockIn: new Date()
+                clockIn: new Date(),
+                clockInReason: reason ?? null
             },
 
             include: {
@@ -155,13 +156,13 @@ export class AttendanceRepository extends BaseRepository {
 
     }
 
-    async clockOut(id: bigint) {
+    async clockOut(id: bigint, reason?: string) {
 
         return this.prisma.attendance.update({
 
             where: { id },
 
-            data: { clockOut: new Date() },
+            data: { clockOut: new Date(), clockOutReason: reason ?? null },
 
             include: {
                 user: { select: { firstName: true, lastName: true } },

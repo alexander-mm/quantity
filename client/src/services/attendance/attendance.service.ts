@@ -15,6 +15,7 @@ export async function getKioskContext(): Promise<ApiResponse<KioskContext>> {
 export async function clockAttendance(payload: {
     userId: string;
     pin: string;
+    reason?: string;
 }): Promise<ApiResponse<ClockResult>> {
     const { data } = await api.post<ApiResponse<ClockResult>>("/attendance/clock", payload);
     return data;

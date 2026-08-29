@@ -38,9 +38,9 @@ export class AttendanceController {
 
         try {
 
-            const { userId, pin } = req.body;
+            const { userId, pin, reason } = req.body;
 
-            const result = await this.service.clock(getClientIp(req), userId, pin);
+            const result = await this.service.clock(getClientIp(req), userId, pin, reason);
 
             const message = result.action === "clock-in"
                 ? "Entrada registrada correctamente."

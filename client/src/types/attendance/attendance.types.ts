@@ -32,7 +32,9 @@ export interface AttendanceRecord {
     userId: string;
     storeId: string;
     clockIn: string;
+    clockInReason: string | null;
     clockOut: string | null;
+    clockOutReason: string | null;
     createdAt: string;
     user: AttendanceRecordUser;
     store: AttendanceRecordStore;

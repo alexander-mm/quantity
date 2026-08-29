@@ -50,7 +50,7 @@ export class AttendanceService {
 
     }
 
-    async clock(ip: string, userId: string, pin: string) {
+    async clock(ip: string, userId: string, pin: string, reason?: string) {
 
         const store = await this.repository.findStoreByIp(ip);
 
@@ -76,11 +76,11 @@ export class AttendanceService {
         const open = await this.repository.findOpenAttendance(employee.id);
 
         if (open) {
-            const record = await this.repository.clockOut(open.id);
+            const record = await this.repository.clockOut(open.id, reason);
             return { action: "clock-out" as const, record };
         }
 
-        const record = await this.repository.clockIn(employee.id, store.id);
+        const record = await this.repository.clockIn(employee.id, store.id, reason);
         return { action: "clock-in" as const, record };
 
     }

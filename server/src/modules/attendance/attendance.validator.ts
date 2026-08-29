@@ -10,7 +10,13 @@ export const clockAttendanceSchema = z.object({
     pin: z
         .string()
         .trim()
-        .regex(/^\d{4}$/, "El PIN debe ser de 4 dígitos numéricos.")
+        .regex(/^\d{4}$/, "El PIN debe ser de 4 dígitos numéricos."),
+
+    reason: z
+        .string()
+        .trim()
+        .max(200, "El motivo no puede superar los 200 caracteres.")
+        .optional()
 
 });
 

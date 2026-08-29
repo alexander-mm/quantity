@@ -39,11 +39,21 @@ export function AttendanceHistoryTable({ records }: Props) {
                         {record.store.name}
                     </td>
                     <td className="px-6 py-4">
-                        {format(new Date(record.clockIn), "dd/MM/yyyy HH:mm")}
+                        <div>{format(new Date(record.clockIn), "dd/MM/yyyy HH:mm")}</div>
+                        {record.clockInReason && (
+                            <div className="text-xs text-muted-foreground">{record.clockInReason}</div>
+                        )}
                     </td>
                     <td className="px-6 py-4">
                         {record.clockOut
-                            ? format(new Date(record.clockOut), "dd/MM/yyyy HH:mm")
+                            ? (
+                                <>
+                                    <div>{format(new Date(record.clockOut), "dd/MM/yyyy HH:mm")}</div>
+                                    {record.clockOutReason && (
+                                        <div className="text-xs text-muted-foreground">{record.clockOutReason}</div>
+                                    )}
+                                </>
+                            )
                             : <span className="text-green-600 font-medium">En turno</span>}
                     </td>
                     <td className="px-6 py-4">
