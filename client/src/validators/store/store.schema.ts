@@ -8,7 +8,8 @@ export const storeSchema = z.object({
     city: z.string().trim().optional(),
     phone: z.string().trim().optional(),
     email: z.string().trim().email("Correo inválido.").optional().or(z.literal("")),
-    manager: z.string().trim().optional()
+    manager: z.string().trim().optional(),
+    attendanceIp: z.string().trim().optional()
 });
 
 export type StoreFormData = z.infer<typeof storeSchema>;

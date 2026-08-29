@@ -28,3 +28,5 @@ export * from "./raw-materials";
 export * from "./raw-material-movements";
 export * from "./equipment-parts";
 export * from "./part-cutting-orders";
+export * from "./attendance-clock";
+export * from "./attendance-history";

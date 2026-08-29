@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { onFormError } from "@/lib/form-error-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-hot-toast";
@@ -30,7 +30,8 @@ export function StoreForm({ onSuccess, mode = "create", storeId }: Props) {
             city: "",
             phone: "",
             email: "",
-            manager: ""
+            manager: "",
+            attendanceIp: ""
         }
     });
 
@@ -38,6 +39,7 @@ export function StoreForm({ onSuccess, mode = "create", storeId }: Props) {
     const updateMutation = useUpdateStore();
     const { data: storeData } = useStore(mode === "edit" ? storeId : undefined);
     const loading = createMutation.isPending || updateMutation.isPending;
+    const typeWatch = useWatch({ control, name: "type" });
 
     useEffect(() => {
 
@@ -53,7 +55,8 @@ export function StoreForm({ onSuccess, mode = "create", storeId }: Props) {
             city: storeData.data.city ?? "",
             phone: storeData.data.phone ?? "",
             email: storeData.data.email ?? "",
-            manager: storeData.data.manager ?? ""
+            manager: storeData.data.manager ?? "",
+            attendanceIp: storeData.data.attendanceIp ?? ""
         });
 
     }, [mode, storeData, reset]);
@@ -68,7 +71,8 @@ export function StoreForm({ onSuccess, mode = "create", storeId }: Props) {
             city: data.city || undefined,
             phone: data.phone || undefined,
             email: data.email || undefined,
-            manager: data.manager || undefined
+            manager: data.manager || undefined,
+            attendanceIp: data.attendanceIp || undefined
         };
 
         const onError = (error: unknown) => {
@@ -169,6 +173,19 @@ export function StoreForm({ onSuccess, mode = "create", storeId }: Props) {
                 <Label className="mb-1">Responsable (opcional)</Label>
                 <Input {...register("manager")} />
             </div>
+
+            {typeWatch === "STORE" && (
+                <div>
+                    <Label className="mb-1">IP para reloj checador (opcional)</Label>
+                    <Input {...register("attendanceIp")} placeholder="Ej. 190.90.1.2" />
+                    <p className="text-xs text-muted-foreground">
+                        Solo se puede marcar entrada/salida en "/asistencia" desde un equipo que salga a
+                        internet con esta IP pública. Dejalo vacío para desactivar el reloj checador en
+                        esta tienda.
+                    </p>
+                    <p className="text-sm text-red-500">{errors.attendanceIp?.message}</p>
+                </div>
+            )}
 
             <div className="flex justify-end">
                 <Button type="submit" disabled={loading}>

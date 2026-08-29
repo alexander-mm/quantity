@@ -1,4 +1,4 @@
-import { Pencil, Trash2 } from "lucide-react";
+import { KeyRound, Pencil, Trash2 } from "lucide-react";
 import { EntityTable } from "@/components/ui";
 import type { User } from "@/types";
 
@@ -6,9 +6,10 @@ type Props = {
     users: User[];
     onEdit: (user: User) => void;
     onDelete: (user: User) => void;
+    onSetPin: (user: User) => void;
 };
 
-export function UsersTable({ users, onEdit, onDelete }: Props) {
+export function UsersTable({ users, onEdit, onDelete, onSetPin }: Props) {
     return (
         <EntityTable
             headers={["Usuario", "Nombre", "Rol", "Tienda", "Acciones"]}
@@ -21,6 +22,14 @@ export function UsersTable({ users, onEdit, onDelete }: Props) {
                     <td className="px-6 py-4">{user.store.name}</td>
                     <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
+                            {user.store.type === "STORE" && (
+                                <KeyRound
+                                    size={18}
+                                    className="cursor-pointer text-slate-500 hover:text-primary"
+                                    title="PIN de asistencia"
+                                    onClick={() => onSetPin(user)}
+                                />
+                            )}
                             <Pencil
                                 size={18}
                                 className="cursor-pointer text-slate-500 hover:text-primary"

@@ -36,3 +36,4 @@ export * from "./equipment-parts";
 export * from "./part-production";
 export * from "./part-cutting-orders";
 export * from "./returns";
+export * from "./attendance";

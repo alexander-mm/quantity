@@ -39,4 +39,5 @@ export * from "./part-production";
 export * from "./part-cutting-orders";
 export * from "./returns";
 export * from "./sync";
+export * from "./attendance";
 export * from "./shared";

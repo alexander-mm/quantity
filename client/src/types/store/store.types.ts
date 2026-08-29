@@ -8,5 +8,6 @@ export interface Store {
     phone: string | null;
     email: string | null;
     manager: string | null;
+    attendanceIp: string | null;
     isActive: boolean;
 }

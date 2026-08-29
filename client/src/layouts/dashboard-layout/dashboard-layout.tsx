@@ -181,7 +181,8 @@ export function DashboardLayout({
             items: [
                 { to: "/roles", label: "Roles", visibility: "adminOnly" },
                 { to: "/users", label: "Usuarios", visibility: "adminOnly" },
-                { to: "/stores", label: "Tiendas", visibility: "adminOnly" }
+                { to: "/stores", label: "Tiendas", visibility: "adminOnly" },
+                { to: "/attendance-history", label: "Asistencia", visibility: "adminOnly" }
             ]
         }
     ];

@@ -38,6 +38,8 @@ import { RawMaterialMovementsPage } from "@/pages/raw-material-movements";
 import { RawMaterialAdjustmentsPage } from "@/pages/raw-material-adjustments";
 import { EquipmentPartsPage } from "@/pages/equipment-parts";
 import { PartCuttingOrdersPage } from "@/pages/part-cutting-orders";
+import { AttendanceClockPage } from "@/pages/attendance-clock";
+import { AttendanceHistoryPage } from "@/pages/attendance-history";
 
 const router = createBrowserRouter([
 
@@ -436,6 +438,25 @@ const router = createBrowserRouter([
             <ProtectedRoute blockedRoles={[ROLES.PRODUCTION]}>
                 <DashboardLayout>
                     <WholesalerDetailPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
+
+    {
+        // Pantalla del reloj checador: pública a propósito, pensada para quedar abierta en
+        // el equipo de la tienda. No lleva DashboardLayout ni ProtectedRoute — la restricción
+        // real es del lado del servidor, por la IP registrada de la tienda.
+        path: "/asistencia",
+        element: <AttendanceClockPage />
+    },
+
+    {
+        path: "/attendance-history",
+        element: (
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+                <DashboardLayout>
+                    <AttendanceHistoryPage />
                 </DashboardLayout>
             </ProtectedRoute>
         )

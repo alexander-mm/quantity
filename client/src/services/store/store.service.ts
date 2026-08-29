@@ -20,6 +20,7 @@ export type CreateStoreRequest = {
     phone?: string;
     email?: string;
     manager?: string;
+    attendanceIp?: string;
 };
 
 export async function createStore(

@@ -15,5 +15,6 @@ export interface User {
     store: {
         id: string;
         name: string;
+        type: "MAIN_WAREHOUSE" | "STORE";
     };
 }

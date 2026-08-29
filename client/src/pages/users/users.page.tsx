@@ -6,7 +6,8 @@ import {
     UsersTable,
     UsersEmptyState,
     UserModal,
-    DeleteUserDialog
+    DeleteUserDialog,
+    SetAttendancePinModal
 } from "@/components";
 import { useUsers, useDeleteUser } from "@/hooks";
 import type { User } from "@/types";
@@ -19,6 +20,7 @@ export function UsersPage() {
     const [open, setOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [userToDelete, setUserToDelete] = useState<User | null>(null);
+    const [userToSetPin, setUserToSetPin] = useState<User | null>(null);
 
     return (
         <PageContainer>
@@ -48,10 +50,23 @@ export function UsersPage() {
                                 onDelete={(user) => {
                                     setUserToDelete(user);
                                 }}
+                                onSetPin={(user) => {
+                                    setUserToSetPin(user);
+                                }}
                             />
                         )
                 )}
             </div>
+
+            <SetAttendancePinModal
+                open={!!userToSetPin}
+                user={userToSetPin}
+                onOpenChange={(value) => {
+                    if (!value) {
+                        setUserToSetPin(null);
+                    }
+                }}
+            />
 
             <UserModal
                 open={open}

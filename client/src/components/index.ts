@@ -37,3 +37,4 @@ export * from "./part-production";
 export * from "./part-cutting-orders";
 export * from "./returns";
 export * from "./pending-sync";
+export * from "./attendance";
