@@ -16,26 +16,32 @@ const includeRelations = {
 
 type QuoteWithRelations = Prisma.QuoteGetPayload<{ include: typeof includeRelations }>;
 
-function computeTotals(details: CreateQuoteDto["details"]) {
+function computeTotals(data: Pick<
+    CreateQuoteDto,
+    "details" | "hasShipping" | "shippingCost" | "hasAdditionalCost" | "additionalCost"
+>) {
 
-    const subtotal = details.reduce(
+    const subtotal = data.details.reduce(
         (sum, item) => sum + (item.quantity * item.unitPrice),
         0
     );
 
-    const discount = details.reduce(
+    const discount = data.details.reduce(
         (sum, item) => sum + (item.discount ?? 0),
         0
     );
 
-    const tax = details.reduce(
+    const tax = data.details.reduce(
         (sum, item) => sum + (item.tax ?? 0),
         0
     );
 
-    const total = subtotal - discount + tax;
+    const shippingCost = data.hasShipping ? (data.shippingCost ?? 0) : 0;
+    const additionalCost = data.hasAdditionalCost ? (data.additionalCost ?? 0) : 0;
 
-    return { subtotal, discount, tax, total };
+    const total = subtotal - discount + tax + shippingCost + additionalCost;
+
+    return { subtotal, discount, tax, shippingCost, additionalCost, total };
 
 }
 
@@ -71,7 +77,7 @@ export class QuoteRepository extends BaseRepository {
         data: CreateQuoteDto
     ): Promise<QuoteWithRelations> {
 
-        const totals = computeTotals(data.details);
+        const totals = computeTotals(data);
 
         return this.prisma.quote.create({
             data: {
@@ -85,6 +91,10 @@ export class QuoteRepository extends BaseRepository {
                 subtotal: totals.subtotal,
                 discount: totals.discount,
                 tax: totals.tax,
+                hasShipping: data.hasShipping ?? false,
+                shippingCost: totals.shippingCost,
+                hasAdditionalCost: data.hasAdditionalCost ?? false,
+                additionalCost: totals.additionalCost,
                 total: totals.total,
                 details: {
                     create: data.details.map(item => ({
@@ -110,7 +120,7 @@ export class QuoteRepository extends BaseRepository {
         data: UpdateQuoteDto
     ): Promise<QuoteWithRelations> {
 
-        const totals = computeTotals(data.details);
+        const totals = computeTotals(data);
 
         return this.prisma.quote.update({
             where: { id },
@@ -124,6 +134,10 @@ export class QuoteRepository extends BaseRepository {
                 subtotal: totals.subtotal,
                 discount: totals.discount,
                 tax: totals.tax,
+                hasShipping: data.hasShipping ?? false,
+                shippingCost: totals.shippingCost,
+                hasAdditionalCost: data.hasAdditionalCost ?? false,
+                additionalCost: totals.additionalCost,
                 total: totals.total,
                 details: {
                     deleteMany: {},

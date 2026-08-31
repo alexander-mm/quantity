@@ -70,6 +70,18 @@ export function QuotePrintView({ quote }: Props) {
                     <span>IVA</span>
                     <span>{formatCurrency(quote.tax, quote.currency)}</span>
                 </div>
+                {quote.hasShipping && (
+                    <div className="flex justify-between py-1 text-slate-500">
+                        <span>Costo de envío</span>
+                        <span>{formatCurrency(quote.shippingCost, quote.currency)}</span>
+                    </div>
+                )}
+                {quote.hasAdditionalCost && (
+                    <div className="flex justify-between py-1 text-slate-500">
+                        <span>Costo adicional</span>
+                        <span>{formatCurrency(quote.additionalCost, quote.currency)}</span>
+                    </div>
+                )}
                 <div className="mt-2 flex justify-between border-t border-slate-200 pt-2 text-lg font-semibold text-[#0170B8]">
                     <span>Total</span>
                     <span>{formatCurrency(quote.total, quote.currency)}</span>

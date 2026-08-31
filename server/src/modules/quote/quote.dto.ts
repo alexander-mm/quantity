@@ -15,6 +15,10 @@ export interface CreateQuoteDto {
     validUntil?: Date;
     observations?: string;
     details: CreateQuoteDetailDto[];
+    hasShipping?: boolean;
+    shippingCost?: number;
+    hasAdditionalCost?: boolean;
+    additionalCost?: number;
 }
 
 export type UpdateQuoteDto = Omit<CreateQuoteDto, "userId">;

@@ -16,6 +16,7 @@ export class ProductQueryRepository extends BaseRepository {
                 pvpCop: true,
                 minimumStock: true,
                 isActive: true,
+                assembleOnSale: true,
                 brand: {
                     select: {
                         name: true
@@ -86,6 +87,7 @@ export class ProductQueryRepository extends BaseRepository {
                 pvpCop: true,
                 minimumStock: true,
                 categoryId: true,
+                assembleOnSale: true,
 
                 brand: {
                     select: {
@@ -127,6 +129,7 @@ export class ProductQueryRepository extends BaseRepository {
             pvp: product.pvp,
             pvpCop: product.pvpCop,
             minimumStock: product.minimumStock,
+            assembleOnSale: product.assembleOnSale,
             additionalCosts: product.additionalCosts
         };
     }

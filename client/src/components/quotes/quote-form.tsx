@@ -37,7 +37,11 @@ function toFormData(quote: Quote): QuoteFormData {
             unitPrice: Number(d.unitPrice),
             discount: Number(d.discount),
             tax: Number(d.tax)
-        }))
+        })),
+        hasShipping: quote.hasShipping,
+        shippingCost: quote.hasShipping ? Number(quote.shippingCost) : undefined,
+        hasAdditionalCost: quote.hasAdditionalCost,
+        additionalCost: quote.hasAdditionalCost ? Number(quote.additionalCost) : undefined
     };
 }
 
@@ -54,7 +58,11 @@ export function QuoteForm({ quote, onSuccess }: Props) {
             quoteDate: todayLocalDateString(),
             validUntil: "",
             observations: "",
-            details: []
+            details: [],
+            hasShipping: false,
+            shippingCost: undefined,
+            hasAdditionalCost: false,
+            additionalCost: undefined
         }
     });
 
@@ -84,6 +92,10 @@ export function QuoteForm({ quote, onSuccess }: Props) {
 
     const details = useWatch({ control: methods.control, name: "details" });
     const currency = useWatch({ control: methods.control, name: "currency" });
+    const hasShipping = useWatch({ control: methods.control, name: "hasShipping" });
+    const shippingCostWatch = useWatch({ control: methods.control, name: "shippingCost" });
+    const hasAdditionalCost = useWatch({ control: methods.control, name: "hasAdditionalCost" });
+    const additionalCostWatch = useWatch({ control: methods.control, name: "additionalCost" });
 
     const items = details ?? [];
 
@@ -94,7 +106,9 @@ export function QuoteForm({ quote, onSuccess }: Props) {
 
     const discount = items.reduce((sum, item) => sum + Number(item.discount || 0), 0);
     const tax = items.reduce((sum, item) => sum + Number(item.tax || 0), 0);
-    const total = subtotal - discount + tax;
+    const shippingCost = hasShipping ? Number(shippingCostWatch || 0) : 0;
+    const additionalCost = hasAdditionalCost ? Number(additionalCostWatch || 0) : 0;
+    const total = subtotal - discount + tax + shippingCost + additionalCost;
 
     const createMutation = useCreateQuote();
     const updateMutation = useUpdateQuote();
@@ -115,7 +129,11 @@ export function QuoteForm({ quote, onSuccess }: Props) {
                 unitPrice: Number(d.unitPrice),
                 discount: d.discount ? Number(d.discount) : undefined,
                 tax: d.tax ? Number(d.tax) : undefined
-            }))
+            })),
+            hasShipping: !!data.hasShipping,
+            shippingCost: data.hasShipping ? (Number(data.shippingCost) || 0) : undefined,
+            hasAdditionalCost: !!data.hasAdditionalCost,
+            additionalCost: data.hasAdditionalCost ? (Number(data.additionalCost) || 0) : undefined
         };
 
         if (isEditing) {

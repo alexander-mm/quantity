@@ -28,7 +28,31 @@ export const quoteSchema = z.object({
 
     observations: z.string().trim().max(500, "Máximo 500 caracteres.").optional(),
 
-    details: z.array(quoteDetailSchema).min(1, "Agrega al menos un producto.")
+    details: z.array(quoteDetailSchema).min(1, "Agrega al menos un producto."),
+
+    hasShipping: z.boolean().optional(),
+    shippingCost: z.coerce.number().min(0).optional(),
+
+    hasAdditionalCost: z.boolean().optional(),
+    additionalCost: z.coerce.number().min(0).optional()
+
+}).superRefine((data, ctx) => {
+
+    if (data.hasShipping && !(data.shippingCost && data.shippingCost > 0)) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Indique el costo de envío.",
+            path: ["shippingCost"]
+        });
+    }
+
+    if (data.hasAdditionalCost && !(data.additionalCost && data.additionalCost > 0)) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Indique el costo adicional.",
+            path: ["additionalCost"]
+        });
+    }
 
 });
 

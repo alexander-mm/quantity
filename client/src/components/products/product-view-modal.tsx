@@ -3,7 +3,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatCurrency } from "@/lib/format-currency";
-import { useAuth, useProduct, useProductPriceEntries, useMarginProfiles } from "@/hooks";
+import {
+    useAuth,
+    useProduct,
+    useProductPriceEntries,
+    useMarginProfiles,
+    useProductComponents,
+    useEquipmentParts
+} from "@/hooks";
 import { ROLES } from "@/constants/roles";
 import type { Product } from "@/types";
 
@@ -20,10 +27,14 @@ export function ProductViewModal({ product, open, onOpenChange }: Props) {
     const { data: detailData } = useProduct(product?.id);
     const { data: priceEntriesData } = useProductPriceEntries(product?.id);
     const { data: marginProfilesData } = useMarginProfiles();
+    const { data: componentsData } = useProductComponents(product?.assembleOnSale ? product.id : undefined);
+    const { data: equipmentPartsData } = useEquipmentParts(product?.assembleOnSale ? product.id : undefined);
 
     const detail = detailData?.data;
     const priceEntries = priceEntriesData?.data ?? [];
     const marginProfiles = marginProfilesData?.data ?? [];
+    const components = componentsData?.data ?? [];
+    const partComponents = equipmentPartsData?.data ?? [];
 
     const [manualSelection, setManualSelection] = useState<
         { productId: string; profileId: string } | null
@@ -99,6 +110,28 @@ export function ProductViewModal({ product, open, onOpenChange }: Props) {
                         <div>
                             <p className="text-sm text-muted-foreground">Descripción</p>
                             <p className="font-medium">{detail.description}</p>
+                        </div>
+                    )}
+
+                    {product.assembleOnSale && (components.length > 0 || partComponents.length > 0) && (
+                        <div className="space-y-2 rounded-lg border p-3">
+                            <p className="text-xs text-muted-foreground">
+                                Este producto es un kit — al venderse, se descuentan sus componentes
+                            </p>
+
+                            {components.map(item => (
+                                <div key={item.id} className="flex items-center justify-between text-sm">
+                                    <span>{item.componentProduct.internalCode} - {item.componentProduct.name}</span>
+                                    <span className="font-medium">{Number(item.quantity)}</span>
+                                </div>
+                            ))}
+
+                            {partComponents.map(item => (
+                                <div key={item.id} className="flex items-center justify-between text-sm">
+                                    <span>{item.part.code} - {item.part.name}</span>
+                                    <span className="font-medium">{Number(item.quantity)}</span>
+                                </div>
+                            ))}
                         </div>
                     )}
 

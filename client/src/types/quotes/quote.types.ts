@@ -27,6 +27,10 @@ export interface Quote {
     subtotal: string;
     discount: string;
     tax: string;
+    hasShipping: boolean;
+    shippingCost: string;
+    hasAdditionalCost: boolean;
+    additionalCost: string;
     total: string;
     createdAt: string;
     client: Client;

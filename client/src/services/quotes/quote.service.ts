@@ -17,6 +17,10 @@ export type CreateQuoteRequest = {
     validUntil?: Date;
     observations?: string;
     details: QuoteDetailRequest[];
+    hasShipping?: boolean;
+    shippingCost?: number;
+    hasAdditionalCost?: boolean;
+    additionalCost?: number;
 };
 
 export type UpdateQuoteRequest = CreateQuoteRequest;

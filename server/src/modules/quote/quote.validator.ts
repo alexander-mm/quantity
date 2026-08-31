@@ -14,7 +14,7 @@ const quoteDetailSchema = z.object({
 
 });
 
-export const createQuoteSchema = z.object({
+const baseQuoteSchema = z.object({
 
     number: z
         .string()
@@ -36,9 +36,50 @@ export const createQuoteSchema = z.object({
         .max(500, "Las observaciones no pueden superar los 500 caracteres.")
         .optional(),
 
-    details: z.array(quoteDetailSchema).min(1, "Agrega al menos un producto.")
+    details: z.array(quoteDetailSchema).min(1, "Agrega al menos un producto."),
+
+    hasShipping: z.boolean().optional(),
+    shippingCost: z.coerce.number().min(0).optional(),
+
+    hasAdditionalCost: z.boolean().optional(),
+    additionalCost: z.coerce.number().min(0).optional()
 
 });
+
+function applyCostRules<
+    T extends z.ZodType<{
+        hasShipping?: boolean;
+        shippingCost?: number;
+        hasAdditionalCost?: boolean;
+        additionalCost?: number;
+    }>
+>(
+    schema: T
+) {
+
+    return schema.superRefine((data, ctx) => {
+
+        if (data.hasShipping && !(data.shippingCost && data.shippingCost > 0)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Indique el costo de envío.",
+                path: ["shippingCost"]
+            });
+        }
+
+        if (data.hasAdditionalCost && !(data.additionalCost && data.additionalCost > 0)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Indique el costo adicional.",
+                path: ["additionalCost"]
+            });
+        }
+
+    });
+
+}
+
+export const createQuoteSchema = applyCostRules(baseQuoteSchema);
 
 export const updateQuoteSchema = createQuoteSchema;
 

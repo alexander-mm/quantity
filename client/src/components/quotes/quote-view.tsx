@@ -77,10 +77,6 @@ export function QuoteView({ quote, onClose }: Props) {
                     <p className="text-sm text-muted-foreground">Válida hasta</p>
                     <p>{quote.validUntil ? formatDateOnly(quote.validUntil) : "Sin vencimiento"}</p>
                 </div>
-                <div>
-                    <p className="text-sm text-muted-foreground">Total</p>
-                    <p className="font-medium">{formatCurrency(quote.total, quote.currency)}</p>
-                </div>
             </div>
 
             <div className="overflow-x-auto rounded-lg border">
@@ -104,6 +100,42 @@ export function QuoteView({ quote, onClose }: Props) {
                         ))}
                     </tbody>
                 </table>
+            </div>
+
+            <div className="w-full space-y-2 sm:ml-auto sm:w-80">
+                <div className="flex justify-between">
+                    <span>Subtotal</span>
+                    <strong>{formatCurrency(quote.subtotal, quote.currency)}</strong>
+                </div>
+
+                <div className="flex justify-between">
+                    <span>Descuento</span>
+                    <strong>{formatCurrency(quote.discount, quote.currency)}</strong>
+                </div>
+
+                <div className="flex justify-between">
+                    <span>IVA</span>
+                    <strong>{formatCurrency(quote.tax, quote.currency)}</strong>
+                </div>
+
+                {quote.hasShipping && (
+                    <div className="flex justify-between">
+                        <span>Costo de envío</span>
+                        <strong>{formatCurrency(quote.shippingCost, quote.currency)}</strong>
+                    </div>
+                )}
+
+                {quote.hasAdditionalCost && (
+                    <div className="flex justify-between">
+                        <span>Costo adicional</span>
+                        <strong>{formatCurrency(quote.additionalCost, quote.currency)}</strong>
+                    </div>
+                )}
+
+                <div className="flex justify-between border-t pt-2 text-lg font-semibold">
+                    <span>Total</span>
+                    <span>{formatCurrency(quote.total, quote.currency)}</span>
+                </div>
             </div>
 
             <div className="flex flex-wrap justify-between gap-2">
