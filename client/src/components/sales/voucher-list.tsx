@@ -1,12 +1,15 @@
 import { Plus, Trash2 } from "lucide-react";
-import { useFormContext, useWatch, type Control } from "react-hook-form";
+import { useFormContext, useWatch } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 type Props = {
-    control: Control<any>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    control: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     register: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setValue: any;
     name: string;
     label: string;

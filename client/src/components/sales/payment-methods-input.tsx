@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Controller, useWatch, type Control } from "react-hook-form";
+import { Controller, useWatch } from "react-hook-form";
 import { Plus, Trash2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,7 @@ type PaymentMethodRow = {
 
 type Props = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    control: Control<any>;
+    control: any;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     register: any;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

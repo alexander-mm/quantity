@@ -330,7 +330,7 @@ export function QuoteForm({ quote, onSuccess }: Props) {
                         <Label className="mb-1">Precio</Label>
                         <Select
                             value={priceEntryKey ?? ""}
-                            onValueChange={(value) => applyPriceEntryToAllLines(value)}
+                            onValueChange={(value) => applyPriceEntryToAllLines(value ?? "")}
                         >
                             <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Precio base del producto">
