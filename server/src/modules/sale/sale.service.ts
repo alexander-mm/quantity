@@ -115,10 +115,11 @@ export class SaleService {
     private async validatePaymentMethod(
         data: {
             paymentMethod?: string;
+            paymentMethods?: { method: string; amount: number }[];
             transferVouchers?: string[];
             accountReceivableNumber?: string;
             downPayment?: number;
-            downPaymentMethod?: string;
+            downPaymentMethods?: { method: string; amount: number }[];
             downPaymentVouchers?: string[];
         },
         excludeAccountReceivableId?: bigint
@@ -133,10 +134,22 @@ export class SaleService {
         const requiresAccountReceivable =
             data.paymentMethod === "CREDIT";
 
-        if (data.paymentMethod === "TRANSFER" && (!data.transferVouchers || data.transferVouchers.length === 0)) {
-            throw new ValidationError(
-                "Debe indicar al menos un número de comprobante de la transferencia."
-            );
+        if (!requiresAccountReceivable) {
+
+            if (!data.paymentMethods || data.paymentMethods.length === 0) {
+                throw new ValidationError(
+                    "Debe indicar al menos un método de pago."
+                );
+            }
+
+            const hasTransfer = data.paymentMethods.some(entry => entry.method === "TRANSFER");
+
+            if (hasTransfer && (!data.transferVouchers || data.transferVouchers.length === 0)) {
+                throw new ValidationError(
+                    "Debe indicar al menos un número de comprobante de la transferencia."
+                );
+            }
+
         }
 
         if (requiresAccountReceivable) {
@@ -157,9 +170,13 @@ export class SaleService {
                 );
             }
 
-            if (data.downPayment && data.downPayment > 0 && data.downPaymentMethod === "TRANSFER") {
+            if (data.downPayment && data.downPayment > 0) {
 
-                if (!data.downPaymentVouchers || data.downPaymentVouchers.length === 0) {
+                const hasDownPaymentTransfer = (data.downPaymentMethods ?? []).some(
+                    entry => entry.method === "TRANSFER"
+                );
+
+                if (hasDownPaymentTransfer && (!data.downPaymentVouchers || data.downPaymentVouchers.length === 0)) {
                     throw new ValidationError(
                         "Debe indicar al menos un número de comprobante del abono."
                     );
@@ -170,6 +187,22 @@ export class SaleService {
         }
 
         return requiresAccountReceivable;
+
+    }
+
+    private assertPaymentMethodsMatchAmount(
+        paymentMethods: { amount: number }[] | undefined,
+        expectedAmount: number,
+        errorLabel: string
+    ): void {
+
+        const sum = (paymentMethods ?? []).reduce((total, entry) => total + entry.amount, 0);
+
+        if (Math.abs(sum - expectedAmount) > 0.01) {
+            throw new ValidationError(
+                `La suma de los métodos de pago (${sum}) no coincide con ${errorLabel} (${expectedAmount}).`
+            );
+        }
 
     }
 
@@ -348,6 +381,14 @@ export class SaleService {
 
             const sale = await saleRepository.create(saleData);
 
+            if (!requiresAccountReceivable) {
+                this.assertPaymentMethodsMatchAmount(
+                    data.paymentMethods,
+                    Number(sale.total),
+                    "el total de la venta"
+                );
+            }
+
             if (requiresAccountReceivable) {
 
                 const downPayment = data.downPayment ?? 0;
@@ -357,6 +398,14 @@ export class SaleService {
                 if (downPayment > originalAmount) {
                     throw new ValidationError(
                         `El abono (${downPayment}) no puede ser mayor que el total de la venta (${originalAmount}).`
+                    );
+                }
+
+                if (downPayment > 0) {
+                    this.assertPaymentMethodsMatchAmount(
+                        data.downPaymentMethods,
+                        downPayment,
+                        "el monto del abono"
                     );
                 }
 
@@ -375,7 +424,7 @@ export class SaleService {
                     amount,
                     currency: sale.currency,
                     downPayment,
-                    downPaymentMethod: downPayment > 0 ? data.downPaymentMethod : undefined,
+                    downPaymentMethods: downPayment > 0 ? data.downPaymentMethods : undefined,
                     downPaymentVouchers: downPayment > 0 ? data.downPaymentVouchers : undefined,
                     termDays: data.termDays,
                     dueDate
@@ -437,6 +486,14 @@ export class SaleService {
                 data
             );
 
+            if (!requiresAccountReceivable) {
+                this.assertPaymentMethodsMatchAmount(
+                    data.paymentMethods,
+                    Number(updatedSale.total),
+                    "el total de la venta"
+                );
+            }
+
             if (requiresAccountReceivable) {
 
                 const downPayment = data.downPayment ?? 0;
@@ -446,6 +503,14 @@ export class SaleService {
                 if (downPayment > originalAmount) {
                     throw new ValidationError(
                         `El abono (${downPayment}) no puede ser mayor que el total de la venta (${originalAmount}).`
+                    );
+                }
+
+                if (downPayment > 0) {
+                    this.assertPaymentMethodsMatchAmount(
+                        data.downPaymentMethods,
+                        downPayment,
+                        "el monto del abono"
                     );
                 }
 
@@ -461,7 +526,7 @@ export class SaleService {
                     amount,
                     currency: updatedSale.currency,
                     downPayment,
-                    downPaymentMethod: downPayment > 0 ? data.downPaymentMethod : undefined,
+                    downPaymentMethods: downPayment > 0 ? data.downPaymentMethods : undefined,
                     downPaymentVouchers: downPayment > 0 ? data.downPaymentVouchers : undefined,
                     termDays: data.termDays,
                     dueDate

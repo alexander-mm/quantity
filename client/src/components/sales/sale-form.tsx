@@ -42,10 +42,15 @@ function toFormData(sale: Sale): SaleFormData {
         hasLabor: sale.hasLabor,
         laborCost: sale.hasLabor ? Number(sale.laborCost) : undefined,
         paymentMethod: sale.paymentMethod,
+        paymentMethods: sale.paymentMethod !== "CREDIT"
+            ? sale.paymentMethods.map(entry => ({ method: entry.method, amount: Number(entry.amount) }))
+            : [],
         transferVouchers: sale.transferVouchers.map(v => v.number),
         accountReceivableNumber: sale.accountReceivable?.number ?? "",
         downPayment: sale.accountReceivable ? Number(sale.accountReceivable.downPayment) : undefined,
-        downPaymentMethod: sale.accountReceivable?.downPaymentMethod ?? undefined,
+        downPaymentMethods: sale.accountReceivable?.downPaymentMethods.map(
+            entry => ({ method: entry.method, amount: Number(entry.amount) })
+        ) ?? [],
         downPaymentVouchers: sale.accountReceivable?.downPaymentVouchers.map(v => v.number) ?? [],
         termDays: sale.accountReceivable?.termDays ?? undefined,
         priceEntryKey: "",
@@ -90,10 +95,11 @@ export function SaleForm({
                 hasLabor: false,
                 laborCost: undefined,
                 paymentMethod: "CASH",
+                paymentMethods: [{ method: "CASH", amount: 0 }],
                 transferVouchers: [],
                 accountReceivableNumber: "",
                 downPayment: undefined,
-                downPaymentMethod: undefined,
+                downPaymentMethods: [],
                 downPaymentVouchers: [],
                 termDays: undefined,
                 // Solo controla qué precio (PVP USD N / PVP COP N) se aplica a todas las líneas de esta venta.
@@ -300,7 +306,7 @@ const total =
                 className="space-y-6 min-w-0"
             >
                 <SaleHeader />
-                <SalePaymentSection />
+                <SalePaymentSection total={total} />
                 <SaleDetailsTable />
                 <SaleTotals
                     subtotal={subtotal}

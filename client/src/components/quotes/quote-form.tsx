@@ -11,8 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Combobox, ComboboxInput, ComboboxContent, ComboboxItem, ComboboxEmpty } from "@/components/ui/combobox";
 import { quoteSchema } from "@/validators";
 import type { QuoteFormData } from "@/validators";
-import { useClients, useQuotes, useCreateQuote, useUpdateQuote } from "@/hooks";
-import { getNextSequentialCode, todayLocalDateString } from "@/lib";
+import { useClients, useProducts, useQuotes, useCreateQuote, useUpdateQuote, useProductPriceEntryLabels } from "@/hooks";
+import { getNextSequentialCode, resolveProductPriceEntries, todayLocalDateString } from "@/lib";
 import { getClientLabel } from "@/lib/client-label";
 import { QuoteDetailsTable } from "./quote-details-table";
 import { QuoteTotals } from "./quote-totals";
@@ -31,6 +31,7 @@ function toFormData(quote: Quote): QuoteFormData {
         quoteDate: quote.quoteDate.split("T")[0],
         validUntil: quote.validUntil ? quote.validUntil.split("T")[0] : "",
         observations: quote.observations ?? "",
+        priceEntryKey: "",
         details: quote.details.map(d => ({
             productId: d.product.id,
             quantity: Number(d.quantity),
@@ -58,6 +59,8 @@ export function QuoteForm({ quote, onSuccess }: Props) {
             quoteDate: todayLocalDateString(),
             validUntil: "",
             observations: "",
+            // Solo controla qué precio (PVP USD N / PVP COP N) se aplica a todas las líneas de esta cotización.
+            priceEntryKey: "",
             details: [],
             hasShipping: false,
             shippingCost: undefined,
@@ -69,6 +72,12 @@ export function QuoteForm({ quote, onSuccess }: Props) {
     const { data: quotesData } = useQuotes();
     const { data: clientsData } = useClients();
     const clients = clientsData?.data ?? [];
+
+    const { data: productsData } = useProducts();
+    const products = productsData?.data ?? [];
+
+    const { data: priceEntryLabelsData } = useProductPriceEntryLabels();
+    const priceEntryLabels = priceEntryLabelsData?.data ?? [];
 
     useEffect(() => {
 
@@ -92,10 +101,81 @@ export function QuoteForm({ quote, onSuccess }: Props) {
 
     const details = useWatch({ control: methods.control, name: "details" });
     const currency = useWatch({ control: methods.control, name: "currency" });
+    const clientId = useWatch({ control: methods.control, name: "clientId" });
+    const priceEntryKey = useWatch({ control: methods.control, name: "priceEntryKey" });
     const hasShipping = useWatch({ control: methods.control, name: "hasShipping" });
     const shippingCostWatch = useWatch({ control: methods.control, name: "shippingCost" });
     const hasAdditionalCost = useWatch({ control: methods.control, name: "hasAdditionalCost" });
     const additionalCostWatch = useWatch({ control: methods.control, name: "additionalCost" });
+
+    const selectedClient = clients.find(client => client.id === clientId);
+    const clientDiscountPercentage = Number(selectedClient?.discountPercentage ?? 0);
+    const hasClientDiscount = clientDiscountPercentage > 0;
+
+    const filteredPriceEntryLabels = priceEntryLabels.filter(entry => entry.currency === currency);
+
+    const applyPriceEntryToAllLines = async (priceEntryKey: string) => {
+
+        methods.setValue("priceEntryKey", priceEntryKey);
+
+        if (!priceEntryKey) {
+            return;
+        }
+
+        const [entryCurrency, entrySequenceRaw] = priceEntryKey.split("-");
+        const entrySequence = Number(entrySequenceRaw);
+        const entryLabel = `PVP ${entryCurrency} ${entrySequenceRaw}`;
+        const currentDetails = methods.getValues("details") ?? [];
+        const productsMissingPrice: string[] = [];
+
+        for (let index = 0; index < currentDetails.length; index++) {
+
+            const productId = currentDetails[index]?.productId;
+
+            if (!productId) {
+                continue;
+            }
+
+            try {
+
+                const entries = await resolveProductPriceEntries(productId);
+                const match = entries.find(
+                    entry => entry.currency === entryCurrency && entry.sequence === entrySequence
+                );
+
+                const newUnitPrice = match ? Number(match.price) : undefined;
+
+                methods.setValue(`details.${index}.unitPrice`, newUnitPrice);
+
+                if (!match) {
+
+                    const product = products.find(item => item.id === productId);
+                    productsMissingPrice.push(product ? `${product.internalCode} - ${product.name}` : productId);
+
+                } else if (hasClientDiscount) {
+
+                    const quantity = Number(currentDetails[index]?.quantity) || 0;
+
+                    methods.setValue(
+                        `details.${index}.discount`,
+                        quantity * Number(match.price) * (clientDiscountPercentage / 100)
+                    );
+
+                }
+
+            } catch (error) {
+                console.error(error);
+            }
+
+        }
+
+        if (productsMissingPrice.length > 0) {
+            toast.error(
+                `Sin precio "${entryLabel}" para: ${productsMissingPrice.join(", ")}. Ingresa el precio manualmente en cada línea.`
+            );
+        }
+
+    };
 
     const items = details ?? [];
 
@@ -217,7 +297,21 @@ export function QuoteForm({ quote, onSuccess }: Props) {
 
                     <div>
                         <Label className="mb-1">Moneda</Label>
-                        <Select value={currency} onValueChange={(value) => methods.setValue("currency", value as "USD" | "COP")}>
+                        <Select
+                            value={currency}
+                            onValueChange={(value) => {
+
+                                methods.setValue("currency", value as "USD" | "COP");
+
+                                const currentPriceEntryKey: string = methods.getValues("priceEntryKey") ?? "";
+                                const [currentEntryCurrency] = currentPriceEntryKey.split("-");
+
+                                if (currentPriceEntryKey && currentEntryCurrency !== value) {
+                                    methods.setValue("priceEntryKey", "");
+                                }
+
+                            }}
+                        >
                             <SelectTrigger>
                                 <SelectValue placeholder="Seleccione" />
                             </SelectTrigger>
@@ -230,9 +324,40 @@ export function QuoteForm({ quote, onSuccess }: Props) {
 
                 </div>
 
-                <div>
-                    <Label className="mb-1">Válida hasta (opcional)</Label>
-                    <Input type="date" className="max-w-xs" {...methods.register("validUntil")} />
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+                    <div>
+                        <Label className="mb-1">Precio</Label>
+                        <Select
+                            value={priceEntryKey ?? ""}
+                            onValueChange={(value) => applyPriceEntryToAllLines(value)}
+                        >
+                            <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Precio base del producto">
+                                    {(value: string | null) =>
+                                        filteredPriceEntryLabels.find(entry => `${entry.currency}-${entry.sequence}` === value)?.label
+                                            ?? "Precio base del producto"
+                                    }
+                                </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                                {filteredPriceEntryLabels.map(entry => (
+                                    <SelectItem key={`${entry.currency}-${entry.sequence}`} value={`${entry.currency}-${entry.sequence}`}>
+                                        {entry.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                            Se aplica de inmediato a todos los productos ya agregados a la cotización. Solo se muestran precios en {currency}.
+                        </p>
+                    </div>
+
+                    <div>
+                        <Label className="mb-1">Válida hasta (opcional)</Label>
+                        <Input type="date" className="max-w-xs" {...methods.register("validUntil")} />
+                    </div>
+
                 </div>
 
                 <QuoteDetailsTable />

@@ -22,9 +22,11 @@ type AccountReceivableWithRelations =
                 };
             };
             downPaymentVouchers: true;
+            downPaymentMethods: true;
             payments: {
                 include: {
                     vouchers: true;
+                    paymentMethods: true;
                 };
             };
         };
@@ -43,9 +45,11 @@ const includeRelations = {
         }
     },
     downPaymentVouchers: true,
+    downPaymentMethods: true,
     payments: {
         include: {
-            vouchers: true
+            vouchers: true,
+            paymentMethods: true
         },
         orderBy: {
             paymentDate: "desc"
@@ -179,12 +183,19 @@ export class AccountReceivableRepository extends BaseRepository {
                 amount: data.amount,
                 currency: data.currency,
                 downPayment: data.downPayment ?? 0,
-                downPaymentMethod: data.downPaymentMethod,
                 termDays: data.termDays,
                 dueDate: data.dueDate,
                 downPaymentVouchers: data.downPaymentVouchers && data.downPaymentVouchers.length > 0
                     ? {
                         create: data.downPaymentVouchers.map(number => ({ number }))
+                    }
+                    : undefined,
+                downPaymentMethods: data.downPaymentMethods && data.downPaymentMethods.length > 0
+                    ? {
+                        create: data.downPaymentMethods.map(entry => ({
+                            method: entry.method,
+                            amount: entry.amount
+                        }))
                     }
                     : undefined
             },
@@ -244,7 +255,6 @@ export class AccountReceivableRepository extends BaseRepository {
             amount: data.amount,
             currency: data.currency,
             downPayment: data.downPayment ?? 0,
-            downPaymentMethod: data.downPaymentMethod ?? null,
             termDays: data.termDays ?? null,
             dueDate: data.dueDate ?? null
         };
@@ -261,6 +271,14 @@ export class AccountReceivableRepository extends BaseRepository {
                 saleId: data.saleId,
                 downPaymentVouchers: data.downPaymentVouchers && data.downPaymentVouchers.length > 0
                     ? { create: data.downPaymentVouchers.map(number => ({ number })) }
+                    : undefined,
+                downPaymentMethods: data.downPaymentMethods && data.downPaymentMethods.length > 0
+                    ? {
+                        create: data.downPaymentMethods.map(entry => ({
+                            method: entry.method,
+                            amount: entry.amount
+                        }))
+                    }
                     : undefined
             },
 
@@ -271,6 +289,15 @@ export class AccountReceivableRepository extends BaseRepository {
                     deleteMany: {},
                     create: data.downPaymentVouchers && data.downPaymentVouchers.length > 0
                         ? data.downPaymentVouchers.map(number => ({ number }))
+                        : []
+                },
+                downPaymentMethods: {
+                    deleteMany: {},
+                    create: data.downPaymentMethods && data.downPaymentMethods.length > 0
+                        ? data.downPaymentMethods.map(entry => ({
+                            method: entry.method,
+                            amount: entry.amount
+                        }))
                         : []
                 }
             },
@@ -297,6 +324,10 @@ export class AccountReceivableRepository extends BaseRepository {
             where: { accountReceivableId: existing.id }
         });
 
+        await this.prisma.accountReceivableDownPaymentMethodEntry.deleteMany({
+            where: { accountReceivableId: existing.id }
+        });
+
         await this.prisma.accountReceivable.delete({
             where: { id: existing.id }
         });
@@ -314,13 +345,18 @@ export class AccountReceivableRepository extends BaseRepository {
             data: {
                 accountReceivableId,
                 amount: data.amount,
-                paymentMethod: data.paymentMethod,
                 paymentDate: data.paymentDate,
                 observations: data.observations,
                 createdBy,
-                vouchers: data.paymentMethod === "TRANSFER" && data.vouchers && data.vouchers.length > 0
+                vouchers: data.vouchers && data.vouchers.length > 0
                     ? { create: data.vouchers.map(number => ({ number })) }
-                    : undefined
+                    : undefined,
+                paymentMethods: {
+                    create: data.paymentMethods.map(entry => ({
+                        method: entry.method,
+                        amount: entry.amount
+                    }))
+                }
             }
 
         });

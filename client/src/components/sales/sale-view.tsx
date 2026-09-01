@@ -20,8 +20,13 @@ function getPaymentMethodLabel(paymentMethod: Sale["paymentMethod"]) {
         case "CASH": return "Efectivo";
         case "TRANSFER": return "Transferencia";
         case "CREDIT": return "Crédito";
+        case "MIXED": return "Mixto";
         default: return paymentMethod;
     }
+}
+
+function getSinglePaymentMethodLabel(method: "CASH" | "TRANSFER") {
+    return method === "TRANSFER" ? "Transferencia" : "Efectivo";
 }
 
 export function SaleView({
@@ -91,12 +96,26 @@ export function SaleView({
                     <p className="text-sm text-muted-foreground">
                         Forma de pago
                     </p>
-                    <p>
-                        {getPaymentMethodLabel(sale.paymentMethod)}
-                        {sale.paymentMethod === "TRANSFER" && sale.transferVouchers.length > 0
-                            ? ` (comprobante${sale.transferVouchers.length > 1 ? "s" : ""}: ${sale.transferVouchers.map(v => v.number).join(", ")})`
-                            : ""}
-                    </p>
+                    {sale.paymentMethod === "CREDIT" ? (
+                        <p>Crédito</p>
+                    ) : sale.paymentMethods.length > 1 ? (
+                        <div>
+                            {sale.paymentMethods.map(entry => (
+                                <p key={entry.id}>
+                                    {getSinglePaymentMethodLabel(entry.method)}: {formatCurrency(entry.amount, sale.currency)}
+                                </p>
+                            ))}
+                        </div>
+                    ) : (
+                        <p>
+                            {getPaymentMethodLabel(sale.paymentMethod)}
+                        </p>
+                    )}
+                    {sale.transferVouchers.length > 0 && (
+                        <p className="text-sm text-muted-foreground">
+                            Comprobante{sale.transferVouchers.length > 1 ? "s" : ""}: {sale.transferVouchers.map(v => v.number).join(", ")}
+                        </p>
+                    )}
                 </div>
 
                 <div>

@@ -84,7 +84,13 @@ export function AccountReceivablePrintView({ accountReceivable }: Props) {
                             {accountReceivable.payments.map(payment => (
                                 <tr key={payment.id} className="border-b border-slate-100">
                                     <td className="py-3">{formatDateOnly(payment.paymentDate)}</td>
-                                    <td className="py-3">{payment.paymentMethod === "TRANSFER" ? "Transferencia" : "Efectivo"}</td>
+                                    <td className="py-3">
+                                        {payment.paymentMethods.map(entry => (
+                                            <div key={entry.id}>
+                                                {entry.method === "TRANSFER" ? "Transferencia" : "Efectivo"}
+                                            </div>
+                                        ))}
+                                    </td>
                                     <td className="py-3">
                                         {payment.vouchers.length > 0 ? payment.vouchers.map(v => v.number).join(", ") : "-"}
                                     </td>

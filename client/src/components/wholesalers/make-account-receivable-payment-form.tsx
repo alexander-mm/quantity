@@ -1,26 +1,19 @@
-import { Controller, useForm, useWatch } from "react-hook-form";
-import { Plus, Trash2 } from "lucide-react";
+import { useForm, useWatch } from "react-hook-form";
 import { onFormError } from "@/lib/form-error-toast";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
-} from "@/components/ui/select";
 import { formatCurrency } from "@/lib/format-currency";
 import { todayLocalDateString } from "@/lib";
 import { useCreateAccountReceivablePayment } from "@/hooks";
+import { PaymentMethodsInput, VoucherList } from "@/components/sales";
 import type { AccountReceivable } from "@/types";
 
 type FormValues = {
     amount: number;
-    paymentMethod: "CASH" | "TRANSFER";
+    paymentMethods: { method: "CASH" | "TRANSFER"; amount: number }[];
     paymentDate: string;
     vouchers: string[];
     observations: string;
@@ -42,15 +35,16 @@ export function MakeAccountReceivablePaymentForm({ accountReceivable, onSuccess 
     } = useForm<FormValues>({
         defaultValues: {
             amount: undefined,
-            paymentMethod: "CASH",
+            paymentMethods: [{ method: "CASH", amount: 0 }],
             paymentDate: todayLocalDateString(),
             vouchers: [],
             observations: ""
         }
     });
 
-    const paymentMethod = useWatch({ control, name: "paymentMethod" });
-    const vouchers = useWatch({ control, name: "vouchers" }) ?? [];
+    const amount = Number(useWatch({ control, name: "amount" }) ?? 0);
+    const paymentMethods: { method: "CASH" | "TRANSFER" }[] = useWatch({ control, name: "paymentMethods" }) ?? [];
+    const hasTransfer = paymentMethods.some(entry => entry.method === "TRANSFER");
 
     const paymentMutation = useCreateAccountReceivablePayment();
 
@@ -63,13 +57,22 @@ export function MakeAccountReceivablePaymentForm({ accountReceivable, onSuccess 
             return;
         }
 
+        const sum = data.paymentMethods.reduce((total, entry) => total + entry.amount, 0);
+
+        if (Math.abs(sum - data.amount) > 0.01) {
+            toast.error(`La suma de los métodos de pago (${sum}) no coincide con el monto del abono (${data.amount}).`);
+            return;
+        }
+
+        const hasTransferMethod = data.paymentMethods.some(entry => entry.method === "TRANSFER");
+
         paymentMutation.mutate({
             id: accountReceivable.id,
             data: {
                 amount: data.amount,
-                paymentMethod: data.paymentMethod,
+                paymentMethods: data.paymentMethods,
                 paymentDate: new Date(data.paymentDate),
-                vouchers: data.paymentMethod === "TRANSFER" ? data.vouchers : undefined,
+                vouchers: hasTransferMethod ? data.vouchers : undefined,
                 observations: data.observations || undefined
             }
         }, {
@@ -121,70 +124,25 @@ export function MakeAccountReceivablePaymentForm({ accountReceivable, onSuccess 
                 <p className="text-sm text-red-500">{errors.paymentDate?.message}</p>
             </div>
 
-            <div>
-                <Label className="mb-1">Forma de pago</Label>
-                <Controller
+            <PaymentMethodsInput
+                control={control}
+                register={register}
+                setValue={setValue}
+                name="paymentMethods"
+                totalAmount={amount}
+                currency={accountReceivable.currency}
+                errorMessage={(errors.paymentMethods as { message?: string } | undefined)?.message}
+            />
+
+            {hasTransfer && (
+                <VoucherList
                     control={control}
-                    name="paymentMethod"
-                    render={({ field }) => (
-                        <Select value={field.value} onValueChange={field.onChange}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Seleccione">
-                                    {(value: string | null) =>
-                                        value === "TRANSFER" ? "Transferencia" : "Efectivo"
-                                    }
-                                </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="CASH">Efectivo</SelectItem>
-                                <SelectItem value="TRANSFER">Transferencia</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    )}
+                    register={register}
+                    setValue={setValue}
+                    name="vouchers"
+                    label="Números de comprobante"
+                    errorMessage={(errors.vouchers as { message?: string } | undefined)?.message}
                 />
-            </div>
-
-            {paymentMethod === "TRANSFER" && (
-                <div>
-                    <Label className="mb-1">Números de comprobante</Label>
-
-                    <div className="space-y-2">
-                        {vouchers.map((_, index) => (
-                            <div key={index} className="flex items-center gap-2">
-                                <Input
-                                    {...register(`vouchers.${index}` as const)}
-                                    placeholder="Número de comprobante"
-                                />
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => setValue(
-                                        "vouchers",
-                                        vouchers.filter((_, i) => i !== index)
-                                    )}
-                                >
-                                    <Trash2 size={16} className="text-red-500" />
-                                </Button>
-                            </div>
-                        ))}
-                    </div>
-
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="mt-2"
-                        onClick={() => setValue("vouchers", [...vouchers, ""])}
-                    >
-                        <Plus size={16} />
-                        Agregar comprobante
-                    </Button>
-
-                    <p className="text-sm text-red-500">
-                        {(errors.vouchers as { message?: string } | undefined)?.message}
-                    </p>
-                </div>
             )}
 
             <div>

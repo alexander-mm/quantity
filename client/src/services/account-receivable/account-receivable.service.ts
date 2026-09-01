@@ -45,7 +45,7 @@ export async function markAccountReceivablePaid(id: string): Promise<ApiResponse
 
 export type CreateAccountReceivablePaymentRequest = {
     amount: number;
-    paymentMethod: "CASH" | "TRANSFER";
+    paymentMethods: { method: "CASH" | "TRANSFER"; amount: number }[];
     paymentDate: Date;
     vouchers?: string[];
     observations?: string;

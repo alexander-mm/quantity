@@ -1,10 +1,12 @@
 import { Trash2 } from "lucide-react";
-import { Controller, useFormContext } from "react-hook-form";
+import { toast } from "react-hot-toast";
+import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { Combobox, ComboboxInput, ComboboxContent, ComboboxItem, ComboboxEmpty } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useProducts, useClients } from "@/hooks";
+import { useProducts, useClients, useProductPriceEntries } from "@/hooks";
+import { resolveProductPriceEntries } from "@/lib";
 import { formatCurrency } from "@/lib/format-currency";
 
 type Props = {
@@ -28,6 +30,22 @@ export function QuoteDetailRow({ index, onRemove }: Props) {
     const clientId = watch("clientId");
     const selectedClient = clients.find(client => client.id === clientId);
     const clientDiscountPercentage = Number(selectedClient?.discountPercentage ?? 0);
+
+    const productId = watch(`details.${index}.productId`);
+
+    const { data: priceEntriesData } = useProductPriceEntries(productId || undefined);
+    const priceEntries = priceEntriesData?.data ?? [];
+
+    const priceEntryKey = useWatch({ control, name: "priceEntryKey" });
+    const [entryCurrency, entrySequenceRaw] = (priceEntryKey ?? "").split("-");
+    const entrySequence = Number(entrySequenceRaw);
+    const selectedEntryLabel = priceEntryKey ? `PVP ${entryCurrency} ${entrySequenceRaw}` : undefined;
+
+    const priceForSelectedEntry = productId
+        ? priceEntries.find(entry => entry.currency === entryCurrency && entry.sequence === entrySequence)
+        : undefined;
+
+    const missingPriceForEntry = !!priceEntryKey && !!productId && !priceForSelectedEntry;
 
     const quantity = Number(watch(`details.${index}.quantity`)) || 0;
     const unitPrice = Number(watch(`details.${index}.unitPrice`)) || 0;
@@ -73,6 +91,34 @@ export function QuoteDetailRow({ index, onRemove }: Props) {
                                         return;
                                     }
 
+                                    if (priceEntryKey) {
+
+                                        resolveProductPriceEntries(item.value).then(entries => {
+
+                                            const match = entries.find(
+                                                entry => entry.currency === entryCurrency && entry.sequence === entrySequence
+                                            );
+
+                                            const newUnitPrice = match ? Number(match.price) : undefined;
+
+                                            setValue(`details.${index}.unitPrice`, newUnitPrice);
+
+                                            if (newUnitPrice !== undefined) {
+                                                applyClientDiscount(quantity, newUnitPrice);
+                                            } else {
+                                                toast.error(
+                                                    `${item.label} no tiene precio registrado en "${selectedEntryLabel}". Ingresa el precio manualmente.`
+                                                );
+                                            }
+
+                                        }).catch(error => {
+                                            console.error(error);
+                                        });
+
+                                        return;
+
+                                    }
+
                                     const product = products.find(p => p.id === item.value);
                                     const priceForCurrency = isCop ? product?.pvpCop : product?.pvp;
 
@@ -103,6 +149,20 @@ export function QuoteDetailRow({ index, onRemove }: Props) {
                 <p className="text-sm text-muted-foreground">
                     Descuento de cliente ({clientDiscountPercentage}%)
                 </p>
+            )}
+
+            {priceEntryKey && productId && (
+
+                missingPriceForEntry ? (
+                    <p className="text-sm text-red-500">
+                        Este producto no tiene precio registrado en "{selectedEntryLabel}". Ingresa el precio manualmente.
+                    </p>
+                ) : (
+                    <p className="text-sm text-muted-foreground">
+                        Precio de "{selectedEntryLabel}"{priceForSelectedEntry ? `: ${formatCurrency(Number(priceForSelectedEntry.price), currency)}` : ""}
+                    </p>
+                )
+
             )}
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

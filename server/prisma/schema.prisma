@@ -455,6 +455,7 @@ model Sale {
   returns           Return[]
   convertedFromQuote Quote?
   transferVouchers  SaleTransferVoucher[]
+  paymentMethods    SalePaymentMethodEntry[]
 
   subtotal     Decimal @default(0) @db.Decimal(12, 2)
   discount     Decimal @default(0) @db.Decimal(12, 2)
@@ -472,15 +473,31 @@ enum PaymentMethod {
   CASH
   TRANSFER
   CREDIT
+  MIXED
 }
 
-// Comprobantes de la transferencia con la que se pagó la venta (Sale.paymentMethod = TRANSFER).
+// Comprobantes de la transferencia con la que se pagó la venta (Sale.paymentMethod = TRANSFER o MIXED).
 model SaleTransferVoucher {
   id        BigInt   @id @default(autoincrement())
   uuid      String   @unique @default(uuid())
   saleId    BigInt
   number    String
   createdAt DateTime @default(now())
+
+  sale Sale @relation(fields: [saleId], references: [id])
+
+  @@index([saleId])
+}
+
+// Desglose de la venta pagada de inmediato (paymentMethod CASH/TRANSFER/MIXED) por
+// uno o mas metodos de pago. No aplica a ventas a credito (paymentMethod = CREDIT).
+model SalePaymentMethodEntry {
+  id        BigInt        @id @default(autoincrement())
+  uuid      String        @unique @default(uuid())
+  saleId    BigInt
+  method    PaymentMethod
+  amount    Decimal       @db.Decimal(12, 2)
+  createdAt DateTime      @default(now())
 
   sale Sale @relation(fields: [saleId], references: [id])
 
@@ -935,11 +952,10 @@ model AccountReceivable {
   saleId   BigInt @unique
 
   // originalAmount: total de la venta. amount: saldo pendiente (originalAmount - downPayment).
-  originalAmount    Decimal        @db.Decimal(12, 2)
-  amount            Decimal        @db.Decimal(12, 2)
-  currency          Currency
-  downPayment       Decimal        @default(0) @db.Decimal(12, 2)
-  downPaymentMethod PaymentMethod?
+  originalAmount Decimal  @db.Decimal(12, 2)
+  amount         Decimal  @db.Decimal(12, 2)
+  currency       Currency
+  downPayment    Decimal  @default(0) @db.Decimal(12, 2)
 
   // Plazo de pago en dias (15/30/45/60) y su fecha limite calculada desde la fecha de venta.
   termDays       Int?
@@ -956,6 +972,7 @@ model AccountReceivable {
   sale   Sale   @relation(fields: [saleId], references: [id])
 
   downPaymentVouchers AccountReceivableDownPaymentVoucher[]
+  downPaymentMethods  AccountReceivableDownPaymentMethodEntry[]
   payments            AccountReceivablePayment[]
 
   @@index([clientId])
@@ -976,24 +993,52 @@ model AccountReceivableDownPaymentVoucher {
   @@index([accountReceivableId])
 }
 
+// Desglose del abono inicial (downPayment) por uno o mas metodos de pago.
+model AccountReceivableDownPaymentMethodEntry {
+  id                  BigInt        @id @default(autoincrement())
+  uuid                String        @unique @default(uuid())
+  accountReceivableId BigInt
+  method              PaymentMethod
+  amount              Decimal       @db.Decimal(12, 2)
+  createdAt           DateTime      @default(now())
+
+  accountReceivable AccountReceivable @relation(fields: [accountReceivableId], references: [id])
+
+  @@index([accountReceivableId])
+}
+
 // Abonos registrados despues de creada la cuenta de cobro (distintos del
 // downPayment inicial, que se registra al crear la venta a credito). Cada
 // abono descuenta AccountReceivable.amount.
 model AccountReceivablePayment {
-  id                  BigInt        @id @default(autoincrement())
-  uuid                String        @unique @default(uuid())
+  id                  BigInt    @id @default(autoincrement())
+  uuid                String    @unique @default(uuid())
   accountReceivableId BigInt
-  amount              Decimal       @db.Decimal(12, 2)
-  paymentMethod       PaymentMethod
+  amount              Decimal   @db.Decimal(12, 2)
   paymentDate         DateTime
   observations        String?
-  createdAt           DateTime      @default(now())
+  createdAt           DateTime  @default(now())
   createdBy           BigInt?
 
-  accountReceivable AccountReceivable                 @relation(fields: [accountReceivableId], references: [id])
+  accountReceivable AccountReceivable                    @relation(fields: [accountReceivableId], references: [id])
   vouchers          AccountReceivablePaymentVoucher[]
+  paymentMethods    AccountReceivablePaymentMethodEntry[]
 
   @@index([accountReceivableId])
+}
+
+// Desglose del abono por uno o mas metodos de pago.
+model AccountReceivablePaymentMethodEntry {
+  id        BigInt        @id @default(autoincrement())
+  uuid      String        @unique @default(uuid())
+  paymentId BigInt
+  method    PaymentMethod
+  amount    Decimal       @db.Decimal(12, 2)
+  createdAt DateTime      @default(now())
+
+  payment AccountReceivablePayment @relation(fields: [paymentId], references: [id])
+
+  @@index([paymentId])
 }
 
 // Comprobantes del abono (AccountReceivablePayment), solo si se pago por transferencia.

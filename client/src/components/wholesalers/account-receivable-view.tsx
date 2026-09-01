@@ -58,14 +58,17 @@ export function AccountReceivableView({ accountReceivable, onClose }: Props) {
                 {Number(accountReceivable.downPayment) > 0 && (
                     <div>
                         <p className="text-sm text-muted-foreground">Abono</p>
-                        <p>
-                            {formatCurrency(accountReceivable.downPayment, accountReceivable.currency)}
-                            {accountReceivable.downPaymentMethod === "TRANSFER" ? " (transferencia" : " (efectivo"}
-                            {accountReceivable.downPaymentMethod === "TRANSFER" && accountReceivable.downPaymentVouchers.length > 0
-                                ? `: ${accountReceivable.downPaymentVouchers.map(v => v.number).join(", ")}`
-                                : ""}
-                            )
-                        </p>
+                        <p>{formatCurrency(accountReceivable.downPayment, accountReceivable.currency)}</p>
+                        {accountReceivable.downPaymentMethods.map(entry => (
+                            <p key={entry.id} className="text-sm text-muted-foreground">
+                                {entry.method === "TRANSFER" ? "Transferencia" : "Efectivo"}: {formatCurrency(entry.amount, accountReceivable.currency)}
+                            </p>
+                        ))}
+                        {accountReceivable.downPaymentVouchers.length > 0 && (
+                            <p className="text-sm text-muted-foreground">
+                                Comprobantes: {accountReceivable.downPaymentVouchers.map(v => v.number).join(", ")}
+                            </p>
+                        )}
                     </div>
                 )}
                 {accountReceivable.paidAt && (
@@ -74,6 +77,10 @@ export function AccountReceivableView({ accountReceivable, onClose }: Props) {
                         <p>{new Date(accountReceivable.paidAt).toLocaleDateString()}</p>
                     </div>
                 )}
+                <div className="sm:col-span-2">
+                    <p className="text-sm text-muted-foreground">Observaciones de la venta</p>
+                    <p>{accountReceivable.sale.observations ?? "-"}</p>
+                </div>
                 <div className="sm:col-span-2">
                     <p className="text-sm text-muted-foreground">Observaciones</p>
                     <p>{accountReceivable.observations ?? "-"}</p>
@@ -121,7 +128,11 @@ export function AccountReceivableView({ accountReceivable, onClose }: Props) {
                                     <tr key={payment.id} className="border-b">
                                         <td className="p-2 whitespace-nowrap">{formatDateOnly(payment.paymentDate)}</td>
                                         <td className="p-2 whitespace-nowrap">
-                                            {payment.paymentMethod === "TRANSFER" ? "Transferencia" : "Efectivo"}
+                                            {payment.paymentMethods.map(entry => (
+                                                <p key={entry.id}>
+                                                    {entry.method === "TRANSFER" ? "Transferencia" : "Efectivo"}: {formatCurrency(entry.amount, accountReceivable.currency)}
+                                                </p>
+                                            ))}
                                         </td>
                                         <td className="p-2">
                                             {payment.vouchers.length > 0

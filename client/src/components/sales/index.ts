@@ -1,5 +1,7 @@
 export * from "./sale-header";
 export * from "./sale-payment-section";
+export * from "./voucher-list";
+export * from "./payment-methods-input";
 export * from "./sale-details-table";
 export * from "./sale-detail-row";
 export * from "./sale-totals";

@@ -1,9 +1,7 @@
 import { useEffect } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
-import { Plus, Trash2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import {
     Select,
     SelectContent,
@@ -13,74 +11,29 @@ import {
 } from "@/components/ui/select";
 import { useAccountsReceivable } from "@/hooks";
 import { getNextSequentialCode } from "@/lib";
+import { VoucherListFromContext } from "./voucher-list";
+import { PaymentMethodsInput } from "./payment-methods-input";
 
 const TERM_OPTIONS = [15, 30, 45, 60];
 
-function VoucherList({
-    name,
-    label
-}: {
-    name: "transferVouchers" | "downPaymentVouchers";
-    label: string;
-}) {
+type Props = {
+    total: number;
+};
 
-    const { control, register, setValue, formState: { errors } } = useFormContext();
-
-    const vouchers: string[] = useWatch({ control, name }) ?? [];
-
-    const errorMessage =
-        (errors[name] as { message?: string } | undefined)?.message;
-
-    return (
-        <div>
-            <Label className="mb-1">{label}</Label>
-
-            <div className="space-y-2">
-                {vouchers.map((_, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                        <Input
-                            {...register(`${name}.${index}` as const)}
-                            placeholder="Número de comprobante"
-                        />
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setValue(
-                                name,
-                                vouchers.filter((_, i) => i !== index)
-                            )}
-                        >
-                            <Trash2 size={16} className="text-red-500" />
-                        </Button>
-                    </div>
-                ))}
-            </div>
-
-            <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="mt-2"
-                onClick={() => setValue(name, [...vouchers, ""])}
-            >
-                <Plus size={16} />
-                Agregar comprobante
-            </Button>
-
-            <p className="text-sm text-red-500">{errorMessage}</p>
-        </div>
-    );
-
-}
-
-export function SalePaymentSection() {
+export function SalePaymentSection({ total }: Props) {
 
     const { control, register, setValue, formState: { errors } } = useFormContext();
 
     const paymentMethod = useWatch({ control, name: "paymentMethod" });
     const downPayment = Number(useWatch({ control, name: "downPayment" }) ?? 0);
-    const downPaymentMethod = useWatch({ control, name: "downPaymentMethod" });
+
+    const paymentMethods: { method: "CASH" | "TRANSFER" }[] =
+        useWatch({ control, name: "paymentMethods" }) ?? [];
+    const hasTransfer = paymentMethods.some(entry => entry.method === "TRANSFER");
+
+    const downPaymentMethods: { method: "CASH" | "TRANSFER" }[] =
+        useWatch({ control, name: "downPaymentMethods" }) ?? [];
+    const hasDownPaymentTransfer = downPaymentMethods.some(entry => entry.method === "TRANSFER");
 
     const { data: accountsReceivableData } = useAccountsReceivable();
 
@@ -117,13 +70,22 @@ export function SalePaymentSection() {
                     control={control}
                     name="paymentMethod"
                     render={({ field }) => (
-                        <Select value={field.value} onValueChange={field.onChange}>
+                        <Select
+                            value={field.value}
+                            onValueChange={(value) => {
+                                field.onChange(value);
+                                if (value !== "CREDIT") {
+                                    setValue("paymentMethods", [{ method: value, amount: total }]);
+                                }
+                            }}
+                        >
                             <SelectTrigger>
                                 <SelectValue placeholder="Seleccione">
                                     {(value: string | null) => {
                                         if (value === "CASH") return "Efectivo";
                                         if (value === "TRANSFER") return "Transferencia";
                                         if (value === "CREDIT") return "Crédito";
+                                        if (value === "MIXED") return "Mixto (varios métodos)";
                                         return "Seleccione";
                                     }}
                                 </SelectValue>
@@ -141,8 +103,20 @@ export function SalePaymentSection() {
                 </p>
             </div>
 
-            {paymentMethod === "TRANSFER" && (
-                <VoucherList name="transferVouchers" label="Números de comprobante" />
+            {paymentMethod !== "CREDIT" && (
+                <PaymentMethodsInput
+                    control={control}
+                    register={register}
+                    setValue={setValue}
+                    name="paymentMethods"
+                    totalAmount={total}
+                    syncFieldName="paymentMethod"
+                    errorMessage={errors.paymentMethods?.message as string}
+                />
+            )}
+
+            {paymentMethod !== "CREDIT" && hasTransfer && (
+                <VoucherListFromContext name="transferVouchers" label="Números de comprobante" />
             )}
 
             {paymentMethod === "CREDIT" && (
@@ -203,35 +177,18 @@ export function SalePaymentSection() {
                     </div>
 
                     {downPayment > 0 && (
-                        <div>
-                            <Label className="mb-1">¿Cómo se pagó el abono?</Label>
-                            <Controller
-                                control={control}
-                                name="downPaymentMethod"
-                                render={({ field }) => (
-                                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Seleccione">
-                                                {(value: string | null) =>
-                                                    value === "TRANSFER" ? "Transferencia" : value === "CASH" ? "Efectivo" : "Seleccione"
-                                                }
-                                            </SelectValue>
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="CASH">Efectivo</SelectItem>
-                                            <SelectItem value="TRANSFER">Transferencia</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                )}
-                            />
-                            <p className="text-sm text-red-500">
-                                {errors.downPaymentMethod?.message as string}
-                            </p>
-                        </div>
+                        <PaymentMethodsInput
+                            control={control}
+                            register={register}
+                            setValue={setValue}
+                            name="downPaymentMethods"
+                            totalAmount={downPayment}
+                            errorMessage={errors.downPaymentMethods?.message as string}
+                        />
                     )}
 
-                    {downPayment > 0 && downPaymentMethod === "TRANSFER" && (
-                        <VoucherList name="downPaymentVouchers" label="Números de comprobante del abono" />
+                    {downPayment > 0 && hasDownPaymentTransfer && (
+                        <VoucherListFromContext name="downPaymentVouchers" label="Números de comprobante del abono" />
                     )}
 
                     <p className="text-xs text-muted-foreground">

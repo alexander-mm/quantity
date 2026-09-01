@@ -59,12 +59,13 @@ export type CreateSaleRequest={
     hasLabor?:boolean;
     laborCost?:number;
 
-    paymentMethod:"CASH"|"TRANSFER"|"CREDIT";
+    paymentMethod:"CASH"|"TRANSFER"|"CREDIT"|"MIXED";
+    paymentMethods?:{method:"CASH"|"TRANSFER";amount:number}[];
     transferVouchers?:string[];
 
     accountReceivableNumber?:string;
     downPayment?:number;
-    downPaymentMethod?:"CASH"|"TRANSFER";
+    downPaymentMethods?:{method:"CASH"|"TRANSFER";amount:number}[];
     downPaymentVouchers?:string[];
     termDays?:number;
 

@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+const paymentMethodEntrySchema = z.object({
+    method: z.enum(["CASH", "TRANSFER"]),
+    amount: z.number().positive("El monto debe ser mayor que cero.")
+});
+
 export const saleSchema=z.object({
 
     // Consecutivo por tienda asignado por el servidor; de solo lectura en el formulario.
@@ -49,7 +54,11 @@ export const saleSchema=z.object({
         .optional(),
 
     paymentMethod:z
-        .enum(["CASH","TRANSFER","CREDIT"],{error:"Seleccione la forma de pago."}),
+        .enum(["CASH","TRANSFER","CREDIT","MIXED"],{error:"Seleccione la forma de pago."}),
+
+    paymentMethods:z
+        .array(paymentMethodEntrySchema)
+        .optional(),
 
     transferVouchers:z
         .array(z.string().min(1,"Ingrese el número de comprobante."))
@@ -64,8 +73,8 @@ export const saleSchema=z.object({
         .min(0)
         .optional(),
 
-    downPaymentMethod:z
-        .enum(["CASH","TRANSFER"])
+    downPaymentMethods:z
+        .array(paymentMethodEntrySchema)
         .optional(),
 
     downPaymentVouchers:z
@@ -143,12 +152,49 @@ export const saleSchema=z.object({
         });
     }
 
-    if (data.paymentMethod === "TRANSFER" && (!data.transferVouchers || data.transferVouchers.length === 0)) {
-        ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Debe indicar al menos un número de comprobante.",
-            path: ["transferVouchers"]
-        });
+    if (data.paymentMethod !== "CREDIT") {
+
+        if (!data.paymentMethods || data.paymentMethods.length === 0) {
+
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Debe indicar al menos un método de pago.",
+                path: ["paymentMethods"]
+            });
+
+        } else {
+
+            const methods = data.paymentMethods.map(entry => entry.method);
+
+            if (methods.includes("TRANSFER") && (!data.transferVouchers || data.transferVouchers.length === 0)) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "Debe indicar al menos un número de comprobante.",
+                    path: ["transferVouchers"]
+                });
+            }
+
+            const subtotal = data.details.reduce(
+                (sum, item) => sum + (item.quantity * item.unitPrice), 0
+            );
+            const discount = data.details.reduce((sum, item) => sum + (item.discount ?? 0), 0);
+            const tax = data.details.reduce((sum, item) => sum + (item.tax ?? 0), 0);
+            const shippingCost = data.hasShipping ? (data.shippingCost ?? 0) : 0;
+            const laborCost = data.hasLabor ? (data.laborCost ?? 0) : 0;
+            const total = subtotal - discount + tax + shippingCost + laborCost;
+
+            const sum = data.paymentMethods.reduce((s, entry) => s + entry.amount, 0);
+
+            if (Math.abs(sum - total) > 0.01) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: `La suma de los métodos de pago (${sum}) no coincide con el total de la venta (${total}).`,
+                    path: ["paymentMethods"]
+                });
+            }
+
+        }
+
     }
 
     if (data.paymentMethod === "CREDIT") {
@@ -163,23 +209,39 @@ export const saleSchema=z.object({
 
         if (data.downPayment && data.downPayment > 0) {
 
-            if (!data.downPaymentMethod) {
+            if (!data.downPaymentMethods || data.downPaymentMethods.length === 0) {
+
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
                     message: "Indique cómo se pagó el abono.",
-                    path: ["downPaymentMethod"]
+                    path: ["downPaymentMethods"]
                 });
-            }
 
-            if (
-                data.downPaymentMethod === "TRANSFER" &&
-                (!data.downPaymentVouchers || data.downPaymentVouchers.length === 0)
-            ) {
-                ctx.addIssue({
-                    code: z.ZodIssueCode.custom,
-                    message: "Debe indicar al menos un número de comprobante del abono.",
-                    path: ["downPaymentVouchers"]
-                });
+            } else {
+
+                const downPaymentMethodsList = data.downPaymentMethods.map(entry => entry.method);
+
+                if (
+                    downPaymentMethodsList.includes("TRANSFER") &&
+                    (!data.downPaymentVouchers || data.downPaymentVouchers.length === 0)
+                ) {
+                    ctx.addIssue({
+                        code: z.ZodIssueCode.custom,
+                        message: "Debe indicar al menos un número de comprobante del abono.",
+                        path: ["downPaymentVouchers"]
+                    });
+                }
+
+                const sum = data.downPaymentMethods.reduce((s, entry) => s + entry.amount, 0);
+
+                if (Math.abs(sum - data.downPayment) > 0.01) {
+                    ctx.addIssue({
+                        code: z.ZodIssueCode.custom,
+                        message: `La suma de los métodos de pago del abono (${sum}) no coincide con el monto del abono (${data.downPayment}).`,
+                        path: ["downPaymentMethods"]
+                    });
+                }
+
             }
 
         }

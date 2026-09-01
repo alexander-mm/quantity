@@ -1,6 +1,12 @@
 import type { Client } from "@/types"
 
-export type PaymentMethod = "CASH" | "TRANSFER" | "CREDIT";
+export type PaymentMethod = "CASH" | "TRANSFER" | "CREDIT" | "MIXED";
+
+export interface PaymentMethodEntry {
+    id: string;
+    method: "CASH" | "TRANSFER";
+    amount: string;
+}
 
 export interface SaleTransferVoucher {
     id: string;
@@ -13,7 +19,7 @@ export interface SaleAccountReceivable {
     originalAmount: string;
     amount: string;
     downPayment: string;
-    downPaymentMethod: "CASH" | "TRANSFER" | null;
+    downPaymentMethods: PaymentMethodEntry[];
     termDays: number | null;
     dueDate: string | null;
     downPaymentVouchers: { id: string; number: string }[];
@@ -56,6 +62,7 @@ export interface Sale{
     details:SaleDetail[];
 
     transferVouchers: SaleTransferVoucher[];
+    paymentMethods: PaymentMethodEntry[];
     accountReceivable: SaleAccountReceivable | null;
 
 }

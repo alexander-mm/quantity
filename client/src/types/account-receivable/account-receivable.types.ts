@@ -1,4 +1,4 @@
-import type { Client, Sale, PaymentMethod } from "@/types";
+import type { Client, Sale, PaymentMethodEntry } from "@/types";
 
 export interface AccountReceivableDownPaymentVoucher {
     id: string;
@@ -13,7 +13,7 @@ export interface AccountReceivablePaymentVoucher {
 export interface AccountReceivablePayment {
     id: string;
     amount: string;
-    paymentMethod: PaymentMethod;
+    paymentMethods: PaymentMethodEntry[];
     paymentDate: string;
     observations: string | null;
     createdAt: string;
@@ -30,7 +30,7 @@ export interface AccountReceivable {
     amount: string;
     currency: "USD" | "COP";
     downPayment: string;
-    downPaymentMethod: PaymentMethod | null;
+    downPaymentMethods: PaymentMethodEntry[];
     termDays: number | null;
     dueDate: string | null;
     isPaid: boolean;

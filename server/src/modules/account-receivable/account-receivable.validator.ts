@@ -16,6 +16,11 @@ export const updateAccountReceivableSchema = z.object({
 
 });
 
+const paymentMethodEntrySchema = z.object({
+    method: z.enum(["CASH", "TRANSFER"]),
+    amount: z.coerce.number().positive()
+});
+
 export const createAccountReceivablePaymentSchema = z.object({
 
     amount: z
@@ -23,8 +28,9 @@ export const createAccountReceivablePaymentSchema = z.object({
         .number({ error: "El monto es obligatorio." })
         .positive("El monto debe ser mayor que cero."),
 
-    paymentMethod: z
-        .enum(["CASH", "TRANSFER"], { error: "Seleccione la forma de pago." }),
+    paymentMethods: z
+        .array(paymentMethodEntrySchema)
+        .min(1, "Seleccione al menos un método de pago."),
 
     paymentDate: z
         .coerce
@@ -42,7 +48,27 @@ export const createAccountReceivablePaymentSchema = z.object({
 
 }).superRefine((data, ctx) => {
 
-    if (data.paymentMethod === "TRANSFER" && (!data.vouchers || data.vouchers.length === 0)) {
+    const methods = data.paymentMethods.map(entry => entry.method);
+
+    if (new Set(methods).size !== methods.length) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "No puede repetir el mismo método de pago.",
+            path: ["paymentMethods"]
+        });
+    }
+
+    const sum = data.paymentMethods.reduce((total, entry) => total + entry.amount, 0);
+
+    if (Math.abs(sum - data.amount) > 0.01) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `La suma de los métodos de pago (${sum}) no coincide con el monto del abono (${data.amount}).`,
+            path: ["paymentMethods"]
+        });
+    }
+
+    if (methods.includes("TRANSFER") && (!data.vouchers || data.vouchers.length === 0)) {
         ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: "Debe indicar al menos un número de comprobante.",

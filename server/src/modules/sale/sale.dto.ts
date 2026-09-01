@@ -6,7 +6,12 @@ export interface CreateSaleDetailDto {
     tax?: number;
 }
 
-export type PaymentMethodDto = "CASH" | "TRANSFER" | "CREDIT";
+export type PaymentMethodDto = "CASH" | "TRANSFER" | "CREDIT" | "MIXED";
+
+export interface PaymentMethodEntryDto {
+    method: "CASH" | "TRANSFER";
+    amount: number;
+}
 
 export interface CreateSaleDto {
     clientUuid?: string;
@@ -28,13 +33,15 @@ export interface CreateSaleDto {
 
     paymentMethod: PaymentMethodDto;
 
-    // paymentMethod === "TRANSFER"
+    // paymentMethod !== "CREDIT": desglose de uno o más métodos de pago, suma == total.
+    paymentMethods?: PaymentMethodEntryDto[];
+    // requerido si algún paymentMethods incluye TRANSFER
     transferVouchers?: string[];
 
     // paymentMethod === "CREDIT"
     accountReceivableNumber?: string;
     downPayment?: number;
-    downPaymentMethod?: "CASH" | "TRANSFER";
+    downPaymentMethods?: PaymentMethodEntryDto[];
     downPaymentVouchers?: string[];
     termDays?: number;
 }
@@ -58,11 +65,12 @@ export interface UpdateSaleDto {
     laborCost?: number;
 
     paymentMethod: PaymentMethodDto;
+    paymentMethods?: PaymentMethodEntryDto[];
     transferVouchers?: string[];
 
     accountReceivableNumber?: string;
     downPayment?: number;
-    downPaymentMethod?: "CASH" | "TRANSFER";
+    downPaymentMethods?: PaymentMethodEntryDto[];
     downPaymentVouchers?: string[];
     termDays?: number;
 }

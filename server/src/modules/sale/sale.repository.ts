@@ -15,9 +15,11 @@ export type SaleWithRelations =
                 };
             };
             transferVouchers: true;
+            paymentMethods: true;
             accountReceivable: {
                 include: {
                     downPaymentVouchers: true;
+                    downPaymentMethods: true;
                 };
             };
         };
@@ -33,9 +35,11 @@ const saleIncludeRelations = {
         }
     },
     transferVouchers: true,
+    paymentMethods: true,
     accountReceivable: {
         include: {
-            downPaymentVouchers: true
+            downPaymentVouchers: true,
+            downPaymentMethods: true
         }
     }
 } as const;
@@ -157,9 +161,17 @@ export class SaleRepository extends BaseRepository {
                             + (item.tax ?? 0)
                     }))
                 },
-                transferVouchers: data.paymentMethod === "TRANSFER" && data.transferVouchers
+                transferVouchers: data.transferVouchers && data.transferVouchers.length > 0
                     ? {
                         create: data.transferVouchers.map(number => ({ number }))
+                    }
+                    : undefined,
+                paymentMethods: data.paymentMethod !== "CREDIT" && data.paymentMethods
+                    ? {
+                        create: data.paymentMethods.map(entry => ({
+                            method: entry.method,
+                            amount: entry.amount
+                        }))
                     }
                     : undefined
             },
@@ -229,8 +241,17 @@ export class SaleRepository extends BaseRepository {
                 },
                 transferVouchers: {
                     deleteMany: {},
-                    create: data.paymentMethod === "TRANSFER" && data.transferVouchers
+                    create: data.transferVouchers && data.transferVouchers.length > 0
                         ? data.transferVouchers.map(number => ({ number }))
+                        : []
+                },
+                paymentMethods: {
+                    deleteMany: {},
+                    create: data.paymentMethod !== "CREDIT" && data.paymentMethods
+                        ? data.paymentMethods.map(entry => ({
+                            method: entry.method,
+                            amount: entry.amount
+                        }))
                         : []
                 }
             },

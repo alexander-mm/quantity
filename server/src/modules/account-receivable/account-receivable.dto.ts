@@ -1,3 +1,8 @@
+export interface PaymentMethodEntryDto {
+    method: "CASH" | "TRANSFER";
+    amount: number;
+}
+
 export interface CreateAccountReceivableDto {
     number: string;
     clientId: bigint;
@@ -6,7 +11,7 @@ export interface CreateAccountReceivableDto {
     amount: number;
     currency: "USD" | "COP";
     downPayment?: number;
-    downPaymentMethod?: "CASH" | "TRANSFER";
+    downPaymentMethods?: PaymentMethodEntryDto[];
     downPaymentVouchers?: string[];
     termDays?: number;
     dueDate?: Date;
@@ -19,7 +24,7 @@ export interface UpdateAccountReceivableDto {
 
 export interface CreateAccountReceivablePaymentDto {
     amount: number;
-    paymentMethod: "CASH" | "TRANSFER";
+    paymentMethods: PaymentMethodEntryDto[];
     paymentDate: Date;
     vouchers?: string[];
     observations?: string;

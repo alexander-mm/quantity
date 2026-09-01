@@ -28,6 +28,9 @@ export const quoteSchema = z.object({
 
     observations: z.string().trim().max(500, "Máximo 500 caracteres.").optional(),
 
+    // No se persiste: solo controla qué precio (PVP USD N / PVP COP N) se aplica a las líneas de la cotización.
+    priceEntryKey: z.string().optional(),
+
     details: z.array(quoteDetailSchema).min(1, "Agrega al menos un producto."),
 
     hasShipping: z.boolean().optional(),

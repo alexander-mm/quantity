@@ -22,6 +22,7 @@ function getPaymentMethodLabel(paymentMethod: Sale["paymentMethod"]) {
         case "CASH": return "Efectivo";
         case "TRANSFER": return "Transferencia";
         case "CREDIT": return "Crédito";
+        case "MIXED": return "Mixto";
         default: return paymentMethod;
     }
 }
