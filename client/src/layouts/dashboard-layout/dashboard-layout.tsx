@@ -182,7 +182,8 @@ export function DashboardLayout({
                 { to: "/roles", label: "Roles", visibility: "adminOnly" },
                 { to: "/users", label: "Usuarios", visibility: "adminOnly" },
                 { to: "/stores", label: "Tiendas", visibility: "adminOnly" },
-                { to: "/attendance-history", label: "Asistencia", visibility: "adminOnly" }
+                { to: "/attendance-history", label: "Asistencia", visibility: "adminOnly" },
+                { to: "/weekly-reports", label: "Informes semanales", visibility: "adminOnly" }
             ]
         }
     ];

@@ -1054,6 +1054,22 @@ model AccountReceivablePaymentVoucher {
   @@index([paymentId])
 }
 
+// PDF del informe semanal (ventas, dinero y comparación con la semana anterior),
+// generado por el job weekly-report. Se guarda ademas de enviarse a Telegram para
+// poder verlo/imprimirlo desde el programa aunque falle el envio.
+model WeeklyReport {
+  id            BigInt   @id @default(autoincrement())
+  uuid          String   @unique @default(uuid())
+  weekStart     DateTime
+  weekEnd       DateTime
+  pdf           Bytes
+  telegramSent  Boolean  @default(false)
+  telegramError String?
+  createdAt     DateTime @default(now())
+
+  @@index([weekStart])
+}
+
 model Quote {
   id              BigInt    @id @default(autoincrement())
   uuid            String    @unique @default(uuid())

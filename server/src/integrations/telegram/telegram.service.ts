@@ -61,10 +61,10 @@ export class TelegramService {
 
     }
 
-    async sendDocument(buffer: Buffer, filename: string, caption?: string): Promise<void> {
+    async sendDocument(buffer: Buffer, filename: string, caption?: string): Promise<{ ok: boolean; error?: string }> {
 
         if (!isConfigured()) {
-            return;
+            return { ok: false, error: "Telegram no configurado (falta TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID)." };
         }
 
         try {
@@ -86,11 +86,17 @@ export class TelegramService {
             );
 
             if (!response.ok) {
-                console.error(`❌ Telegram sendDocument falló: ${response.status} ${await response.text()}`);
+                const errorText = await response.text();
+                console.error(`❌ Telegram sendDocument falló: ${response.status} ${errorText}`);
+                return { ok: false, error: `HTTP ${response.status}: ${errorText}` };
             }
 
+            return { ok: true };
+
         } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
             console.error(`❌ Error enviando documento "${filename}" a Telegram:`, error);
+            return { ok: false, error: message };
         }
 
     }

@@ -1,9 +1,11 @@
 import { ReportDataService, type ReportRange } from "../modules/reports/report-data.service.js";
 import { buildWeeklyReportPdf } from "../modules/reports/report-pdf.builder.js";
 import { TelegramService } from "../integrations/telegram/telegram.service.js";
+import { WeeklyReportRepository } from "../modules/weekly-report/weekly-report.repository.js";
 
 const reportDataService = new ReportDataService();
 const telegramService = new TelegramService();
+const weeklyReportRepository = new WeeklyReportRepository();
 
 function startOfWeek(reference: Date): Date {
 
@@ -54,11 +56,21 @@ export async function runWeeklyReport(): Promise<void> {
 
         const label = `${isoDate(currentRange.from)} a ${isoDate(currentRange.to)}`;
 
-        await telegramService.sendDocument(
+        const telegramResult = await telegramService.sendDocument(
             pdf,
             `reporte-semanal-${isoDate(currentRange.from)}.pdf`,
             `📊 <b>Reporte semanal</b> (${label})\nVentas, dinero y comparación con la semana anterior.`
         );
+
+        // Se guarda siempre, incluso si el envío a Telegram falló, para poder
+        // verlo/imprimirlo desde el programa y para dejar registro del error.
+        await weeklyReportRepository.create({
+            weekStart: currentRange.from,
+            weekEnd: currentRange.to,
+            pdf,
+            telegramSent: telegramResult.ok,
+            telegramError: telegramResult.error
+        });
 
     } catch (error) {
         console.error("❌ Error generando el paquete de reportes semanales:", error);

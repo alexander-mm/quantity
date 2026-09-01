@@ -40,6 +40,7 @@ import { EquipmentPartsPage } from "@/pages/equipment-parts";
 import { PartCuttingOrdersPage } from "@/pages/part-cutting-orders";
 import { AttendanceClockPage } from "@/pages/attendance-clock";
 import { AttendanceHistoryPage } from "@/pages/attendance-history";
+import { WeeklyReportsPage } from "@/pages/weekly-reports";
 
 const router = createBrowserRouter([
 
@@ -457,6 +458,17 @@ const router = createBrowserRouter([
             <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
                 <DashboardLayout>
                     <AttendanceHistoryPage />
+                </DashboardLayout>
+            </ProtectedRoute>
+        )
+    },
+
+    {
+        path: "/weekly-reports",
+        element: (
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+                <DashboardLayout>
+                    <WeeklyReportsPage />
                 </DashboardLayout>
             </ProtectedRoute>
         )
