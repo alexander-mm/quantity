@@ -140,10 +140,10 @@ function salesSection(data: ReportData): Content[] {
                     content.push({ text: currency, margin: [8, 2, 0, 2] as [number, number, number, number] });
                 }
 
-                const rows = items.map(item => [item.code, item.name, String(item.quantity), formatMoney(item.total, item.currency)]);
+                const rows = items.map(item => [item.saleNumber, item.code, item.name, String(item.quantity), formatMoney(item.total, item.currency)]);
 
                 content.push({
-                    table: { widths: ["auto", "*", "auto", "auto"], body: [["Código", "Producto", "Cant.", "Total"], ...rows] },
+                    table: { widths: ["auto", "auto", "*", "auto", "auto"], body: [["Venta", "Código", "Producto", "Cant.", "Total"], ...rows] },
                     margin: [8, 0, 0, 8]
                 });
 

@@ -31,6 +31,7 @@ export interface SoldItemLine {
     quantity: number;
     total: number;
     currency: string;
+    saleNumber: string;
 }
 
 export interface DaySales {
@@ -169,7 +170,8 @@ export class ReportDataService {
                     name: detail.product.name,
                     quantity,
                     total: lineTotal,
-                    currency
+                    currency,
+                    saleNumber: sale.number
                 });
 
                 // Clave por producto + moneda: sumar USD y COP como si fueran lo mismo no tiene sentido.
