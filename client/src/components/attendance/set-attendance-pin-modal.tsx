@@ -31,7 +31,7 @@ export function SetAttendancePinModal({ open, user, onOpenChange }: Props) {
 
         mutation.mutate({ userId: user.id, pin }, {
             onSuccess: () => {
-                toast.success("PIN de asistencia configurado correctamente.");
+                toast.success("PIN de asistencia configurado.");
                 setPin("");
                 onOpenChange(false);
             },
