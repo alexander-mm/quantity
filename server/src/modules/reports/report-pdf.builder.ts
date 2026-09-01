@@ -388,12 +388,18 @@ function topMoversSection(current: ProductTotal[], previous: ProductTotal[]): Co
 
 }
 
-function comparisonSection(current: ReportData, previous: ReportData): Content[] {
+type ComparisonLabels = {
+    comparisonTitle: string;
+    currentPeriodLabel: string;
+    previousPeriodLabel: string;
+};
+
+function comparisonSection(current: ReportData, previous: ReportData, labels: ComparisonLabels): Content[] {
 
     return [
-        { text: "3. Comparación con la semana anterior", style: "sectionTitle", pageBreak: "before" },
-        { text: `Semana actual: ${formatRange(current.range)}`, style: "subheader" },
-        { text: `Semana anterior: ${formatRange(previous.range)}`, margin: [0, -12, 0, 16] },
+        { text: labels.comparisonTitle, style: "sectionTitle", pageBreak: "before" },
+        { text: `${labels.currentPeriodLabel}: ${formatRange(current.range)}`, style: "subheader" },
+        { text: `${labels.previousPeriodLabel}: ${formatRange(previous.range)}`, margin: [0, -12, 0, 16] },
         { text: `Ventas confirmadas: ${previous.salesCount} → ${current.salesCount}`, margin: [0, 0, 0, 12] },
         ...currencyComparisonTable("Ventas totales por moneda", current.kpis.totalsByCurrency, previous.kpis.totalsByCurrency),
         ...storeComparisonTable(current.kpis.totalsByStore, previous.kpis.totalsByStore),
@@ -407,14 +413,30 @@ function comparisonSection(current: ReportData, previous: ReportData): Content[]
 
 }
 
-export async function buildWeeklyReportPdf(current: ReportData, previous: ReportData): Promise<Buffer> {
+export async function buildWeeklyReportPdf(
+    current: ReportData,
+    previous: ReportData,
+    options?: {
+        title?: string;
+        comparisonTitle?: string;
+        currentPeriodLabel?: string;
+        previousPeriodLabel?: string;
+    }
+): Promise<Buffer> {
+
+    const {
+        title = "Reporte Semanal",
+        comparisonTitle = "3. Comparación con la semana anterior",
+        currentPeriodLabel = "Semana actual",
+        previousPeriodLabel = "Semana anterior"
+    } = options ?? {};
 
     const content: Content[] = [
-        { text: "Reporte Semanal", style: "header" },
+        { text: title, style: "header" },
         { text: formatRange(current.range), style: "subheader" },
         ...salesSection(current),
         ...moneySection(current),
-        ...comparisonSection(current, previous)
+        ...comparisonSection(current, previous, { comparisonTitle, currentPeriodLabel, previousPeriodLabel })
     ];
 
     return generatePdf({ content, styles: baseStyles, defaultStyle: { font: FONT_FAMILY, fontSize: 9 } });

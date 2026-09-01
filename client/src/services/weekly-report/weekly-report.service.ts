@@ -10,3 +10,8 @@ export async function getWeeklyReportPdfBlob(id: string): Promise<Blob> {
     const { data } = await api.get(`/weekly-reports/${id}/pdf`, { responseType: "blob" });
     return data;
 }
+
+export async function generateCustomWeeklyReport(payload: { from: string; to: string }): Promise<ApiResponse<WeeklyReport>> {
+    const { data } = await api.post<ApiResponse<WeeklyReport>>("/weekly-reports/custom", payload);
+    return data;
+}

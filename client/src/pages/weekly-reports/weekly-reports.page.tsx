@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "react-hot-toast";
-import { PageContainer, PageHeader, WeeklyReportsTable, WeeklyReportViewerModal } from "@/components";
+import { PageContainer, PageHeader, WeeklyReportsTable, WeeklyReportViewerModal, CustomWeeklyReportForm } from "@/components";
 import { LoadingState } from "@/components/ui/spinner";
 import { useWeeklyReports } from "@/hooks";
 import { getWeeklyReportPdfBlob } from "@/services";
@@ -45,10 +45,14 @@ export function WeeklyReportsPage() {
 
             <PageHeader
                 title="Informes semanales"
-                description="Informes de ventas y dinero generados automáticamente cada semana, enviados a Telegram y disponibles aquí para verlos o imprimirlos."
+                description="Informes de ventas y dinero generados automáticamente cada semana, enviados a Telegram y disponibles aquí para verlos o imprimirlos. También puedes generar un informe personalizado para un rango de fechas específico."
             />
 
-            <div className="mt-8">
+            <div className="mt-6">
+                <CustomWeeklyReportForm onGenerated={handleView} />
+            </div>
+
+            <div className="mt-6">
                 {isLoading && <LoadingState />}
                 {isError && <p>Error al cargar los informes semanales.</p>}
                 {!isLoading && !isError && (

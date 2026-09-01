@@ -117,7 +117,7 @@ export function AttendanceClockPage() {
                                 </span>
                                 <span className={`flex items-center gap-1.5 text-sm font-medium ${employee.clockedIn ? "text-green-600" : "text-slate-400"}`}>
                                     {employee.clockedIn ? <LogOut size={18} /> : <LogIn size={18} />}
-                                    {employee.clockedIn ? "Adentro" : "Afuera"}
+                                    {employee.clockedIn ? "Registrar Salida" : "Registrar Entrada"}
                                 </span>
                             </button>
                         ))}
