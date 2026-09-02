@@ -106,6 +106,15 @@ export function AccountReceivableView({ accountReceivable, onClose }: Props) {
                                 </td>
                             </tr>
                         ))}
+                        {accountReceivable.sale.hasShipping && (
+                            <tr className="border-b">
+                                <td className="p-2 whitespace-nowrap">Costo de envío</td>
+                                <td className="p-2 text-center">1</td>
+                                <td className="p-2 text-center whitespace-nowrap">
+                                    {formatCurrency(accountReceivable.sale.shippingCost, accountReceivable.currency)}
+                                </td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
             </div>

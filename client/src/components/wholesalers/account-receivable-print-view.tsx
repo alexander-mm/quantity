@@ -48,6 +48,13 @@ export function AccountReceivablePrintView({ accountReceivable }: Props) {
                             <td className="py-3 text-right">{formatCurrency(detail.lineTotal, accountReceivable.currency)}</td>
                         </tr>
                     ))}
+                    {accountReceivable.sale.hasShipping && (
+                        <tr className="border-b border-slate-100">
+                            <td className="py-3">Costo de envío</td>
+                            <td className="py-3 text-right">1</td>
+                            <td className="py-3 text-right">{formatCurrency(accountReceivable.sale.shippingCost, accountReceivable.currency)}</td>
+                        </tr>
+                    )}
                 </tbody>
             </table>
 
