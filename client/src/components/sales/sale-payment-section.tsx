@@ -9,8 +9,7 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
-import { useAccountsReceivable } from "@/hooks";
-import { getNextSequentialCode } from "@/lib";
+import { useNextAccountReceivableNumber } from "@/hooks";
 import { VoucherListFromContext } from "./voucher-list";
 import { PaymentMethodsInput } from "./payment-methods-input";
 
@@ -35,31 +34,23 @@ export function SalePaymentSection({ total }: Props) {
         useWatch({ control, name: "downPaymentMethods" }) ?? [];
     const hasDownPaymentTransfer = downPaymentMethods.some(entry => entry.method === "TRANSFER");
 
-    const { data: accountsReceivableData } = useAccountsReceivable();
+    // Sugerencia calculada en el servidor sobre TODAS las cuentas de cobro (no solo
+    // las de la tienda del usuario), porque el número es único globalmente — si se
+    // calculara con la lista filtrada por tienda, podía sugerir un número que ya
+    // existe en otra tienda y el guardado fallaba con "el número ya existe".
+    const { data: nextNumberData } = useNextAccountReceivableNumber(paymentMethod === "CREDIT");
 
     useEffect(() => {
 
-        if (paymentMethod !== "CREDIT") {
+        if (paymentMethod !== "CREDIT" || !nextNumberData?.data.number) {
             return;
         }
 
-        const list = accountsReceivableData?.data ?? [];
-
-        if (list.length === 0) {
-            setValue("accountReceivableNumber", "CTA-001");
-            return;
-        }
-
-        const [last] = [...list].sort(
-            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-
-        const next = getNextSequentialCode(last.number);
-        setValue("accountReceivableNumber", next || "CTA-001");
+        setValue("accountReceivableNumber", nextNumberData.data.number);
 
         // Solo se sugiere una vez, al cambiar a "Crédito" — la persona puede editarlo después.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [paymentMethod]);
+    }, [paymentMethod, nextNumberData]);
 
     return (
         <div className="space-y-4 rounded-lg border p-3">

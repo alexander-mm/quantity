@@ -27,6 +27,13 @@ router.get(
 );
 
 router.get(
+    "/next-number",
+    authenticate,
+    blockRoles(ROLES.PRODUCTION),
+    controller.nextNumber.bind(controller)
+);
+
+router.get(
     "/by-client/:clientId",
     authenticate,
     blockRoles(ROLES.PRODUCTION),

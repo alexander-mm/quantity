@@ -31,6 +31,26 @@ export class AccountReceivableController {
 
     }
 
+    async nextNumber(
+        _req: AuthenticatedRequest,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+
+        try {
+
+            const number = await this.service.previewNextNumber();
+
+            res.status(200).json(
+                ApiResponse.success("Número obtenido correctamente.", { number })
+            );
+
+        } catch (error) {
+            next(error);
+        }
+
+    }
+
     async findByClient(
         req: AuthenticatedRequest,
         res: Response,

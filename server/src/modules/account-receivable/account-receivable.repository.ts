@@ -155,6 +155,21 @@ export class AccountReceivableRepository extends BaseRepository {
 
     }
 
+    // Ultima cuenta de cobro creada, sin filtrar por tienda: el numero es unico
+    // globalmente (no por tienda), asi que la sugerencia del siguiente numero
+    // debe basarse en el total, no en lo que una tienda en particular puede ver.
+    async findLastGlobal(): Promise<AccountReceivable | null> {
+
+        return this.prisma.accountReceivable.findFirst({
+
+            orderBy: {
+                id: "desc"
+            }
+
+        });
+
+    }
+
     async findByNumber(
         number: string
     ): Promise<AccountReceivable | null> {

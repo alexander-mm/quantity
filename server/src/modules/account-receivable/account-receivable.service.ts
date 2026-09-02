@@ -37,6 +37,30 @@ export class AccountReceivableService {
         return this.repository.findPendingWithDueDate();
     }
 
+    // Sugerencia del siguiente numero de cuenta de cobro (ej. "CTA-004"), calculada
+    // sobre la ultima cuenta de cobro global (no filtrada por tienda) para evitar
+    // sugerir un numero que otra tienda ya tiene y que el usuario actual no puede ver.
+    async previewNextNumber(): Promise<string> {
+
+        const last = await this.repository.findLastGlobal();
+
+        if (!last) {
+            return "CTA-001";
+        }
+
+        const match = last.number.match(/^(.*?)(\d+)$/);
+
+        if (!match) {
+            return "CTA-001";
+        }
+
+        const [, prefix, digits] = match;
+        const next = (Number(digits) + 1).toString().padStart(digits.length, "0");
+
+        return `${prefix}${next}`;
+
+    }
+
     async markReminderSent(id: bigint) {
         return this.repository.updateLastReminderAt(id, new Date());
     }

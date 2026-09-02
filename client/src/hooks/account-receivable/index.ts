@@ -1,4 +1,5 @@
 export * from "./use-accounts-receivable";
+export * from "./use-next-account-receivable-number";
 export * from "./use-accounts-receivable-by-client";
 export * from "./use-account-receivable";
 export * from "./use-account-receivable-summary";

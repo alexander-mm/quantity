@@ -6,6 +6,11 @@ export async function getAccountsReceivable(): Promise<ApiResponse<AccountReceiv
     return data;
 }
 
+export async function getNextAccountReceivableNumber(): Promise<ApiResponse<{ number: string }>> {
+    const { data } = await api.get<ApiResponse<{ number: string }>>("/accounts-receivable/next-number");
+    return data;
+}
+
 export async function getAccountsReceivableByClient(
     clientId: string
 ): Promise<ApiResponse<AccountReceivable[]>> {
