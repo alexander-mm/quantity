@@ -76,6 +76,11 @@ export function SalePaymentSection({ total }: Props) {
                                 field.onChange(value);
                                 if (value !== "CREDIT") {
                                     setValue("paymentMethods", [{ method: value, amount: total }]);
+                                } else {
+                                    // No aplica en una venta a crédito: si queda con datos de la
+                                    // selección anterior (ej. amount: 0), la validación del monto
+                                    // (> 0) bloquea el guardado aunque el campo ya no se muestre.
+                                    setValue("paymentMethods", []);
                                 }
                             }}
                         >
