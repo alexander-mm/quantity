@@ -1,18 +1,8 @@
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
-} from "@/components/ui/select";
-
-type Store = {
-    id: string;
-    name: string;
-};
+import { StoreSelector } from "@/components/selectors";
+import type { Store } from "@/types";
 
 type Props={
     onNewSale:()=>void;
@@ -44,32 +34,16 @@ export function SalesToolbar({
                     onChange={onSearchChange}
                 />
 
-                <Select
-                    value={storeId || "all"}
-                    onValueChange={(value) => onStoreChange(!value || value === "all" ? "" : value)}
-                >
-                    <SelectTrigger className="w-full md:w-56">
-                        <SelectValue placeholder="Todas las tiendas">
-                            {(value: string | null) =>
-                                !value || value === "all"
-                                    ? "Todas las tiendas"
-                                    : stores.find(store => store.id === value)?.name ?? "Todas las tiendas"
-                            }
-                        </SelectValue>
-                    </SelectTrigger>
-
-                    <SelectContent>
-                        <SelectItem value="all">
-                            Todas las tiendas
-                        </SelectItem>
-
-                        {stores.map(store => (
-                            <SelectItem key={store.id} value={store.id}>
-                                {store.name}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                <div className="w-full md:w-56">
+                    <StoreSelector
+                        stores={stores}
+                        value={storeId || "all"}
+                        label=""
+                        placeholder="Todas las tiendas"
+                        aggregateOption={{ value: "all", label: "Todas las tiendas" }}
+                        onChange={(value) => onStoreChange(!value || value === "all" ? "" : value)}
+                    />
+                </div>
 
             </div>
 

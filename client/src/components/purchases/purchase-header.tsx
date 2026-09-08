@@ -1,13 +1,7 @@
 import { Controller, useFormContext } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
-} from "@/components/ui/select";
+import { SupplierSelector, StoreSelector } from "@/components/selectors";
 
 import {
     useSuppliers,
@@ -62,40 +56,15 @@ export function PurchaseHeader() {
             </div>
 
             <div>
-                <Label className="mb-1">Proveedor</Label>
                 <Controller
                     control={control}
                     name="supplierId"
                     render={({ field }) => (
-
-                        <Select
+                        <SupplierSelector
+                            suppliers={suppliers}
                             value={field.value}
-                            onValueChange={field.onChange}
-                        >
-                            <SelectTrigger>
-                                <SelectValue
-                                    placeholder="Seleccione"
-                                >
-                                    {(value: string | null) =>
-                                        suppliers.find(item => item.id === value)?.companyName ?? "Seleccione"
-                                    }
-                                </SelectValue>
-                            </SelectTrigger>
-
-                            <SelectContent>
-                                {
-                                    suppliers.map(item => (
-
-                                        <SelectItem
-                                            key={item.id}
-                                            value={item.id}
-                                        >
-                                            {item.companyName}
-                                        </SelectItem>
-                                    ))
-                                }
-                            </SelectContent>
-                        </Select>
+                            onChange={(value) => field.onChange(value ?? "")}
+                        />
                     )}
                 />
                 <p className="text-sm text-red-500">
@@ -104,40 +73,15 @@ export function PurchaseHeader() {
             </div>
 
             <div>
-                <Label className="mb-1">Bodega</Label>
                 <Controller
                     control={control}
                     name="storeId"
                     render={({ field }) => (
-
-                        <Select
+                        <StoreSelector
+                            stores={stores}
                             value={field.value}
-                            onValueChange={field.onChange}
-                        >
-                            <SelectTrigger>
-                                <SelectValue
-                                    placeholder="Seleccione"
-                                >
-                                    {(value: string | null) =>
-                                        stores.find(item => item.id === value)?.name ?? "Seleccione"
-                                    }
-                                </SelectValue>
-                            </SelectTrigger>
-
-                            <SelectContent>
-                                {
-                                    stores.map(item => (
-
-                                        <SelectItem
-                                            key={item.id}
-                                            value={item.id}
-                                        >
-                                            {item.name}
-                                        </SelectItem>
-                                    ))
-                                }
-                            </SelectContent>
-                        </Select>
+                            onChange={(value) => field.onChange(value ?? "")}
+                        />
                     )}
                 />
                 <p className="text-sm text-red-500">

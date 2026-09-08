@@ -12,6 +12,7 @@ export function QuotesPage() {
     const [search, setSearch] = useState("");
     const [open, setOpen] = useState(false);
     const [quoteToView, setQuoteToView] = useState<Quote | null>(null);
+    const [quoteToEdit, setQuoteToEdit] = useState<Quote | null>(null);
 
     const quotes = useMemo(() => {
 
@@ -56,7 +57,11 @@ export function QuotesPage() {
                         ? <p className="text-muted-foreground">No hay cotizaciones registradas.</p>
                         : (
                             <>
-                                <QuotesTable quotes={pagedQuotes} onView={(quote) => setQuoteToView(quote)} />
+                                <QuotesTable
+                                    quotes={pagedQuotes}
+                                    onView={(quote) => setQuoteToView(quote)}
+                                    onEdit={(quote) => setQuoteToEdit(quote)}
+                                />
                                 <PaginationControls
                                     page={page}
                                     totalPages={totalPages}
@@ -70,6 +75,12 @@ export function QuotesPage() {
             </div>
 
             <QuoteModal open={open} onOpenChange={setOpen} />
+
+            <QuoteModal
+                open={!!quoteToEdit}
+                quote={quoteToEdit}
+                onOpenChange={(value) => { if (!value) setQuoteToEdit(null); }}
+            />
 
             <QuoteViewModal
                 open={!!quoteToView}

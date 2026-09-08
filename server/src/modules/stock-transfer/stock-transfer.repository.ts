@@ -111,6 +111,15 @@ export class StockTransferRepository extends BaseRepository {
         });
     }
 
+    // Cambia el status a CANCELLED. El servicio ya se encargo de revertir el
+    // movimiento de despacho (si existia) antes de llamar a este metodo.
+    async delete(id: bigint): Promise<StockTransfer> {
+        return this.prisma.stockTransfer.update({
+            where: { id },
+            data: { status: "CANCELLED" }
+        });
+    }
+
     async updateStatus(
         id: bigint,
         data: {

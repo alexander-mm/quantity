@@ -1,4 +1,4 @@
-import { Eye, Pencil, Send } from "lucide-react";
+import { Eye, Pencil, Send, Trash2 } from "lucide-react";
 import { EntityTable } from "@/components/ui";
 import { StockTransferStatusBadge } from "./stock-transfer-status-badge";
 import { formatDateOnly } from "@/lib/format-date";
@@ -9,9 +9,10 @@ type Props = {
     onView: (transfer: StockTransfer) => void;
     onEdit?: (transfer: StockTransfer) => void;
     onDispatch?: (transfer: StockTransfer) => void;
+    onDelete?: (transfer: StockTransfer) => void;
 };
 
-export function StockTransfersTable({ transfers, onView, onEdit, onDispatch }: Props) {
+export function StockTransfersTable({ transfers, onView, onEdit, onDispatch, onDelete }: Props) {
     return (
         <EntityTable headers={["Número", "Fecha", "Origen", "Destino", "Estado", "Acciones"]}>
             {transfers.map(transfer => (
@@ -26,28 +27,36 @@ export function StockTransfersTable({ transfers, onView, onEdit, onDispatch }: P
                     </td>
                     <td className="px-6 py-4"><StockTransferStatusBadge status={transfer.status} /></td>
                     <td className="px-6 py-4">
-                        {transfer.status === "DRAFT" && onEdit ? (
-                            <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3">
+                            {transfer.status === "DRAFT" && onEdit && (
                                 <Pencil
                                     size={18}
                                     className="cursor-pointer text-slate-500 hover:text-primary"
                                     onClick={() => onEdit(transfer)}
                                 />
-                                {onDispatch && (
-                                    <Send
-                                        size={18}
-                                        className="cursor-pointer text-green-600 hover:text-green-700"
-                                        onClick={() => onDispatch(transfer)}
-                                    />
-                                )}
-                            </div>
-                        ) : (
-                            <Eye
-                                size={18}
-                                className="cursor-pointer text-slate-500 hover:text-primary"
-                                onClick={() => onView(transfer)}
-                            />
-                        )}
+                            )}
+                            {transfer.status === "DRAFT" && onDispatch && (
+                                <Send
+                                    size={18}
+                                    className="cursor-pointer text-green-600 hover:text-green-700"
+                                    onClick={() => onDispatch(transfer)}
+                                />
+                            )}
+                            {transfer.status !== "DRAFT" && (
+                                <Eye
+                                    size={18}
+                                    className="cursor-pointer text-slate-500 hover:text-primary"
+                                    onClick={() => onView(transfer)}
+                                />
+                            )}
+                            {(transfer.status === "DRAFT" || transfer.status === "PENDING" || transfer.status === "WITH_ISSUES") && onDelete && (
+                                <Trash2
+                                    size={18}
+                                    className="cursor-pointer text-red-500 hover:text-red-700"
+                                    onClick={() => onDelete(transfer)}
+                                />
+                            )}
+                        </div>
                     </td>
                 </tr>
             ))}

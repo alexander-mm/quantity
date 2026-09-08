@@ -1,5 +1,11 @@
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+    Combobox,
+    ComboboxInput,
+    ComboboxContent,
+    ComboboxItem,
+    ComboboxEmpty
+} from "@/components/ui/combobox";
 import type { Role } from "@/types";
 
 type Props = {
@@ -17,33 +23,30 @@ export function RoleSelector({
     placeholder = "Seleccione un rol",
     onChange
 }: Props) {
+
+    const items = roles.map(role => ({ value: role.id, label: role.name }));
+    const selected = items.find(item => item.value === value) ?? null;
+
     return (
         <div className="flex-1">
             <Label className="mb-1">{label}</Label>
-            <Select
-                value={value}
-                onValueChange={onChange}
+            <Combobox
+                items={items}
+                value={selected}
+                onValueChange={(item) => onChange(item ? item.value : "")}
             >
-                <SelectTrigger>
-                    <SelectValue placeholder={placeholder}>
-                        {(selectedValue: string | null) =>
-                            roles.find(role => role.id === selectedValue)?.name ?? placeholder
-                        }
-                    </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                    {
-                        roles.map(role => (
-                            <SelectItem
-                                key={role.id}
-                                value={role.id}
-                            >
-                                {role.name}
-                            </SelectItem>
-                        ))
-                    }
-                </SelectContent>
-            </Select>
+                <ComboboxInput placeholder={placeholder} />
+                <ComboboxContent>
+                    {(item) => (
+                        <ComboboxItem key={item.value} value={item}>
+                            {item.label}
+                        </ComboboxItem>
+                    )}
+                </ComboboxContent>
+                <ComboboxEmpty>
+                    No se encontraron roles.
+                </ComboboxEmpty>
+            </Combobox>
         </div>
     );
 }

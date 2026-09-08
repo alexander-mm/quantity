@@ -39,6 +39,11 @@ export async function updateStockTransfer(
     return data;
 }
 
+export async function deleteStockTransfer(id: string): Promise<ApiResponse<void>> {
+    const { data } = await api.delete<ApiResponse<void>>(`/stock-transfers/${id}`);
+    return data;
+}
+
 export async function dispatchStockTransfer(id: string): Promise<ApiResponse<StockTransfer>> {
     const { data } = await api.post<ApiResponse<StockTransfer>>(`/stock-transfers/${id}/dispatch`);
     return data;

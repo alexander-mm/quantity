@@ -6,41 +6,44 @@ import {
     ComboboxItem,
     ComboboxEmpty
 } from "@/components/ui/combobox";
-import type { Store } from "@/types";
+import type { MarginProfile } from "@/types";
 
-type AggregateOption = {
+type NoneOption = {
     value: string;
     label: string;
 };
 
-type Props={
-    stores:Store[];
-    value:string;
-    label?:string;
-    placeholder?:string;
-    onChange:(value:string|null)=>void;
-    // Item extra al principio de la lista (ej. "Total (todas las tiendas)") para
-    // ofrecer, además de "una tienda a la vez", una vista agregada de todas.
-    aggregateOption?: AggregateOption;
+type Props = {
+    marginProfiles: MarginProfile[];
+    value: string;
+    label?: string;
+    placeholder?: string;
+    onChange: (value: string | null) => void;
+    // Item extra (ej. "Sin perfil" / "Precio base") para representar "ninguno".
+    noneOption?: NoneOption;
 };
 
-export function StoreSelector({
-    stores,
+function formatProfileLabel(profile: MarginProfile) {
+    return `${profile.name} (-${Number(profile.percentage)}%)`;
+}
+
+export function MarginProfileSelector({
+    marginProfiles,
     value,
-    label="Bodega",
-    placeholder="Seleccione una bodega",
+    label = "Perfil de descuento",
+    placeholder = "Seleccione un perfil",
     onChange,
-    aggregateOption
-}:Props){
+    noneOption
+}: Props) {
 
     const items = [
-        ...(aggregateOption ? [aggregateOption] : []),
-        ...stores.map(store => ({ value: store.id, label: store.name }))
+        ...(noneOption ? [noneOption] : []),
+        ...marginProfiles.map(profile => ({ value: profile.id, label: formatProfileLabel(profile) }))
     ];
 
     const selected = items.find(item => item.value === value) ?? null;
 
-    return(
+    return (
         <div className="flex-1">
             {label && <Label className="mb-1">{label}</Label>}
             <Combobox
@@ -57,7 +60,7 @@ export function StoreSelector({
                     )}
                 </ComboboxContent>
                 <ComboboxEmpty>
-                    No se encontraron bodegas.
+                    No se encontraron perfiles.
                 </ComboboxEmpty>
             </Combobox>
         </div>

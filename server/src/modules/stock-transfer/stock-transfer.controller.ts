@@ -77,6 +77,31 @@ export class StockTransferController {
         }
     }
 
+    async delete(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { id } = req.params;
+            if (!id || Array.isArray(id)) {
+                res.status(400).json(ApiResponse.error("Id inválido."));
+                return;
+            }
+
+            const transfer = await this.service.findById(id);
+
+            if (
+                req.user?.roleName !== ROLES.ADMIN &&
+                transfer.originStoreId.toString() !== req.user?.storeId
+            ) {
+                res.status(403).json(ApiResponse.error("Solo puedes eliminar envíos de tu propia tienda."));
+                return;
+            }
+
+            await this.service.delete(id);
+            res.status(200).json(ApiResponse.success("Envío eliminado correctamente."));
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async dispatch(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
         try {
             const { id } = req.params;

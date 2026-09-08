@@ -3,6 +3,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { StoreSelector } from "@/components/selectors/store-selector";
+import { UserSelector } from "@/components/selectors/user-selector";
 import { useStores, useUsers } from "@/hooks";
 import { ROLES } from "@/constants/roles";
 
@@ -76,30 +77,18 @@ export function StockTransferHeader() {
 
             {destType === "TECHNICIAN" ? (
                 <div>
-                    <Label>Técnico</Label>
                     <Controller
                         control={control}
                         name="destUserId"
                         render={({ field }) => (
-                            <Select value={field.value ?? ""} onValueChange={field.onChange}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Seleccione un técnico">
-                                        {(value: string | null) => {
-                                            const technician = technicians.find(t => t.id === value);
-                                            return technician
-                                                ? `${technician.firstName} ${technician.lastName}`
-                                                : "Seleccione un técnico";
-                                        }}
-                                    </SelectValue>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {technicians.map(t => (
-                                        <SelectItem key={t.id} value={t.id}>
-                                            {t.firstName} {t.lastName}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <UserSelector
+                                users={technicians}
+                                value={field.value ?? ""}
+                                label="Técnico"
+                                placeholder="Seleccione un técnico"
+                                emptyMessage="No se encontraron técnicos."
+                                onChange={(value) => field.onChange(value ?? "")}
+                            />
                         )}
                     />
                     <p className="text-sm text-red-500">{errors.destUserId?.message as string}</p>

@@ -33,6 +33,8 @@ router.put(
     controller.update.bind(controller)
 );
 
+router.delete("/:id", authenticate, blockRoles(ROLES.PRODUCTION), controller.delete.bind(controller));
+
 router.post("/:id/dispatch", authenticate, blockRoles(ROLES.PRODUCTION), controller.dispatch.bind(controller));
 
 router.post("/:id/confirm", authenticate, blockRoles(ROLES.PRODUCTION), controller.confirm.bind(controller));

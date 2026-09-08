@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Combobox, ComboboxInput, ComboboxContent, ComboboxItem, ComboboxEmpty } from "@/components/ui/combobox";
 import { BarcodeScanButton } from "@/components/scanner";
+import { StoreSelector } from "@/components/selectors";
 import { returnSchema } from "@/validators";
 import type { ReturnFormData } from "@/validators";
 import {
@@ -559,25 +560,16 @@ export function ReturnForm({ onSuccess }: Props) {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 
                 <div>
-                    <Label className="mb-1">Tienda / bodega destino</Label>
                     <Controller
                         control={control}
                         name="storeId"
                         render={({ field }) => (
-                            <Select value={field.value} onValueChange={field.onChange}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Seleccione">
-                                        {(value: string | null) =>
-                                            stores.find(store => store.id === value)?.name ?? "Seleccione"
-                                        }
-                                    </SelectValue>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {stores.map(store => (
-                                        <SelectItem key={store.id} value={store.id}>{store.name}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <StoreSelector
+                                stores={stores}
+                                value={field.value}
+                                label="Tienda / bodega destino"
+                                onChange={(value) => field.onChange(value ?? "")}
+                            />
                         )}
                     />
                     <p className="text-sm text-red-500">{errors.storeId?.message}</p>

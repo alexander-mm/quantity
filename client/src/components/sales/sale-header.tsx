@@ -18,7 +18,7 @@ import {
     useOfflineCollection
 } from "@/hooks";
 import { resolveProductPriceEntries, getCachedPriceEntryLabels, offlineDb } from "@/lib";
-import { ClientSelector } from "@/components/selectors";
+import { ClientSelector, StoreSelector } from "@/components/selectors";
 
 export function SaleHeader() {
     const {
@@ -329,44 +329,15 @@ export function SaleHeader() {
             )}
 
             <div>
-                <Label className="mb-1">Bodega</Label>
-
                 <Controller
                     control={control}
                     name="storeId"
                     render={({ field }) => (
-
-                        <Select
+                        <StoreSelector
+                            stores={stores}
                             value={field.value}
-                            onValueChange={field.onChange}
-                        >
-                            <SelectTrigger>
-
-                                <SelectValue
-                                    placeholder="Seleccione"
-                                >
-                                    {(value: string | null) =>
-                                        stores.find(item => item.id === value)?.name ?? "Seleccione"
-                                    }
-                                </SelectValue>
-                            </SelectTrigger>
-
-                            <SelectContent>
-                                {
-                                    stores.map(item => (
-                                        <SelectItem
-                                            key={item.id}
-                                            value={item.id}
-                                        >
-                                            {item.name}
-                                        </SelectItem>
-
-                                    ))
-                                }
-
-                            </SelectContent>
-                        </Select>
-
+                            onChange={(value) => field.onChange(value ?? "")}
+                        />
                     )}
                 />
 

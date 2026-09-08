@@ -9,9 +9,10 @@ import {
     StockTransfersTable,
     StockTransferModal,
     ReceiveTransferModal,
-    DispatchTransferDialog
+    DispatchTransferDialog,
+    DeleteTransferDialog
 } from "@/components";
-import { useStockTransfers, useDispatchStockTransfer } from "@/hooks";
+import { useStockTransfers, useDispatchStockTransfer, useDeleteStockTransfer } from "@/hooks";
 import type { StockTransfer } from "@/types";
 
 export function StockTransfersPage() {
@@ -22,8 +23,10 @@ export function StockTransfersPage() {
     const [transferToEdit, setTransferToEdit] = useState<StockTransfer | null>(null);
     const [transferToView, setTransferToView] = useState<StockTransfer | null>(null);
     const [transferToDispatch, setTransferToDispatch] = useState<StockTransfer | null>(null);
+    const [transferToDelete, setTransferToDelete] = useState<StockTransfer | null>(null);
 
     const dispatchMutation = useDispatchStockTransfer();
+    const deleteMutation = useDeleteStockTransfer();
 
     return (
         <PageContainer>
@@ -45,6 +48,7 @@ export function StockTransfersPage() {
                                 onView={setTransferToView}
                                 onEdit={setTransferToEdit}
                                 onDispatch={setTransferToDispatch}
+                                onDelete={setTransferToDelete}
                             />
                         )
                 )}
@@ -85,6 +89,31 @@ export function StockTransfersPage() {
                                 axios.isAxiosError<{ message?: string }>(error) && error.response?.data?.message
                                     ? error.response.data.message
                                     : "No se pudo despachar el envío.";
+                            toast.error(message);
+                        }
+                    });
+
+                }}
+            />
+
+            <DeleteTransferDialog
+                open={!!transferToDelete}
+                loading={deleteMutation.isPending}
+                onOpenChange={() => setTransferToDelete(null)}
+                onConfirm={() => {
+
+                    if (!transferToDelete) return;
+
+                    deleteMutation.mutate(transferToDelete.id, {
+                        onSuccess: () => {
+                            toast.success("Envío eliminado correctamente.");
+                            setTransferToDelete(null);
+                        },
+                        onError: (error) => {
+                            const message =
+                                axios.isAxiosError<{ message?: string }>(error) && error.response?.data?.message
+                                    ? error.response.data.message
+                                    : "No se pudo eliminar el envío.";
                             toast.error(message);
                         }
                     });

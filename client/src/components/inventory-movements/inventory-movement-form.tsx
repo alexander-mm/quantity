@@ -16,6 +16,7 @@ import { inventoryMovementSchema } from "@/validators";
 import type { InventoryMovementFormData } from "@/validators";
 import { MinimumStockField } from "@/components/shared";
 import { BarcodeScanButton } from "@/components/scanner";
+import { StoreSelector } from "@/components/selectors";
 import {
     useMovementTypes,
     useProducts,
@@ -259,28 +260,16 @@ export function InventoryMovementForm({ movement, onSuccess }: Props) {
             )}
 
             <div>
-                <Label className="mb-1">Bodega</Label>
                 <Controller
 
                     control={control}
                     name="storeId"
                     render={({ field }) => (
-                        <Select value={field.value} onValueChange={field.onChange}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Seleccione">
-                                    {(value: string | null) =>
-                                        stores.find(item => item.id === value)?.name ?? "Seleccione"
-                                    }
-                                </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                                {stores.map(item => (
-                                    <SelectItem key={item.id} value={item.id}>
-                                        {item.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <StoreSelector
+                            stores={stores}
+                            value={field.value}
+                            onChange={(value) => field.onChange(value ?? "")}
+                        />
                     )}
                 />
                 <p className="text-sm text-red-500">

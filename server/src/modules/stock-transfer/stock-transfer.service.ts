@@ -119,6 +119,62 @@ export class StockTransferService {
 
     }
 
+    async delete(id: string): Promise<void> {
+
+        await prisma.$transaction(async (tx) => {
+
+            const repository = this.repository.withTransaction(tx);
+            const transfer = await repository.findById(BigInt(id));
+
+            if (!transfer) {
+                throw new NotFoundError("Envío no encontrado.");
+            }
+
+            if (transfer.status === "RECEIVED") {
+                throw new ValidationError("No se puede eliminar un envío ya confirmado.");
+            }
+
+            if (transfer.status === "CANCELLED") {
+                throw new ValidationError("Este envío ya fue eliminado.");
+            }
+
+            if (transfer.status !== "DRAFT") {
+
+                // El envío ya fue despachado (PENDING) o tiene una novedad reportada sin
+                // resolver (WITH_ISSUES): el origen ya registró una salida real de stock.
+                // Se revierte exactamente lo despachado para que la cancelación no deje
+                // el inventario de origen descontado sin motivo.
+                const movementType = await this.movementTypeRepository.findByCode("TRANSFER_IN");
+
+                if (!movementType) {
+                    throw new NotFoundError("No existe el tipo de movimiento TRANSFER_IN.");
+                }
+
+                const movementService = this.inventoryMovementService.withTransaction(tx);
+
+                for (const detail of transfer.details) {
+
+                    await movementService.createWithTransaction({
+                        movementTypeId: movementType.id,
+                        productId: detail.productId,
+                        storeId: transfer.originStoreId,
+                        userId: transfer.userId,
+                        quantity: detail.quantitySent,
+                        unitCost: detail.product.costPrice,
+                        observations: `Cancelación del envío ${transfer.number}: reingreso a bodega de origen.`,
+                        movementDate: new Date()
+                    });
+
+                }
+
+            }
+
+            await repository.delete(transfer.id);
+
+        });
+
+    }
+
     async dispatch(id: string): Promise<StockTransfer> {
 
         return prisma.$transaction(async (tx) => {

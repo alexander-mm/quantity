@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MarginProfileSelector } from "@/components/selectors";
 import { formatCurrency } from "@/lib/format-currency";
 import {
     useAuth,
@@ -136,33 +135,18 @@ export function ProductViewModal({ product, open, onOpenChange }: Props) {
                     )}
 
                     <div>
-                        <Label className="mb-1">Perfil de precio</Label>
-                        <Select
+                        <MarginProfileSelector
+                            marginProfiles={marginProfiles}
                             value={selectedProfileId}
-                            onValueChange={(v) =>
+                            label="Perfil de precio"
+                            placeholder="Precio base (sin perfil)"
+                            noneOption={{ value: "", label: "Precio base (sin perfil)" }}
+                            onChange={(v) =>
                                 setManualSelection(
                                     v && product ? { productId: product.id, profileId: v } : null
                                 )
                             }
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Precio base (sin perfil)">
-                                    {(value: string | null) => {
-                                        const profile = marginProfiles.find(item => item.id === value);
-                                        return profile
-                                            ? `${profile.name} (-${Number(profile.percentage)}%)`
-                                            : "Precio base (sin perfil)";
-                                    }}
-                                </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                                {marginProfiles.map(profile => (
-                                    <SelectItem key={profile.id} value={profile.id}>
-                                        {profile.name} (-{Number(profile.percentage)}%)
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        />
                     </div>
 
                     <div className="space-y-2 rounded-lg border p-3">

@@ -12,8 +12,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BarcodeScanButton } from "@/components/scanner";
+import { MarginProfileSelector } from "@/components/selectors";
 import { useProducts, useProductPriceEntries, useClients, useMarginProfiles, useOfflineCollection, useKitAvailability } from "@/hooks";
 import { resolveProductPriceEntries, getCachedProductPriceEntries, offlineDb, matchProductByBarcode } from "@/lib";
 import { formatCurrency } from "@/lib/format-currency";
@@ -366,10 +366,13 @@ export function SaleDetailRow({
 
             {!hasClientDiscount && (
                 <div>
-                    <Label className="mb-1">Perfil de descuento (opcional)</Label>
-                    <Select
+                    <MarginProfileSelector
+                        marginProfiles={marginProfiles}
                         value={selectedProfileId}
-                        onValueChange={(rawValue)=>{
+                        label="Perfil de descuento (opcional)"
+                        placeholder="Sin perfil"
+                        noneOption={{ value: NO_PROFILE, label: "Sin perfil" }}
+                        onChange={(rawValue)=>{
 
                             const value=rawValue??NO_PROFILE;
 
@@ -386,29 +389,7 @@ export function SaleDetailRow({
                             );
 
                         }}
-                    >
-                        <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Sin perfil">
-                                {(value: string | null) => {
-                                    if (!value || value === NO_PROFILE) {
-                                        return "Sin perfil";
-                                    }
-                                    const profile = marginProfiles.find(item => item.id === value);
-                                    return profile
-                                        ? `${profile.name} (-${Number(profile.percentage)}%)`
-                                        : "Sin perfil";
-                                }}
-                            </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value={NO_PROFILE}>Sin perfil</SelectItem>
-                            {marginProfiles.map(profile=>(
-                                <SelectItem key={profile.id} value={profile.id}>
-                                    {profile.name} (-{Number(profile.percentage)}%)
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    />
                 </div>
             )}
 

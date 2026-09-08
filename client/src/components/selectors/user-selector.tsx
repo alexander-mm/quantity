@@ -6,41 +6,30 @@ import {
     ComboboxItem,
     ComboboxEmpty
 } from "@/components/ui/combobox";
-import type { Store } from "@/types";
+import type { User } from "@/types";
 
-type AggregateOption = {
+type Props = {
+    users: User[];
     value: string;
-    label: string;
+    label?: string;
+    placeholder?: string;
+    emptyMessage?: string;
+    onChange: (value: string | null) => void;
 };
 
-type Props={
-    stores:Store[];
-    value:string;
-    label?:string;
-    placeholder?:string;
-    onChange:(value:string|null)=>void;
-    // Item extra al principio de la lista (ej. "Total (todas las tiendas)") para
-    // ofrecer, además de "una tienda a la vez", una vista agregada de todas.
-    aggregateOption?: AggregateOption;
-};
-
-export function StoreSelector({
-    stores,
+export function UserSelector({
+    users,
     value,
-    label="Bodega",
-    placeholder="Seleccione una bodega",
-    onChange,
-    aggregateOption
-}:Props){
+    label = "Usuario",
+    placeholder = "Seleccione un usuario",
+    emptyMessage = "No se encontraron usuarios.",
+    onChange
+}: Props) {
 
-    const items = [
-        ...(aggregateOption ? [aggregateOption] : []),
-        ...stores.map(store => ({ value: store.id, label: store.name }))
-    ];
-
+    const items = users.map(user => ({ value: user.id, label: `${user.firstName} ${user.lastName}` }));
     const selected = items.find(item => item.value === value) ?? null;
 
-    return(
+    return (
         <div className="flex-1">
             {label && <Label className="mb-1">{label}</Label>}
             <Combobox
@@ -57,7 +46,7 @@ export function StoreSelector({
                     )}
                 </ComboboxContent>
                 <ComboboxEmpty>
-                    No se encontraron bodegas.
+                    {emptyMessage}
                 </ComboboxEmpty>
             </Combobox>
         </div>
