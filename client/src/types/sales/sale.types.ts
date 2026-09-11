@@ -65,6 +65,9 @@ export interface Sale{
     paymentMethods: PaymentMethodEntry[];
     accountReceivable: SaleAccountReceivable | null;
 
+    cancelReason: string | null;
+    cancelledAt: string | null;
+
 }
 
 export interface SaleDetail{

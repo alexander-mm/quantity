@@ -3,6 +3,7 @@ import { SaleService } from "./sale.service.js";
 import { ApiResponse } from "../../shared/responses/index.js";
 import { AuthenticatedRequest } from "../../middleware/authenticate.js";
 import { ROLES } from "../../shared/constants/roles.js";
+import { VoidSaleDto } from "./sale.dto.js";
 
 export class SaleController {
 
@@ -219,6 +220,52 @@ export class SaleController {
             res.status(200).json(
                 ApiResponse.success(
                     "Venta confirmada correctamente.",
+                    sale
+                )
+            );
+
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async voidSale(
+        req: AuthenticatedRequest,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+        try {
+            const { id } = req.params;
+
+            if (!id || Array.isArray(id)) {
+                res.status(400).json(
+                    ApiResponse.error(
+                        "Id inválido."
+                    )
+                );
+                return;
+            }
+
+            if (!req.user) {
+                res.status(401).json(
+                    ApiResponse.error(
+                        "Token no proporcionado."
+                    )
+                );
+                return;
+            }
+
+            const { reason } = req.body as VoidSaleDto;
+
+            const sale = await this.service.voidSale(
+                id,
+                req.user.userId,
+                reason
+            );
+
+            res.status(200).json(
+                ApiResponse.success(
+                    "Venta anulada correctamente.",
                     sale
                 )
             );

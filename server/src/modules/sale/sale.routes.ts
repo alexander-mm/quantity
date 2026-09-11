@@ -1,10 +1,10 @@
 import { Router } from "express";
 import { authenticate } from "../../middleware/authenticate.js";
-import { blockRoles } from "../../middleware/authorize.js";
+import { authorize, blockRoles } from "../../middleware/authorize.js";
 import { validate } from "../../middleware/validate.js";
 import { ROLES } from "../../shared/constants/roles.js";
 import { SaleController } from "./sale.controller.js";
-import { createSaleSchema, updateSaleSchema } from "./sale.validator.js";
+import { createSaleSchema, updateSaleSchema, voidSaleSchema } from "./sale.validator.js";
 
 const router=Router();
 const controller=new SaleController();
@@ -16,5 +16,6 @@ router.post("/",authenticate,blockRoles(ROLES.PRODUCTION),validate(createSaleSch
 router.put("/:id",authenticate,blockRoles(ROLES.PRODUCTION),validate(updateSaleSchema),controller.update.bind(controller));
 router.delete("/:id",authenticate,blockRoles(ROLES.PRODUCTION),controller.delete.bind(controller));
 router.post("/:id/confirm",authenticate,blockRoles(ROLES.PRODUCTION),controller.confirm.bind(controller));
+router.post("/:id/void",authenticate,authorize(ROLES.ADMIN),validate(voidSaleSchema),controller.voidSale.bind(controller));
 
 export default router;

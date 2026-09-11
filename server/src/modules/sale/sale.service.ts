@@ -1,6 +1,7 @@
 import { Prisma, Sale } from "@prisma/client";
 import { SaleRepository } from "./sale.repository.js";
 import { CreateSaleDto, UpdateSaleDto } from "./sale.dto.js";
+import { ReturnRepository } from "../return/return.repository.js";
 import { ConflictError, NotFoundError, ValidationError } from "../../shared/errors/index.js";
 import { prisma } from "../../database/index.js";
 import { InventoryMovementService } from "../inventory-movement/inventory-movement.service.js";
@@ -53,6 +54,9 @@ export class SaleService {
 
     private readonly telegramService =
         new TelegramService();
+
+    private readonly returnRepository =
+        new ReturnRepository();
 
     // Kits (Product.assembleOnSale = true) no llevan stock propio: se arman al
     // momento de la venta combinando sus componentes/piezas segun la receta
@@ -780,6 +784,194 @@ export class SaleService {
             void this.notifyRealtimeLowStockAfterSale(confirmedSale);
 
             return confirmedSale;
+
+        });
+
+    }
+
+    // Anula una venta CONFIRMED (a diferencia de delete(), que solo "cancela"
+    // un DRAFT sin tocar inventario): revierte el stock de todo lo vendido —
+    // incluyendo, para kits, recalcular la receta actual de componentes/piezas,
+    // igual que hace confirm() — y solo la puede ejecutar un admin (ver rutas).
+    async voidSale(
+        id: string,
+        userId: string,
+        reason: string
+    ): Promise<Sale> {
+
+        const sale = await this.repository.findById(
+            BigInt(id)
+        );
+
+        if (!sale) {
+            throw new NotFoundError(
+                "Venta no encontrada."
+            );
+        }
+
+        if (sale.status !== "CONFIRMED") {
+            throw new ValidationError(
+                "Solo se pueden anular ventas confirmadas."
+            );
+        }
+
+        const existingReturns = await this.returnRepository.findBySaleId(
+            sale.id
+        );
+
+        if (existingReturns.length > 0) {
+            throw new ValidationError(
+                "Esta venta ya tiene devoluciones registradas; no se puede anular."
+            );
+        }
+
+        if (sale.paymentMethod === "CREDIT") {
+
+            const accountReceivable = await this.accountReceivableRepository.findBySaleId(
+                sale.id
+            );
+
+            const hasPayments =
+                !!accountReceivable && (
+                    Number(accountReceivable.downPayment) > 0 ||
+                    accountReceivable.payments.length > 0
+                );
+
+            if (hasPayments) {
+                throw new ValidationError(
+                    "No se puede anular: la cuenta de cobro de esta venta ya tiene abonos registrados."
+                );
+            }
+
+        }
+
+        const movementType = await this.movementTypeRepository.findByCode(
+            "SALE_CANCEL"
+        );
+
+        if (!movementType) {
+            throw new NotFoundError(
+                'No existe el tipo de movimiento SALE_CANCEL. Corre "npx tsx scripts/seed-movement-types.ts".'
+            );
+        }
+
+        return prisma.$transaction(async (tx) => {
+
+            const saleRepository =
+                this.repository.withTransaction(tx);
+
+            const movementService =
+                this.inventoryMovementService.withTransaction(tx);
+
+            const partRepository =
+                this.partRepository.withTransaction(tx);
+
+            const partMovementRepository =
+                this.partMovementRepository.withTransaction(tx);
+
+            const accountReceivableRepository =
+                this.accountReceivableRepository.withTransaction(tx);
+
+            const aggregatedPartRequirements = new Map<string, {
+                partId: bigint;
+                quantity: Prisma.Decimal;
+            }>();
+
+            for (const detail of sale.details) {
+
+                if (detail.product.assembleOnSale) {
+
+                    const { components, parts } = await this.getRecipeRequirements(
+                        detail.productId,
+                        Number(detail.quantity)
+                    );
+
+                    for (const item of components) {
+
+                        await movementService.createWithTransaction({
+                            movementTypeId: movementType.id,
+                            productId: item.componentProductId,
+                            storeId: sale.storeId,
+                            userId: BigInt(userId),
+                            clientId: sale.clientId,
+                            quantity: item.quantity,
+                            unitCost: item.componentProduct.costPrice,
+                            observations: `Anulación de venta ${sale.number}: ${reason}`,
+                            movementDate: new Date()
+                        });
+
+                    }
+
+                    for (const item of parts) {
+
+                        const key = item.partId.toString();
+                        const existing = aggregatedPartRequirements.get(key);
+
+                        aggregatedPartRequirements.set(key, {
+                            partId: item.partId,
+                            quantity: existing
+                                ? existing.quantity.plus(item.quantity)
+                                : item.quantity
+                        });
+
+                    }
+
+                    continue;
+
+                }
+
+                await movementService.createWithTransaction({
+                    movementTypeId: movementType.id,
+                    productId: detail.productId,
+                    storeId: sale.storeId,
+                    userId: BigInt(userId),
+                    clientId: sale.clientId,
+                    quantity: detail.quantity,
+                    unitCost: detail.unitPrice,
+                    observations: `Anulación de venta ${sale.number}: ${reason}`,
+                    movementDate: new Date()
+                });
+
+            }
+
+            if (aggregatedPartRequirements.size > 0) {
+
+                const partRequirements = [...aggregatedPartRequirements.values()];
+
+                await partMovementRepository.create({
+                    number: `ANULACION-${sale.number}`,
+                    type: "IN",
+                    userId,
+                    movementDate: new Date(),
+                    observations: `Anulación de venta ${sale.number}: ${reason}`,
+                    details: partRequirements.map(item => ({
+                        partId: item.partId.toString(),
+                        quantity: Number(item.quantity)
+                    }))
+                });
+
+                for (const item of partRequirements) {
+                    await partRepository.incrementQuantity(
+                        item.partId,
+                        item.quantity
+                    );
+                }
+
+            }
+
+            if (sale.paymentMethod === "CREDIT") {
+                await accountReceivableRepository.deleteBySaleId(
+                    sale.id
+                );
+            }
+
+            return saleRepository.voidSale(
+                sale.id,
+                {
+                    cancelReason: reason,
+                    cancelledBy: BigInt(userId)
+                }
+            );
 
         });
 

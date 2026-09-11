@@ -141,3 +141,18 @@ export async function cancelSale(
     return data;
 
 }
+
+export async function voidSale(
+    payload:{id:string;reason:string}
+):Promise<ApiResponse<Sale>>{
+
+    const {data}=await api.post<
+        ApiResponse<Sale>
+    >(
+        `/sales/${payload.id}/void`,
+        { reason: payload.reason }
+    );
+
+    return data;
+
+}

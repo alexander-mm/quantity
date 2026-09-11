@@ -46,6 +46,10 @@ export interface CreateSaleDto {
     termDays?: number;
 }
 
+export interface VoidSaleDto {
+    reason: string;
+}
+
 export interface UpdateSaleDto {
     // De solo lectura una vez creada la venta: el servidor lo ignora en update.
     number?: string;

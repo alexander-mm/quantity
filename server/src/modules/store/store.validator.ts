@@ -51,10 +51,13 @@ export const createStoreSchema = z.object({
         .max(100, "El responsable no puede superar los 100 caracteres.")
         .optional(),
 
+    // 45 es el largo máximo de una sola IP (IPv6 completa); el campo admite varias
+    // separadas por coma (ver Store.attendanceIp / findStoreByIp), así que el límite
+    // debe alcanzar para varias entradas, no solo una. 500 cubre holgadamente 10.
     attendanceIp: z
         .string()
         .trim()
-        .max(45, "La IP no puede superar los 45 caracteres.")
+        .max(500, "La lista de IPs no puede superar los 500 caracteres.")
         .optional()
 
 });

@@ -286,6 +286,29 @@ export class SaleRepository extends BaseRepository {
 
     }
 
+    async voidSale(
+        id: bigint,
+        data: {
+            cancelReason: string;
+            cancelledBy: bigint;
+        }
+    ): Promise<SaleWithRelations> {
+
+        return this.prisma.sale.update({
+            where: {
+                id
+            },
+            data: {
+                status: "CANCELLED",
+                cancelReason: data.cancelReason,
+                cancelledAt: new Date(),
+                cancelledBy: data.cancelledBy
+            },
+            include: saleIncludeRelations
+        });
+
+    }
+
     withTransaction(
         tx: Prisma.TransactionClient
     ): SaleRepository {

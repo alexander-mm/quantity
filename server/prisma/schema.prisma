@@ -446,6 +446,12 @@ model Sale {
   createdBy     BigInt?
   updatedBy     BigInt?
 
+  // Anulación de una venta CONFIRMED (distinta del "cancelar" de un DRAFT):
+  // requiere motivo y revierte el inventario. Ver SaleService.void().
+  cancelReason String?
+  cancelledAt  DateTime?
+  cancelledBy  BigInt?
+
   client Client @relation(fields: [clientId], references: [id])
   store  Store  @relation(fields: [storeId], references: [id])
   user   User   @relation(fields: [userId], references: [id])

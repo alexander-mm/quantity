@@ -92,6 +92,13 @@ const movementTypes = [
         description: "Salida de stock vendible al registrar una devolución directa de inventario que queda pendiente de revisión",
         affectsStock: true,
         stockOperation: StockOperation.OUT
+    },
+    {
+        code: "SALE_CANCEL",
+        name: "Anulación de Venta",
+        description: "Ingreso por anulación de una venta confirmada (vuelve a stock vendible)",
+        affectsStock: true,
+        stockOperation: StockOperation.IN
     }
 ];
 

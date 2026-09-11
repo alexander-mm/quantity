@@ -1,8 +1,14 @@
+import { useState } from "react";
+import { toast } from "react-hot-toast";
+import axios from "axios";
 import type { Sale } from "@/types";
 import { Button } from "@/components/ui/button";
 import { SaleStatusBadge } from "./sale-status-badge";
+import { VoidSaleDialog } from "./void-sale-dialog";
 import { formatCurrency } from "@/lib/format-currency";
 import { formatDateOnly } from "@/lib/format-date";
+import { useAuth, useVoidSale } from "@/hooks";
+import { ROLES } from "@/constants/roles";
 
 type Props = {
     sale: Sale;
@@ -33,6 +39,14 @@ export function SaleView({
     sale,
     onClose
 }: Props) {
+
+    const { user } = useAuth();
+    const isAdmin = user?.roleName === ROLES.ADMIN;
+
+    const [voidDialogOpen, setVoidDialogOpen] = useState(false);
+    const voidMutation = useVoidSale();
+
+    const canVoid = isAdmin && sale.status === "CONFIRMED";
 
     return (
 
@@ -296,7 +310,19 @@ export function SaleView({
                         {formatCurrency(sale.total, sale.currency)}
                     </span>
                 </div>
-                <div className="flex justify-end">
+                <div className="flex justify-end gap-2">
+
+                    {canVoid && (
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={() => setVoidDialogOpen(true)}
+                        >
+
+                            Anular venta
+
+                        </Button>
+                    )}
 
                     <Button
                         type="button"
@@ -311,6 +337,33 @@ export function SaleView({
                 </div>
 
             </div>
+
+            <VoidSaleDialog
+                open={voidDialogOpen}
+                loading={voidMutation.isPending}
+                onOpenChange={setVoidDialogOpen}
+                onConfirm={(reason) => {
+
+                    voidMutation.mutate(
+                        { id: sale.id, reason },
+                        {
+                            onSuccess: () => {
+                                toast.success("Venta anulada.");
+                                setVoidDialogOpen(false);
+                                onClose();
+                            },
+                            onError: (error) => {
+                                const message =
+                                    axios.isAxiosError<{ message?: string }>(error) && error.response?.data?.message
+                                        ? error.response.data.message
+                                        : "No se pudo anular la venta.";
+                                toast.error(message);
+                            }
+                        }
+                    );
+
+                }}
+            />
         </div>
     );
 }

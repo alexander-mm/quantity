@@ -4,3 +4,4 @@ export * from "./use-create-sale";
 export * from "./use-update-sale";
 export * from "./use-confirm-sale";
 export * from "./use-cancel-sale";
+export * from "./use-void-sale";

@@ -202,3 +202,7 @@ export const updateSaleSchema=applyPaymentMethodRules(baseSaleSchema.extend({
         "CANCELLED"
     ])
 }));
+
+export const voidSaleSchema=z.object({
+    reason:z.string().trim().min(5,"Indique el motivo de la anulación.").max(500)
+});

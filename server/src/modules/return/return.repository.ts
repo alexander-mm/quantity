@@ -50,6 +50,12 @@ export class ReturnRepository extends BaseRepository {
         });
     }
 
+    async findBySaleId(saleId: bigint): Promise<Return[]> {
+        return this.prisma.return.findMany({
+            where: { saleId }
+        });
+    }
+
     async create(data: Prisma.ReturnCreateInput): Promise<ReturnWithRelations> {
         return this.prisma.return.create({
             data,
