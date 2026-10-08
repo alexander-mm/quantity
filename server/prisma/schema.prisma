@@ -50,6 +50,7 @@ model Store {
   stockTransfersDestination StockTransfer[]     @relation("TransferDestination")
   returns                   Return[]
   attendances               Attendance[]
+  attendanceDevices         AttendanceDevice[]
 
   @@index([type])
   @@index([isActive])
@@ -112,6 +113,25 @@ model Attendance {
   @@index([userId])
   @@index([storeId])
   @@index([clockIn])
+}
+
+// Equipo (navegador) autorizado por un administrador para usar el reloj checador de una
+// tienda. El equipo guarda un token secreto que nunca se muestra; acá solo se guarda su hash.
+// Así la autorización no depende de la IP pública, que los proveedores cambian seguido.
+model AttendanceDevice {
+  id         BigInt    @id @default(autoincrement())
+  uuid       String    @unique @default(uuid())
+  storeId    BigInt
+  name       String
+  tokenHash  String    @unique
+  lastUsedAt DateTime?
+  lastIp     String?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  createdBy  BigInt?
+  store      Store     @relation(fields: [storeId], references: [id])
+
+  @@index([storeId])
 }
 
 model RefreshToken {

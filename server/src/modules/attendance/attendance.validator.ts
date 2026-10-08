@@ -28,3 +28,31 @@ export const setAttendancePinSchema = z.object({
         .regex(/^\d{4}$/, "El PIN debe ser de 4 dígitos numéricos.")
 
 });
+
+export const enrollOptionsSchema = z.object({
+
+    username: z
+        .string()
+        .trim()
+        .min(1, "Ingrese el usuario."),
+
+    password: z
+        .string()
+        .min(1, "Ingrese la contraseña.")
+
+});
+
+export const enrollDeviceSchema = enrollOptionsSchema.extend({
+
+    storeId: z
+        .string()
+        .trim()
+        .regex(/^\d+$/, "Seleccione una tienda."),
+
+    name: z
+        .string()
+        .trim()
+        .min(1, "Ingrese un nombre para el equipo.")
+        .max(100, "El nombre no puede superar los 100 caracteres.")
+
+});

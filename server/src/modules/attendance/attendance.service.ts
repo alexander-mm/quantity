@@ -1,23 +1,123 @@
 import bcrypt from "bcrypt";
+import { randomBytes, createHash } from "node:crypto";
 import { ForbiddenError, NotFoundError } from "../../shared/errors/index.js";
+import { ROLES } from "../../shared/constants/roles.js";
+import { UserRepository } from "../user/user.repository.js";
 import { AttendanceRepository } from "./attendance.repository.js";
 import { AttendanceFiltersDto } from "./attendance.dto.js";
 
 function buildNotAuthorizedMessage(ip: string): string {
-    // Se incluye la IP tal como la detectó el servidor (después de pasar por el proxy de
-    // Render) a propósito: es la única forma exacta de saber qué valor registrar en la
-    // tienda — buscar "cuál es mi IP" desde otro dispositivo/red puede dar un valor distinto
-    // (IPv6 vs IPv4, NAT, otro proxy, etc.) al que realmente le llega a este servidor.
-    return `Este equipo no está autorizado para marcar asistencia. IP detectada: ${ip || "desconocida"}. Pedile al administrador que la registre en la tienda correspondiente.`;
+    // No se muestra ningún código del equipo a propósito: la autorización la hace un
+    // administrador desde el propio equipo, así un empleado no puede copiar nada para
+    // marcar desde otro lado. La IP queda solo como dato para la autorización por IP.
+    return `Este equipo no está autorizado para marcar asistencia. Un administrador debe autorizarlo desde este mismo equipo. (IP detectada: ${ip || "desconocida"})`;
+}
+
+function hashDeviceToken(token: string): string {
+    return createHash("sha256").update(token).digest("hex");
 }
 
 export class AttendanceService {
 
     private readonly repository = new AttendanceRepository();
 
-    async getKioskContext(ip: string) {
+    private readonly userRepository = new UserRepository();
 
-        const store = await this.repository.findStoreByIp(ip);
+    // Un equipo autorizado (token secreto guardado en su navegador) tiene prioridad; si no
+    // hay token válido se cae a la autorización por IP configurada en la tienda.
+    private async resolveStore(ip: string, deviceToken: string | null) {
+
+        if (deviceToken) {
+
+            const device = await this.repository.findStoreByDeviceTokenHash(
+                hashDeviceToken(deviceToken)
+            );
+
+            if (device) {
+                await this.repository.touchDevice(device.id, ip);
+                return device.store;
+            }
+
+        }
+
+        return this.repository.findStoreByIp(ip);
+
+    }
+
+    private async verifyAdmin(username: string, password: string) {
+
+        const user = await this.userRepository.findByUsername(username);
+
+        if (!user || !user.isActive || !(await bcrypt.compare(password, user.password))) {
+            // 403 y no 401: el cliente trata cualquier 401 como sesión vencida y cierra sesión.
+            throw new ForbiddenError("Usuario o contraseña incorrectos.");
+        }
+
+        if (user.role.name !== ROLES.ADMIN) {
+            throw new ForbiddenError("Solo un administrador puede autorizar equipos.");
+        }
+
+        return user;
+
+    }
+
+    async getEnrollableStores(username: string, password: string) {
+
+        await this.verifyAdmin(username, password);
+
+        return this.repository.findEnrollableStores();
+
+    }
+
+    async enrollDevice(
+        ip: string,
+        username: string,
+        password: string,
+        storeId: string,
+        name: string
+    ) {
+
+        const admin = await this.verifyAdmin(username, password);
+
+        const store = await this.repository.findEnrollableStoreById(BigInt(storeId));
+
+        if (!store) {
+            throw new NotFoundError("Tienda no encontrada.");
+        }
+
+        const token = randomBytes(48).toString("hex");
+
+        const device = await this.repository.createDevice({
+            storeId: store.id,
+            name,
+            tokenHash: hashDeviceToken(token),
+            ip,
+            createdBy: admin.id
+        });
+
+        return { token, device };
+
+    }
+
+    async findDevices(storeId?: string) {
+
+        return this.repository.findDevices(storeId ? BigInt(storeId) : undefined);
+
+    }
+
+    async revokeDevice(id: string) {
+
+        const revoked = await this.repository.revokeDevice(BigInt(id));
+
+        if (!revoked) {
+            throw new NotFoundError("Equipo no encontrado.");
+        }
+
+    }
+
+    async getKioskContext(ip: string, deviceToken: string | null) {
+
+        const store = await this.resolveStore(ip, deviceToken);
 
         if (!store) {
             throw new ForbiddenError(buildNotAuthorizedMessage(ip));
@@ -50,9 +150,9 @@ export class AttendanceService {
 
     }
 
-    async clock(ip: string, userId: string, pin: string, reason?: string) {
+    async clock(ip: string, deviceToken: string | null, userId: string, pin: string, reason?: string) {
 
-        const store = await this.repository.findStoreByIp(ip);
+        const store = await this.resolveStore(ip, deviceToken);
 
         if (!store) {
             throw new ForbiddenError(buildNotAuthorizedMessage(ip));

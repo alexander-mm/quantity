@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LoadingState } from "@/components/ui/spinner";
+import { AuthorizeDevicePanel } from "@/components/attendance";
 import { useKioskContext, useClockAttendance } from "@/hooks";
 import type { KioskEmployee } from "@/types";
 
@@ -38,6 +39,7 @@ export function AttendanceClockPage() {
     const [selectedEmployee, setSelectedEmployee] = useState<KioskEmployee | null>(null);
     const [pin, setPin] = useState("");
     const [reason, setReason] = useState("");
+    const [authorizing, setAuthorizing] = useState(false);
 
     const context = data?.data;
     const employees = context?.employees ?? [];
@@ -90,12 +92,26 @@ export function AttendanceClockPage() {
 
                 {isLoading && <LoadingState />}
 
-                {isError && (
-                    <p className="rounded-lg border border-red-200 bg-red-50 p-4 text-center text-red-600">
-                        {axios.isAxiosError<{ message?: string }>(error) && error.response?.data?.message
-                            ? error.response.data.message
-                            : "Este equipo no está autorizado para marcar asistencia."}
-                    </p>
+                {isError && !authorizing && (
+                    <div className="space-y-4">
+                        <p className="rounded-lg border border-red-200 bg-red-50 p-4 text-center text-red-600">
+                            {axios.isAxiosError<{ message?: string }>(error) && error.response?.data?.message
+                                ? error.response.data.message
+                                : "Este equipo no está autorizado para marcar asistencia."}
+                        </p>
+                        {axios.isAxiosError(error) && error.response?.status === 403 && (
+                            <Button variant="outline" className="w-full" onClick={() => setAuthorizing(true)}>
+                                Autorizar este equipo (administrador)
+                            </Button>
+                        )}
+                    </div>
+                )}
+
+                {isError && authorizing && (
+                    <AuthorizeDevicePanel
+                        onCancel={() => setAuthorizing(false)}
+                        onAuthorized={() => setAuthorizing(false)}
+                    />
                 )}
 
                 {!isLoading && !isError && !selectedEmployee && (

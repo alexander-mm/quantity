@@ -2,13 +2,14 @@ import { useMemo, useState } from "react";
 import {
     PageContainer,
     PageHeader,
-    AttendanceHistoryTable
+    AttendanceHistoryTable,
+    AttendanceDevicesTable
 } from "@/components";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { PaginationControls } from "@/components/ui";
 import { StoreSelector } from "@/components/selectors/store-selector";
-import { useAttendanceHistory, useStores, usePagination } from "@/hooks";
+import { useAttendanceHistory, useAttendanceDevices, useStores, usePagination } from "@/hooks";
 import { LoadingState } from "@/components/ui/spinner";
 
 export function AttendanceHistoryPage() {
@@ -27,6 +28,9 @@ export function AttendanceHistoryPage() {
     });
 
     const records = useMemo(() => data?.data ?? [], [data]);
+
+    const { data: devicesData, isLoading: devicesLoading } = useAttendanceDevices(storeId || undefined);
+    const devices = devicesData?.data ?? [];
 
     const { pageItems: pagedRecords, page, setPage, totalPages, totalItems, pageSize } = usePagination(records);
 
@@ -74,6 +78,20 @@ export function AttendanceHistoryPage() {
                                 />
                             </>
                         )
+                )}
+            </div>
+
+            <div className="mt-10">
+                <h2 className="text-lg font-semibold">Equipos autorizados</h2>
+                <p className="mb-4 text-sm text-muted-foreground">
+                    Equipos desde los que se puede marcar asistencia. Para autorizar uno nuevo, abrí
+                    "/asistencia" en ese equipo y usá "Autorizar este equipo" con un usuario administrador.
+                </p>
+                {devicesLoading && <LoadingState />}
+                {!devicesLoading && (
+                    devices.length === 0
+                        ? <p className="text-muted-foreground">No hay equipos autorizados para el filtro seleccionado.</p>
+                        : <AttendanceDevicesTable devices={devices} />
                 )}
             </div>
 

@@ -103,6 +103,7 @@ function ResolveTransferModalContent({ transfer, onDone }: ContentProps) {
                                         <Input
                                             type="number"
                                             min={0}
+                                            step="0.01"
                                             value={quantities[detail.product.id] ?? 0}
                                             onChange={(e) => setQuantities(prev => ({
                                                 ...prev,

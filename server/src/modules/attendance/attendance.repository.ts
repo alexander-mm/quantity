@@ -39,6 +39,124 @@ export class AttendanceRepository extends BaseRepository {
 
     }
 
+    async findStoreByDeviceTokenHash(tokenHash: string) {
+
+        const device = await this.prisma.attendanceDevice.findFirst({
+
+            where: {
+                tokenHash,
+                revokedAt: null,
+                store: { isActive: true, type: StoreType.STORE }
+            },
+
+            include: { store: true }
+
+        });
+
+        return device;
+
+    }
+
+    async touchDevice(id: bigint, ip: string) {
+
+        return this.prisma.attendanceDevice.update({
+
+            where: { id },
+
+            data: { lastUsedAt: new Date(), lastIp: ip || null }
+
+        });
+
+    }
+
+    async findEnrollableStores() {
+
+        return this.prisma.store.findMany({
+
+            where: { isActive: true, type: StoreType.STORE },
+
+            select: { id: true, name: true },
+
+            orderBy: { name: "asc" }
+
+        });
+
+    }
+
+    async findEnrollableStoreById(storeId: bigint) {
+
+        return this.prisma.store.findFirst({
+
+            where: { id: storeId, isActive: true, type: StoreType.STORE }
+
+        });
+
+    }
+
+    async createDevice(data: {
+        storeId: bigint;
+        name: string;
+        tokenHash: string;
+        ip: string;
+        createdBy: bigint;
+    }) {
+
+        return this.prisma.attendanceDevice.create({
+
+            data: {
+                storeId: data.storeId,
+                name: data.name,
+                tokenHash: data.tokenHash,
+                lastIp: data.ip || null,
+                createdBy: data.createdBy
+            },
+
+            select: {
+                id: true,
+                name: true,
+                createdAt: true,
+                store: { select: { id: true, name: true } }
+            }
+
+        });
+
+    }
+
+    async findDevices(storeId?: bigint) {
+
+        return this.prisma.attendanceDevice.findMany({
+
+            where: { storeId, revokedAt: null },
+
+            select: {
+                id: true,
+                name: true,
+                lastUsedAt: true,
+                lastIp: true,
+                createdAt: true,
+                store: { select: { id: true, name: true } }
+            },
+
+            orderBy: { createdAt: "desc" }
+
+        });
+
+    }
+
+    async revokeDevice(id: bigint) {
+
+        const result = await this.prisma.attendanceDevice.updateMany({
+
+            where: { id, revokedAt: null },
+
+            data: { revokedAt: new Date() }
+
+        });
+
+        return result.count > 0;
+
+    }
+
     async findStoreEmployees(storeId: bigint) {
 
         return this.prisma.user.findMany({

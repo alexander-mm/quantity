@@ -51,3 +51,24 @@ export interface AttendanceFilters {
     from?: string;
     to?: string;
 }
+
+export interface AttendanceEnrollStore {
+    id: string;
+    name: string;
+}
+
+export interface AttendanceDevice {
+    id: string;
+    name: string;
+    lastUsedAt: string | null;
+    lastIp: string | null;
+    createdAt: string;
+    store: AttendanceRecordStore;
+}
+
+export interface EnrollAttendanceDevicePayload {
+    username: string;
+    password: string;
+    storeId: string;
+    name: string;
+}

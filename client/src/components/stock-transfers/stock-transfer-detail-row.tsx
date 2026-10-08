@@ -89,7 +89,7 @@ export function StockTransferDetailRow({ index, onRemove }: Props) {
                 <Input
                     type="number"
                     min={0}
-                    step="1"
+                    step="0.01"
                     placeholder="0"
                     {...register(`details.${index}.quantitySent`, {
                         setValueAs: (v) => (v === "" ? undefined : Number(v))
